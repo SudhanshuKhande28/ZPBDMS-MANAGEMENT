@@ -33,6 +33,14 @@ import {
   Inbox,
   Code2,
   Cpu,
+  FileSpreadsheet,
+  FlaskConical,
+  Download,
+  MessageSquare,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  ExternalLink,
 } from "lucide-react";
 
 /* ---------------------------------------------------------------
@@ -84,6 +92,16 @@ const ISSUE_STATUSES = ["Open", "In Progress", "Resolved"];
 const TASK_STATUSES = ["To Do", "In Progress", "Done"];
 const ROLLOUT_STAGES = ["Not Started", "Requirements", "UAT", "Live", "Stabilizing"];
 
+// QA Matrix Constants
+const TEST_STATUSES = ["Untested", "Passed", "Failed", "Blocked", "Retest"];
+const DEV_STATUSES = [
+  "Pending Dev Fix",
+  "Dev In Progress",
+  "Resolved / Ready for Retest",
+  "Cannot Reproduce / As Designed",
+];
+const SEVERITIES = ["Blocker", "Critical", "Major", "Minor", "Low"];
+
 const DOC_REF = () => doc(db, "trackerData", "main");
 
 function uid() {
@@ -96,11 +114,77 @@ function formatTimeNow() {
   return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
+function seedTestPoints() {
+  return [
+    {
+      id: uid(),
+      code: "TP-VPDA-01",
+      module: "VPDA",
+      scenario: "Verify digital cryptographic signature generation on Namuna 24 PDF",
+      expectedResult: "PDF generated with valid cryptographic PKCS#7 digital signature and official stamp",
+      actualResult: "Signature generation timed out on large datasets (>50 pages)",
+      status: "Failed",
+      devStatus: "Resolved / Ready for Retest",
+      devRemark: "Added chunked stream processing in build v2.1; response time reduced to 1.2s.",
+      severity: "Critical",
+      tester: "Rutuja",
+      assignedDev: "Sankalp",
+      updatedAt: todayISO(),
+    },
+    {
+      id: uid(),
+      code: "TP-TR-02",
+      module: "Treasury",
+      scenario: "Validate Treasury bill remittance reconciliation with bank transaction IDs",
+      expectedResult: "Bank UTR number matches Treasury ledger with automated status updated to Settled",
+      actualResult: "Ledger status updated correctly with zero discrepancy",
+      status: "Passed",
+      devStatus: "Resolved / Ready for Retest",
+      devRemark: "Automated cron runner verified against staging bank gateway.",
+      severity: "Major",
+      tester: "Rutuja",
+      assignedDev: "Sankalp",
+      updatedAt: todayISO(),
+    },
+    {
+      id: uid(),
+      code: "TP-CESS-03",
+      module: "CESS",
+      scenario: "Test calculation of 2% state infrastructure CESS surcharge on commercial assessment",
+      expectedResult: "System calculates accurate 2% rate rounded up to nearest whole rupee",
+      actualResult: "Awaiting test data batch from Buldhana district office",
+      status: "Untested",
+      devStatus: "Pending Dev Fix",
+      devRemark: "",
+      severity: "Major",
+      tester: "Rutuja",
+      assignedDev: "Sudhanshu Khande",
+      updatedAt: todayISO(),
+    },
+    {
+      id: uid(),
+      code: "TP-NAM-04",
+      module: "Namuna Reports",
+      scenario: "Export Namuna 1 to 33 ledger registers in encrypted Excel/CSV formats",
+      expectedResult: "Download triggers with UTF-8 Marathi/English bilingual encoding",
+      actualResult: "Special Marathi Unicode characters render as question marks in Excel export",
+      status: "Failed",
+      devStatus: "Dev In Progress",
+      devRemark: "Investigating UTF-8 BOM header injection for Excel compatibility.",
+      severity: "Critical",
+      tester: "Rutuja",
+      assignedDev: "Sankalp",
+      updatedAt: todayISO(),
+    },
+  ];
+}
+
 function seedData() {
   return {
     issues: [],
     tasks: [],
     notifications: [],
+    testPoints: seedTestPoints(),
     districts: DISTRICTS_DEFAULT.map((name) => ({
       id: uid(),
       name,
@@ -227,6 +311,150 @@ function StatusChip({ value, interactive = false }) {
         }}
       />
       {value}
+    </span>
+  );
+}
+
+function TestStatusChip({ value, interactive = false, onClick }) {
+  const map = {
+    Passed: {
+      bg: "rgba(34, 197, 94, 0.16)",
+      fg: "#4ade80",
+      border: "rgba(34, 197, 94, 0.4)",
+      glow: "0 0 10px rgba(34, 197, 94, 0.25)",
+      dot: "#22c55e",
+    },
+    Failed: {
+      bg: "rgba(255, 51, 75, 0.2)",
+      fg: "#ffffff",
+      border: "rgba(255, 51, 75, 0.55)",
+      glow: "0 0 12px rgba(255, 51, 75, 0.4)",
+      dot: "#ff334b",
+    },
+    Blocked: {
+      bg: "rgba(245, 158, 11, 0.16)",
+      fg: "#fbbf24",
+      border: "rgba(245, 158, 11, 0.4)",
+      glow: "0 0 10px rgba(245, 158, 11, 0.2)",
+      dot: "#f59e0b",
+    },
+    Retest: {
+      bg: "rgba(56, 189, 248, 0.16)",
+      fg: "#38bdf8",
+      border: "rgba(56, 189, 248, 0.4)",
+      glow: "0 0 10px rgba(56, 189, 248, 0.2)",
+      dot: "#38bdf8",
+    },
+    Untested: {
+      bg: "rgba(148, 163, 184, 0.12)",
+      fg: "#cbd5e1",
+      border: "rgba(148, 163, 184, 0.25)",
+      glow: "none",
+      dot: "#94a3b8",
+    },
+  };
+  const s = map[value] || map.Untested;
+
+  return (
+    <span
+      onClick={onClick}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 6,
+        background: s.bg,
+        color: s.fg,
+        border: `1px solid ${s.border}`,
+        boxShadow: s.glow,
+        fontFamily: "'Inter', sans-serif",
+        fontSize: 12,
+        fontWeight: 700,
+        padding: "3px 10px",
+        borderRadius: 20,
+        whiteSpace: "nowrap",
+        letterSpacing: "0.2px",
+        cursor: interactive ? "pointer" : "default",
+        userSelect: "none",
+        transition: "all 0.18s ease",
+      }}
+    >
+      <span
+        style={{
+          width: 6,
+          height: 6,
+          borderRadius: "50%",
+          backgroundColor: s.dot,
+          boxShadow: `0 0 6px ${s.dot}`,
+        }}
+      />
+      {value}
+    </span>
+  );
+}
+
+function DevStatusChip({ value, onClick }) {
+  const map = {
+    "Resolved / Ready for Retest": {
+      bg: "rgba(34, 197, 94, 0.16)",
+      fg: "#4ade80",
+      border: "rgba(34, 197, 94, 0.4)",
+      glow: "0 0 10px rgba(34, 197, 94, 0.2)",
+      dot: "#22c55e",
+    },
+    "Dev In Progress": {
+      bg: "rgba(168, 85, 247, 0.16)",
+      fg: "#c084fc",
+      border: "rgba(168, 85, 247, 0.4)",
+      glow: "0 0 10px rgba(168, 85, 247, 0.2)",
+      dot: "#a855f7",
+    },
+    "Pending Dev Fix": {
+      bg: "rgba(245, 158, 11, 0.16)",
+      fg: "#fbbf24",
+      border: "rgba(245, 158, 11, 0.4)",
+      glow: "0 0 8px rgba(245, 158, 11, 0.15)",
+      dot: "#f59e0b",
+    },
+    "Cannot Reproduce / As Designed": {
+      bg: "rgba(148, 163, 184, 0.12)",
+      fg: "#94a3b8",
+      border: "rgba(148, 163, 184, 0.25)",
+      glow: "none",
+      dot: "#94a3b8",
+    },
+  };
+  const s = map[value] || map["Pending Dev Fix"];
+
+  return (
+    <span
+      onClick={onClick}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 6,
+        background: s.bg,
+        color: s.fg,
+        border: `1px solid ${s.border}`,
+        boxShadow: s.glow,
+        fontSize: 11.5,
+        fontWeight: 600,
+        padding: "3px 10px",
+        borderRadius: 20,
+        whiteSpace: "nowrap",
+        cursor: onClick ? "pointer" : "default",
+        userSelect: "none",
+        transition: "all 0.18s ease",
+      }}
+    >
+      <span
+        style={{
+          width: 6,
+          height: 6,
+          borderRadius: "50%",
+          backgroundColor: s.dot,
+        }}
+      />
+      {value || "Pending Dev Fix"}
     </span>
   );
 }
@@ -717,6 +945,181 @@ function DistrictForm({ initial, onSave, onCancel }) {
           onClick={() => f.name.trim() && onSave(f)}
         >
           Save District
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function TestPointForm({ initial, onSave, onCancel }) {
+  const [f, setF] = useState(
+    initial || {
+      code: `TP-${MODULES[0]}-${Math.floor(10 + Math.random() * 90)}`,
+      module: MODULES[0],
+      scenario: "",
+      expectedResult: "",
+      actualResult: "",
+      status: "Untested",
+      devStatus: "Pending Dev Fix",
+      devRemark: "",
+      severity: "Major",
+      tester: "Rutuja",
+      assignedDev: "Sankalp",
+    }
+  );
+
+  const teamOptions = TEAM_ROSTER.map((u) => ({
+    value: u.name,
+    label: `${u.name} (${u.role})`,
+  }));
+
+  return (
+    <div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <FormField label="Test Point Code">
+          <input
+            style={darkInputStyle}
+            value={f.code}
+            onChange={(e) => setF({ ...f, code: e.target.value })}
+            placeholder="e.g. TP-VPDA-05"
+          />
+        </FormField>
+        <FormField label="Module">
+          <SelectInput value={f.module} onChange={(v) => setF({ ...f, module: v })} options={MODULES} />
+        </FormField>
+      </div>
+
+      <FormField label="Test Scenario / Verification Point">
+        <input
+          style={darkInputStyle}
+          value={f.scenario}
+          onChange={(e) => setF({ ...f, scenario: e.target.value })}
+          placeholder="e.g. Test OTP validation during cash remittance disbursement"
+        />
+      </FormField>
+
+      <FormField label="Expected Result">
+        <textarea
+          style={{ ...darkInputStyle, minHeight: 60, resize: "vertical" }}
+          value={f.expectedResult}
+          onChange={(e) => setF({ ...f, expectedResult: e.target.value })}
+          placeholder="What the system should do under normal conditions..."
+        />
+      </FormField>
+
+      <FormField label="Actual Result / Defect Observations">
+        <textarea
+          style={{ ...darkInputStyle, minHeight: 60, resize: "vertical" }}
+          value={f.actualResult}
+          onChange={(e) => setF({ ...f, actualResult: e.target.value })}
+          placeholder="What actually occurred during the test run..."
+        />
+      </FormField>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <FormField label="Test Status">
+          <SelectInput value={f.status} onChange={(v) => setF({ ...f, status: v })} options={TEST_STATUSES} />
+        </FormField>
+        <FormField label="Severity">
+          <SelectInput value={f.severity} onChange={(v) => setF({ ...f, severity: v })} options={SEVERITIES} />
+        </FormField>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <FormField label="Tester Lead">
+          <SelectInput value={f.tester} onChange={(v) => setF({ ...f, tester: v })} options={teamOptions} />
+        </FormField>
+        <FormField label="Assigned Developer">
+          <SelectInput value={f.assignedDev} onChange={(v) => setF({ ...f, assignedDev: v })} options={teamOptions} />
+        </FormField>
+      </div>
+
+      <div style={{ display: "flex", gap: 10, marginTop: 22, justifyContent: "flex-end" }}>
+        <button
+          className="btn-ghost-dark"
+          style={{ padding: "9px 18px", fontSize: 13, fontWeight: 500 }}
+          onClick={onCancel}
+        >
+          Cancel
+        </button>
+        <button
+          className="btn-red-gradient"
+          style={{ padding: "9px 20px", fontSize: 13 }}
+          onClick={() => f.scenario.trim() && onSave(f)}
+        >
+          Save Test Point
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function DevResolveForm({ initial, onSave, onCancel }) {
+  const [devStatus, setDevStatus] = useState(initial?.devStatus || "Resolved / Ready for Retest");
+  const [devRemark, setDevRemark] = useState(initial?.devRemark || "");
+  const [assignedDev, setAssignedDev] = useState(initial?.assignedDev || TEAM_ROSTER[1].name);
+
+  const teamOptions = TEAM_ROSTER.map((u) => ({
+    value: u.name,
+    label: `${u.name} (${u.role})`,
+  }));
+
+  return (
+    <div>
+      <div
+        style={{
+          padding: "12px 14px",
+          borderRadius: 8,
+          background: "rgba(255, 255, 255, 0.03)",
+          border: "1px solid rgba(255, 255, 255, 0.08)",
+          marginBottom: 16,
+        }}
+      >
+        <div style={{ fontSize: 11, color: "#94a3b8", textTransform: "uppercase", fontWeight: 700 }}>
+          {initial?.code} · {initial?.module}
+        </div>
+        <div style={{ fontSize: 13.5, color: "#ffffff", fontWeight: 600, marginTop: 2 }}>
+          {initial?.scenario}
+        </div>
+        {initial?.actualResult && (
+          <div style={{ fontSize: 12, color: "#ff6479", marginTop: 6 }}>
+            <strong>Tester Defect Note:</strong> {initial.actualResult}
+          </div>
+        )}
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <FormField label="Developer Status">
+          <SelectInput value={devStatus} onChange={(v) => setDevStatus(v)} options={DEV_STATUSES} />
+        </FormField>
+        <FormField label="Resolving Engineer">
+          <SelectInput value={assignedDev} onChange={(v) => setAssignedDev(v)} options={teamOptions} />
+        </FormField>
+      </div>
+
+      <FormField label="Developer Fix Remarks & Notes">
+        <textarea
+          style={{ ...darkInputStyle, minHeight: 80, resize: "vertical" }}
+          value={devRemark}
+          onChange={(e) => setDevRemark(e.target.value)}
+          placeholder="Explain the root cause fix, commit hash, build patch version, or re-testing steps..."
+        />
+      </FormField>
+
+      <div style={{ display: "flex", gap: 10, marginTop: 22, justifyContent: "flex-end" }}>
+        <button
+          className="btn-ghost-dark"
+          style={{ padding: "9px 18px", fontSize: 13, fontWeight: 500 }}
+          onClick={onCancel}
+        >
+          Cancel
+        </button>
+        <button
+          className="btn-red-gradient"
+          style={{ padding: "9px 20px", fontSize: 13 }}
+          onClick={() => onSave({ devStatus, devRemark, assignedDev })}
+        >
+          Submit Resolution & Notify Tester
         </button>
       </div>
     </div>
@@ -1418,6 +1821,7 @@ export default function App() {
         if (snap.exists()) {
           const fetched = snap.data();
           if (!fetched.notifications) fetched.notifications = [];
+          if (!fetched.testPoints) fetched.testPoints = seedTestPoints();
           setData(fetched);
         } else {
           const seed = seedData();
@@ -1633,9 +2037,15 @@ export default function App() {
     setModal(null);
   };
 
+  const saveTestPoint = (item) => {
+    persist({ ...data, testPoints: addOrUpdate(data.testPoints || [], item, modal?.editing?.id) });
+    setModal(null);
+  };
+
   const removeIssue = (id) => persist({ ...data, issues: data.issues.filter((x) => x.id !== id) });
   const removeTask = (id) => persist({ ...data, tasks: data.tasks.filter((x) => x.id !== id) });
   const removeDistrict = (id) => persist({ ...data, districts: data.districts.filter((x) => x.id !== id) });
+  const removeTestPoint = (id) => persist({ ...data, testPoints: (data.testPoints || []).filter((t) => t.id !== id) });
 
   const cycleIssueStatus = (item) => {
     const next = ISSUE_STATUSES[(ISSUE_STATUSES.indexOf(item.status) + 1) % ISSUE_STATUSES.length];
@@ -1644,6 +2054,49 @@ export default function App() {
   const cycleTaskStatus = (item) => {
     const next = TASK_STATUSES[(TASK_STATUSES.indexOf(item.status) + 1) % TASK_STATUSES.length];
     persist({ ...data, tasks: data.tasks.map((x) => (x.id === item.id ? { ...x, status: next } : x)) });
+  };
+
+  const cycleTestPointStatus = (tp) => {
+    const next = TEST_STATUSES[(TEST_STATUSES.indexOf(tp.status) + 1) % TEST_STATUSES.length];
+    persist({
+      ...data,
+      testPoints: (data.testPoints || []).map((t) => (t.id === tp.id ? { ...t, status: next, updatedAt: todayISO() } : t)),
+    });
+  };
+
+  const resolveTestPoint = (id, resolution) => {
+    const target = (data.testPoints || []).find((t) => t.id === id);
+    const updatedPoints = (data.testPoints || []).map((t) =>
+      t.id === id ? { ...t, ...resolution, updatedAt: todayISO() } : t
+    );
+    const testerName = target?.tester || "Rutuja";
+    const newNotifications = [
+      ...notifyAssignee(
+        testerName,
+        `QA Point Resolved: ${target?.code || "Test Point"}`,
+        `${currentUser.name} marked "${resolution.devStatus}": ${resolution.devRemark || "No remark provided."}`,
+        "test_point",
+        id
+      ),
+      ...(data.notifications || []),
+    ];
+    persist({ ...data, testPoints: updatedPoints, notifications: newNotifications });
+    setModal(null);
+  };
+
+  const dispatchTestPointToIssue = (tp) => {
+    setModal({
+      type: "issue",
+      editing: {
+        title: `[QA Defect - ${tp.code}] ${tp.scenario}`,
+        module: tp.module,
+        priority: tp.severity === "Blocker" || tp.severity === "Critical" ? "Critical" : "High",
+        status: "Open",
+        district: DISTRICTS_DEFAULT[0],
+        assignee: tp.assignedDev || TEAM_ROSTER[1].name,
+        notes: `Expected: ${tp.expectedResult}\nActual: ${tp.actualResult}\nDeveloper Remark: ${tp.devRemark || "None"}`,
+      },
+    });
   };
 
   // Notification actions
@@ -1675,6 +2128,37 @@ export default function App() {
     (t) => !q || [t.title, t.module, t.assignee].join(" ").toLowerCase().includes(q)
   );
 
+  // QA Spreadsheet filtering
+  const [qaModule, setQaModule] = useState("All Modules");
+  const [qaTestStatus, setQaTestStatus] = useState("All Test Statuses");
+  const [qaDevStatus, setQaDevStatus] = useState("All Dev Statuses");
+  const [qaSearch, setQaSearch] = useState("");
+
+  const allTestPoints = data.testPoints || [];
+  const failedTestPointsCount = allTestPoints.filter((t) => t.status === "Failed").length;
+  const filteredTestPoints = allTestPoints.filter((tp) => {
+    if (qaModule !== "All Modules" && tp.module !== qaModule) return false;
+    if (qaTestStatus !== "All Test Statuses" && tp.status !== qaTestStatus) return false;
+    if (qaDevStatus !== "All Dev Statuses" && tp.devStatus !== qaDevStatus) return false;
+    if (qaSearch.trim()) {
+      const sq = qaSearch.trim().toLowerCase();
+      const haystack = [
+        tp.code,
+        tp.module,
+        tp.scenario,
+        tp.expectedResult,
+        tp.actualResult,
+        tp.devRemark,
+        tp.tester,
+        tp.assignedDev,
+      ]
+        .join(" ")
+        .toLowerCase();
+      if (!haystack.includes(sq)) return false;
+    }
+    return true;
+  });
+
   // My Personal Desk filtering
   const myIssues = data.issues.filter((i) => i.assignee === currentUser.name);
   const myOpenIssues = myIssues.filter((i) => i.status !== "Resolved").length;
@@ -1689,6 +2173,7 @@ export default function App() {
 
   const navItems = [
     { key: "my_desk", label: "My Desk & Tasks", icon: UserCheck, count: myOpenIssues + myPendingTasks, highlight: true },
+    { key: "test_hub", label: "QA Test Matrix", icon: FileSpreadsheet, count: failedTestPointsCount, isAlert: failedTestPointsCount > 0 },
     { key: "dashboard", label: "Operations Deck", icon: LayoutGrid },
     { key: "issues", label: "Issues Matrix", icon: AlertTriangle, count: openIssues, isAlert: criticalOpen > 0 },
     { key: "tasks", label: "Task Directives", icon: ListChecks, count: pendingTasks },
@@ -2067,6 +2552,8 @@ export default function App() {
             <p style={{ margin: "4px 0 0 0", fontSize: 12.5, color: "#94a3b8" }}>
               {tab === "my_desk"
                 ? `Assigned directives and active defects for ${currentUser.name}`
+                : tab === "test_hub"
+                ? "Unified QA Test Matrix, Google Sheet sync, and developer defect resolution log"
                 : "District rollouts, live defect tracking, and sprint task register"}
             </p>
           </div>
@@ -2240,7 +2727,7 @@ export default function App() {
             </div>
 
             {/* Quick Search */}
-            {tab !== "dashboard" && tab !== "my_desk" && (
+            {tab !== "dashboard" && tab !== "my_desk" && tab !== "test_hub" && (
               <div style={{ position: "relative" }}>
                 <Search
                   size={14}
@@ -2269,16 +2756,42 @@ export default function App() {
             )}
 
             {/* View Actions */}
-            <button className="btn-red-gradient" onClick={() => setModal({ type: "issue" })} style={{ padding: "8px 16px" }}>
-              <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
-                <Plus size={15} /> Log Issue
-              </span>
-            </button>
-            <button className="btn-ghost-dark" onClick={() => setModal({ type: "task" })} style={{ padding: "8px 16px" }}>
-              <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
-                <Plus size={15} /> Create Task
-              </span>
-            </button>
+            {tab === "test_hub" ? (
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <button
+                  className="btn-red-gradient"
+                  onClick={() => setModal({ type: "test_point" })}
+                  style={{ padding: "8px 16px" }}
+                >
+                  <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
+                    <Plus size={15} /> Add Test Point
+                  </span>
+                </button>
+                <button
+                  className="btn-ghost-dark"
+                  onClick={() => exportTestPointsCSV(allTestPoints)}
+                  style={{ padding: "8px 16px" }}
+                  title="Export QA Matrix to CSV spreadsheet"
+                >
+                  <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
+                    <Download size={14} /> Export CSV
+                  </span>
+                </button>
+              </div>
+            ) : (
+              <>
+                <button className="btn-red-gradient" onClick={() => setModal({ type: "issue" })} style={{ padding: "8px 16px" }}>
+                  <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
+                    <Plus size={15} /> Log Issue
+                  </span>
+                </button>
+                <button className="btn-ghost-dark" onClick={() => setModal({ type: "task" })} style={{ padding: "8px 16px" }}>
+                  <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
+                    <Plus size={15} /> Create Task
+                  </span>
+                </button>
+              </>
+            )}
           </div>
         </header>
 
@@ -2336,6 +2849,28 @@ export default function App() {
             onDelete={removeDistrict}
           />
         )}
+
+        {tab === "test_hub" && (
+          <TestHubView
+            testPoints={filteredTestPoints}
+            allTestPoints={allTestPoints}
+            onCycleStatus={cycleTestPointStatus}
+            onOpenResolve={(tp) => setModal({ type: "dev_resolve", editing: tp })}
+            onOpenEdit={(tp) => setModal({ type: "test_point", editing: tp })}
+            onDelete={removeTestPoint}
+            onDispatchIssue={dispatchTestPointToIssue}
+            onOpenAdd={() => setModal({ type: "test_point" })}
+            onExportCSV={() => exportTestPointsCSV(allTestPoints)}
+            selectedModule={qaModule}
+            setSelectedModule={setQaModule}
+            selectedTestStatus={qaTestStatus}
+            setSelectedTestStatus={setQaTestStatus}
+            selectedDevStatus={qaDevStatus}
+            setSelectedDevStatus={setQaDevStatus}
+            searchQuery={qaSearch}
+            setSearchQuery={setQaSearch}
+          />
+        )}
       </main>
 
       {/* Modern High-Graphic Modals */}
@@ -2371,6 +2906,34 @@ export default function App() {
           onClose={() => setModal(null)}
         >
           <DistrictForm initial={modal.editing} onSave={saveDistrict} onCancel={() => setModal(null)} />
+        </Modal>
+      )}
+
+      {modal?.type === "test_point" && (
+        <Modal
+          title={modal.editing ? "Edit QA Test Point" : "Add QA Test Point"}
+          icon={FlaskConical}
+          onClose={() => setModal(null)}
+        >
+          <TestPointForm
+            initial={modal.editing}
+            onSave={saveTestPoint}
+            onCancel={() => setModal(null)}
+          />
+        </Modal>
+      )}
+
+      {modal?.type === "dev_resolve" && (
+        <Modal
+          title={`Developer Resolution: ${modal.editing?.code || "Test Point"}`}
+          icon={Code2}
+          onClose={() => setModal(null)}
+        >
+          <DevResolveForm
+            initial={modal.editing}
+            onSave={(resolution) => resolveTestPoint(modal.editing.id, resolution)}
+            onCancel={() => setModal(null)}
+          />
         </Modal>
       )}
     </div>
@@ -3054,3 +3617,644 @@ function DistrictTable({ districts, onEdit, onDelete }) {
     </div>
   );
 }
+
+/* ---------------------------- QA Test Matrix & Spreadsheet Hub ---------------------------- */
+
+function SeverityBadge({ value }) {
+  const isBlocker = value === "Blocker";
+  const isCritical = value === "Critical";
+
+  const colorMap = {
+    Blocker: {
+      bg: "rgba(255, 51, 75, 0.25)",
+      fg: "#ffffff",
+      border: "rgba(255, 51, 75, 0.7)",
+      glow: "0 0 14px rgba(255, 51, 75, 0.5)",
+    },
+    Critical: {
+      bg: "rgba(255, 51, 75, 0.16)",
+      fg: "#ff6479",
+      border: "rgba(255, 51, 75, 0.45)",
+      glow: "0 0 10px rgba(255, 51, 75, 0.3)",
+    },
+    Major: {
+      bg: "rgba(249, 115, 22, 0.14)",
+      fg: "#fb923c",
+      border: "rgba(249, 115, 22, 0.35)",
+      glow: "none",
+    },
+    Minor: {
+      bg: "rgba(56, 189, 248, 0.14)",
+      fg: "#38bdf8",
+      border: "rgba(56, 189, 248, 0.3)",
+      glow: "none",
+    },
+    Low: {
+      bg: "rgba(148, 163, 184, 0.1)",
+      fg: "#94a3b8",
+      border: "rgba(148, 163, 184, 0.2)",
+      glow: "none",
+    },
+  };
+
+  const style = colorMap[value] || colorMap.Low;
+
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 5,
+        background: style.bg,
+        color: style.fg,
+        border: `1px solid ${style.border}`,
+        boxShadow: style.glow,
+        fontSize: 11,
+        fontWeight: isBlocker || isCritical ? 700 : 500,
+        padding: "2px 8px",
+        borderRadius: 4,
+        letterSpacing: "0.2px",
+      }}
+    >
+      {(isBlocker || isCritical) && (
+        <span className="pulse-radar-red" style={{ width: 6, height: 6 }} />
+      )}
+      {value}
+    </span>
+  );
+}
+
+function exportTestPointsCSV(testPoints = []) {
+  const headers = [
+    "Code",
+    "Module",
+    "Test Scenario",
+    "Expected Result",
+    "Actual Result / Bug",
+    "Test Status",
+    "Severity",
+    "Tester Lead",
+    "Assigned Developer",
+    "Developer Status",
+    "Developer Remark",
+    "Last Updated",
+  ];
+
+  const escapeCSV = (val) => {
+    if (val === null || val === undefined) return '""';
+    const str = String(val).replace(/"/g, '""');
+    return `"${str}"`;
+  };
+
+  const rows = testPoints.map((tp) => [
+    escapeCSV(tp.code),
+    escapeCSV(tp.module),
+    escapeCSV(tp.scenario),
+    escapeCSV(tp.expectedResult),
+    escapeCSV(tp.actualResult),
+    escapeCSV(tp.status),
+    escapeCSV(tp.severity),
+    escapeCSV(tp.tester),
+    escapeCSV(tp.assignedDev),
+    escapeCSV(tp.devStatus),
+    escapeCSV(tp.devRemark),
+    escapeCSV(tp.updatedAt || todayISO()),
+  ]);
+
+  const csvContent = [headers.join(","), ...rows.map((r) => r.join(","))].join("\r\n");
+  const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", `ZPBDMS_QA_Test_Matrix_${todayISO()}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+function TestHubView({
+  testPoints,
+  allTestPoints,
+  onCycleStatus,
+  onOpenResolve,
+  onOpenEdit,
+  onDelete,
+  onDispatchIssue,
+  onOpenAdd,
+  onExportCSV,
+  selectedModule,
+  setSelectedModule,
+  selectedTestStatus,
+  setSelectedTestStatus,
+  selectedDevStatus,
+  setSelectedDevStatus,
+  searchQuery,
+  setSearchQuery,
+}) {
+  const total = allTestPoints.length;
+  const passed = allTestPoints.filter((t) => t.status === "Passed").length;
+  const failed = allTestPoints.filter((t) => t.status === "Failed").length;
+  const blocked = allTestPoints.filter((t) => t.status === "Blocked").length;
+  const retest = allTestPoints.filter((t) => t.status === "Retest").length;
+  const untested = allTestPoints.filter((t) => t.status === "Untested").length;
+  const devResolved = allTestPoints.filter(
+    (t) => t.devStatus === "Resolved / Ready for Retest"
+  ).length;
+  const passRate = total > 0 ? Math.round((passed / total) * 100) : 0;
+
+  return (
+    <div>
+      {/* Top QA Operational KPI Cards */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+          gap: 16,
+          marginBottom: 20,
+        }}
+      >
+        <div className="glass-card" style={{ padding: "16px 18px", position: "relative" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 11, color: "#94a3b8", textTransform: "uppercase", fontWeight: 700 }}>
+              Total Test Scenarios
+            </span>
+            <FileSpreadsheet size={15} color="#cbd5e1" />
+          </div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: "#ffffff", marginTop: 8 }}>
+            {total}
+          </div>
+          <div style={{ fontSize: 11.5, color: "#64748b", marginTop: 4 }}>
+            Spreadsheet matrix records
+          </div>
+        </div>
+
+        <div className="glass-card" style={{ padding: "16px 18px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 11, color: "#4ade80", textTransform: "uppercase", fontWeight: 700 }}>
+              Passed / Verification
+            </span>
+            <CheckCircle size={15} color="#22c55e" />
+          </div>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 8 }}>
+            <div style={{ fontSize: 26, fontWeight: 800, color: "#4ade80" }}>{passed}</div>
+            <div style={{ fontSize: 12, color: "#94a3b8" }}>({passRate}% Pass Rate)</div>
+          </div>
+          <div style={{ width: "100%", height: 4, background: "rgba(255, 255, 255, 0.08)", borderRadius: 2, marginTop: 8, overflow: "hidden" }}>
+            <div style={{ width: `${passRate}%`, height: "100%", background: "#22c55e", borderRadius: 2 }} />
+          </div>
+        </div>
+
+        <div
+          className="glass-card"
+          style={{
+            padding: "16px 18px",
+            border: failed > 0 ? "1px solid rgba(255, 51, 75, 0.4)" : "1px solid rgba(255, 255, 255, 0.08)",
+            background: failed > 0 ? "rgba(255, 51, 75, 0.08)" : "rgba(18, 22, 34, 0.6)",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 11, color: "#ff6479", textTransform: "uppercase", fontWeight: 700 }}>
+              Defects / Failed
+            </span>
+            <AlertCircle size={15} color="#ff334b" />
+          </div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: failed > 0 ? "#ff334b" : "#ffffff", marginTop: 8 }}>
+            {failed}
+          </div>
+          <div style={{ fontSize: 11.5, color: failed > 0 ? "#ff8093" : "#64748b", marginTop: 4 }}>
+            {failed > 0 ? "Action required: Developer fix needed" : "All tested scenarios passing"}
+          </div>
+        </div>
+
+        <div className="glass-card" style={{ padding: "16px 18px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 11, color: "#c084fc", textTransform: "uppercase", fontWeight: 700 }}>
+              Developer Resolved
+            </span>
+            <Code2 size={15} color="#a855f7" />
+          </div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: "#c084fc", marginTop: 8 }}>
+            {devResolved}
+          </div>
+          <div style={{ fontSize: 11.5, color: "#94a3b8", marginTop: 4 }}>
+            Ready for Tester Rutuja retest
+          </div>
+        </div>
+
+        <div className="glass-card" style={{ padding: "16px 18px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 11, color: "#fbbf24", textTransform: "uppercase", fontWeight: 700 }}>
+              Pending / In Queue
+            </span>
+            <Clock size={15} color="#f59e0b" />
+          </div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: "#fbbf24", marginTop: 8 }}>
+            {untested + blocked + retest}
+          </div>
+          <div style={{ fontSize: 11.5, color: "#94a3b8", marginTop: 4 }}>
+            {untested} Untested · {blocked} Blocked · {retest} Retest
+          </div>
+        </div>
+      </div>
+
+      {/* Spreadsheet Control Toolbar & Filter Deck */}
+      <div
+        className="glass-card"
+        style={{
+          padding: "14px 18px",
+          marginBottom: 16,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: 12,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", flex: 1 }}>
+          {/* Module Filter */}
+          <div style={{ minWidth: 140 }}>
+            <select
+              value={selectedModule}
+              onChange={(e) => setSelectedModule(e.target.value)}
+              style={{
+                ...darkInputStyle,
+                padding: "7px 12px",
+                fontSize: 12,
+                cursor: "pointer",
+                background: "rgba(18, 22, 34, 0.8)",
+              }}
+            >
+              <option value="All Modules">All Modules</option>
+              {MODULES.map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Test Status Filter */}
+          <div style={{ minWidth: 140 }}>
+            <select
+              value={selectedTestStatus}
+              onChange={(e) => setSelectedTestStatus(e.target.value)}
+              style={{
+                ...darkInputStyle,
+                padding: "7px 12px",
+                fontSize: 12,
+                cursor: "pointer",
+                background: "rgba(18, 22, 34, 0.8)",
+              }}
+            >
+              <option value="All Test Statuses">All Test Statuses</option>
+              {TEST_STATUSES.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Dev Status Filter */}
+          <div style={{ minWidth: 160 }}>
+            <select
+              value={selectedDevStatus}
+              onChange={(e) => setSelectedDevStatus(e.target.value)}
+              style={{
+                ...darkInputStyle,
+                padding: "7px 12px",
+                fontSize: 12,
+                cursor: "pointer",
+                background: "rgba(18, 22, 34, 0.8)",
+              }}
+            >
+              <option value="All Dev Statuses">All Dev Statuses</option>
+              {DEV_STATUSES.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Keyword Search */}
+          <div style={{ position: "relative", flex: 1, minWidth: 220, maxWidth: 360 }}>
+            <Search
+              size={13}
+              style={{
+                position: "absolute",
+                left: 10,
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: "#64748b",
+              }}
+            />
+            <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search points, scenario, remarks, devs..."
+              style={{
+                ...darkInputStyle,
+                padding: "7px 10px 7px 30px",
+                fontSize: 12,
+                background: "rgba(18, 22, 34, 0.8)",
+                width: "100%",
+              }}
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                style={{
+                  position: "absolute",
+                  right: 8,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "transparent",
+                  border: "none",
+                  color: "#94a3b8",
+                  cursor: "pointer",
+                  padding: 2,
+                }}
+              >
+                <X size={12} />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Toolbar Right Info & Quick Action */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 12, color: "#94a3b8" }}>
+            Showing <strong>{testPoints.length}</strong> of {total} test points
+          </span>
+          <button
+            className="btn-red-gradient"
+            onClick={onOpenAdd}
+            style={{ padding: "6px 14px", fontSize: 12 }}
+          >
+            <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
+              <Plus size={14} /> New Point
+            </span>
+          </button>
+        </div>
+      </div>
+
+      {/* High-Density Spreadsheet Matrix Grid */}
+      <div className="glass-card" style={{ overflowX: "auto", overflowY: "hidden" }}>
+        {/* Table Column Headers */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "110px 100px minmax(260px, 2.2fr) 130px 100px 110px minmax(260px, 2.2fr) 110px",
+            padding: "12px 16px",
+            background: "rgba(255, 255, 255, 0.03)",
+            borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
+            fontSize: 11,
+            fontWeight: 700,
+            color: "#94a3b8",
+            textTransform: "uppercase",
+            letterSpacing: "0.6px",
+            alignItems: "center",
+            minWidth: 1180,
+          }}
+        >
+          <span># & Code</span>
+          <span>Module</span>
+          <span>Test Scenario & Evidence</span>
+          <span>Test Status</span>
+          <span>Severity</span>
+          <span>Tester Lead</span>
+          <span>Developer Resolution & Remark</span>
+          <span style={{ textAlign: "right" }}>Actions</span>
+        </div>
+
+        {/* Table Body Rows */}
+        {testPoints.length === 0 ? (
+          <div style={{ padding: "50px 20px", textAlign: "center" }}>
+            <FileSpreadsheet size={36} color="#64748b" style={{ margin: "0 auto 12px", display: "block" }} />
+            <div style={{ color: "#ffffff", fontSize: 14, fontWeight: 600 }}>No QA test points found</div>
+            <p style={{ color: "#64748b", fontSize: 12.5, margin: "6px 0 16px" }}>
+              No test scenarios match the current filters or search term.
+            </p>
+            <button
+              className="btn-red-gradient"
+              onClick={onOpenAdd}
+              style={{ padding: "8px 16px", fontSize: 12.5 }}
+            >
+              <Plus size={13} style={{ marginRight: 6 }} /> Create New Test Point
+            </button>
+          </div>
+        ) : (
+          testPoints.map((tp, idx) => (
+            <div
+              key={tp.id}
+              className="custom-table-row"
+              style={{
+                display: "grid",
+                gridTemplateColumns: "110px 100px minmax(260px, 2.2fr) 130px 100px 110px minmax(260px, 2.2fr) 110px",
+                padding: "14px 16px",
+                borderBottom: idx === testPoints.length - 1 ? "none" : "1px solid rgba(255, 255, 255, 0.05)",
+                alignItems: "center",
+                minWidth: 1180,
+              }}
+            >
+              {/* Code */}
+              <div>
+                <div
+                  style={{
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: "#ffffff",
+                    letterSpacing: "0.2px",
+                  }}
+                >
+                  {tp.code || `TP-${idx + 1}`}
+                </div>
+                <div style={{ fontSize: 10.5, color: "#64748b", marginTop: 2 }}>
+                  Row #{idx + 1}
+                </div>
+              </div>
+
+              {/* Module */}
+              <div>
+                <ModuleTag name={tp.module} />
+              </div>
+
+              {/* Test Scenario & Specification */}
+              <div style={{ paddingRight: 14 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "#ffffff", lineHeight: 1.4 }}>
+                  {tp.scenario}
+                </div>
+
+                {tp.expectedResult && (
+                  <div
+                    style={{
+                      fontSize: 11.5,
+                      color: "#94a3b8",
+                      marginTop: 4,
+                      lineHeight: 1.35,
+                      display: "flex",
+                      gap: 4,
+                    }}
+                  >
+                    <span style={{ color: "#4ade80", fontWeight: 600, flexShrink: 0 }}>Expected:</span>
+                    <span>{tp.expectedResult}</span>
+                  </div>
+                )}
+
+                {tp.actualResult && (
+                  <div
+                    style={{
+                      fontSize: 11.5,
+                      color: tp.status === "Failed" ? "#ff8093" : "#cbd5e1",
+                      marginTop: 4,
+                      lineHeight: 1.35,
+                      display: "flex",
+                      gap: 4,
+                      background: tp.status === "Failed" ? "rgba(255, 51, 75, 0.08)" : "rgba(255, 255, 255, 0.02)",
+                      padding: "4px 8px",
+                      borderRadius: 4,
+                      border: tp.status === "Failed" ? "1px solid rgba(255, 51, 75, 0.25)" : "1px solid rgba(255, 255, 255, 0.06)",
+                    }}
+                  >
+                    <span style={{ color: tp.status === "Failed" ? "#ff334b" : "#94a3b8", fontWeight: 700, flexShrink: 0 }}>
+                      {tp.status === "Failed" ? "Defect:" : "Actual:"}
+                    </span>
+                    <span>{tp.actualResult}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Test Status (Click to advance) */}
+              <div
+                onClick={() => onCycleStatus(tp)}
+                title="Click to advance: Untested → Passed → Failed → Blocked → Retest"
+              >
+                <TestStatusChip value={tp.status} interactive />
+              </div>
+
+              {/* Severity */}
+              <div>
+                <SeverityBadge value={tp.severity || "Major"} />
+              </div>
+
+              {/* Tester Lead */}
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <div
+                    style={{
+                      width: 22,
+                      height: 22,
+                      borderRadius: "50%",
+                      background: "rgba(255, 51, 75, 0.15)",
+                      border: "1px solid rgba(255, 51, 75, 0.35)",
+                      color: "#ff334b",
+                      fontSize: 10,
+                      fontWeight: 700,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {(tp.tester || "R").charAt(0)}
+                  </div>
+                  <span style={{ fontSize: 12, fontWeight: 500, color: "#ffffff" }}>
+                    {tp.tester || "Rutuja"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Developer Resolution & Remarks */}
+              <div style={{ paddingRight: 14 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                  <DevStatusChip value={tp.devStatus} onClick={() => onOpenResolve(tp)} />
+                  <span style={{ fontSize: 11, color: "#94a3b8" }}>
+                    {tp.assignedDev ? `(${tp.assignedDev})` : ""}
+                  </span>
+                </div>
+
+                {tp.devRemark ? (
+                  <div
+                    style={{
+                      fontSize: 11.5,
+                      color: "#e2e8f0",
+                      background: "rgba(255, 255, 255, 0.03)",
+                      borderLeft: "2px solid #ff334b",
+                      padding: "4px 8px",
+                      borderRadius: "0 4px 4px 0",
+                      marginTop: 6,
+                      lineHeight: 1.35,
+                    }}
+                  >
+                    <span style={{ color: "#ff6479", fontWeight: 700 }}>Dev Fix Note: </span>
+                    {tp.devRemark}
+                  </div>
+                ) : (
+                  <div style={{ fontSize: 11, color: "#64748b", marginTop: 4, fontStyle: "italic" }}>
+                    No developer remarks recorded yet.
+                  </div>
+                )}
+
+                <button
+                  onClick={() => onOpenResolve(tp)}
+                  style={{
+                    marginTop: 6,
+                    background: "rgba(255, 51, 75, 0.1)",
+                    border: "1px solid rgba(255, 51, 75, 0.3)",
+                    color: "#ff6479",
+                    borderRadius: 4,
+                    padding: "3px 8px",
+                    fontSize: 10.5,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 4,
+                    transition: "all 0.15s ease",
+                  }}
+                  title="Update developer resolution status and fix remark"
+                >
+                  <Code2 size={11} /> {tp.devRemark ? "Edit Resolution / Remark" : "+ Add Fix Remark / Resolve"}
+                </button>
+              </div>
+
+              {/* Actions */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
+                {tp.status === "Failed" && (
+                  <button
+                    onClick={() => onDispatchIssue(tp)}
+                    className="btn-red-gradient"
+                    style={{
+                      padding: "4px 8px",
+                      fontSize: 10.5,
+                      borderRadius: 4,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 4,
+                      whiteSpace: "nowrap",
+                    }}
+                    title="Dispatch bug directly to central Issues Matrix"
+                  >
+                    <ExternalLink size={10} /> Dispatch Bug
+                  </button>
+                )}
+
+                <div style={{ display: "flex", gap: 4 }}>
+                  <IconButton onClick={() => onOpenEdit(tp)} title="Edit Test Point">
+                    <Pencil size={13} />
+                  </IconButton>
+                  <IconButton onClick={() => onDelete(tp.id)} title="Delete Test Point" variant="danger">
+                    <Trash2 size={13} />
+                  </IconButton>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
