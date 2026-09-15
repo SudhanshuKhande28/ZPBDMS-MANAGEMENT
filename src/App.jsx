@@ -940,15 +940,184 @@ function LoginScreen({ onLogin }) {
   );
 }
 
-/* ---------------------------- Cinematic Post-Login Landing Page ---------------------------- */
+/* ---------------------------- Dynamic Cybernetic Canvas Landing ---------------------------- */
 
-function CinematicLanding({ user, onEnter }) {
+function DynamicCyberLanding({ user, onEnter }) {
+  const canvasRef = useRef(null);
+  const [phase, setPhase] = useState("scan"); // 'scan' -> 'branding' -> 'exit'
+  const [progress, setProgress] = useState(15);
+  const [terminalLog, setTerminalLog] = useState([
+    "INITIALIZING CORE SYSTEM PROTOCOLS...",
+    "VERIFYING ENCRYPTED CREDENTIALS...",
+  ]);
+
+  // Terminal logs sequence & phase shifts
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const t1 = setTimeout(() => {
+      setTerminalLog((prev) => [...prev, `IDENTITY CONFIRMED: ${user.name.toUpperCase()}`]);
+      setProgress(55);
+    }, 500);
+
+    const t2 = setTimeout(() => {
+      setTerminalLog((prev) => [...prev, `SECURITY CLEARANCE: ${user.role.toUpperCase()}`]);
+      setProgress(85);
+    }, 900);
+
+    const t3 = setTimeout(() => {
+      setPhase("branding"); // Show the dynamic developer branding card
+      setProgress(100);
+    }, 1300);
+
+    const t4 = setTimeout(() => {
+      setPhase("exit");
+    }, 3800);
+
+    const t5 = setTimeout(() => {
       onEnter();
-    }, 3200);
-    return () => clearTimeout(timer);
-  }, [onEnter]);
+    }, 4200);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      clearTimeout(t4);
+      clearTimeout(t5);
+    };
+  }, [user, onEnter]);
+
+  // Canvas 60fps particle and 3D perspective cyber-grid animation
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    let animId;
+
+    let w = (canvas.width = window.innerWidth);
+    let h = (canvas.height = window.innerHeight);
+
+    const handleResize = () => {
+      if (!canvas) return;
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    };
+    window.addEventListener("resize", handleResize);
+
+    // Generate 75 autonomous particles
+    const particleCount = 75;
+    const particles = [];
+    for (let i = 0; i < particleCount; i++) {
+      particles.push({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        vx: (Math.random() - 0.5) * 1.6,
+        vy: (Math.random() - 0.5) * 1.6,
+        size: Math.random() * 2.5 + 1.2,
+        color: Math.random() > 0.4 ? "#ff334b" : Math.random() > 0.5 ? "#ffffff" : "#38bdf8",
+      });
+    }
+
+    let radarAngle = 0;
+    let gridOffset = 0;
+
+    const render = () => {
+      ctx.fillStyle = "rgba(7, 8, 12, 0.3)";
+      ctx.fillRect(0, 0, w, h);
+
+      // --- 1. 3D Perspective Cyber-Grid on the floor ---
+      const horizonY = h * 0.55;
+      const fov = 300;
+      gridOffset = (gridOffset + 1.2) % 36;
+
+      ctx.save();
+      ctx.strokeStyle = "rgba(255, 51, 75, 0.15)";
+      ctx.lineWidth = 1;
+
+      // Perspective vertical rays emanating from vanishing point
+      const vanishingX = w / 2;
+      for (let x = -w; x <= w * 2; x += 60) {
+        ctx.beginPath();
+        ctx.moveTo(vanishingX, horizonY);
+        ctx.lineTo(x, h);
+        ctx.stroke();
+      }
+
+      // Moving horizontal lines accelerating downward
+      for (let z = 10; z < 500; z += 30) {
+        const adjustedZ = (z + gridOffset) % 500;
+        const lineY = horizonY + (fov * (h - horizonY)) / (adjustedZ + fov);
+        const alpha = Math.min(1, (lineY - horizonY) / (h - horizonY)) * 0.28;
+        ctx.strokeStyle = `rgba(255, 51, 75, ${alpha})`;
+        ctx.beginPath();
+        ctx.moveTo(0, lineY);
+        ctx.lineTo(w, lineY);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      // --- 2. Sweeping Radar Beam ---
+      radarAngle += 0.035;
+      const radarRadius = Math.min(w, h) * 0.38;
+      ctx.save();
+      const sweepGrad = ctx.createRadialGradient(w / 2, h / 2, 10, w / 2, h / 2, radarRadius);
+      sweepGrad.addColorStop(0, "rgba(255, 51, 75, 0.15)");
+      sweepGrad.addColorStop(1, "transparent");
+      ctx.fillStyle = sweepGrad;
+      ctx.beginPath();
+      ctx.moveTo(w / 2, h / 2);
+      ctx.arc(w / 2, h / 2, radarRadius, radarAngle, radarAngle + 0.5);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+
+      // --- 3. Dynamic Interactive Particle Constellation ---
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if (p.x < 0) p.x = w;
+        if (p.x > w) p.x = 0;
+        if (p.y < 0) p.y = h;
+        if (p.y > h) p.y = 0;
+
+        // Draw particle
+        ctx.fillStyle = p.color;
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Connect proximity lines
+        for (let j = i + 1; j < particles.length; j++) {
+          const p2 = particles[j];
+          const dx = p.x - p2.x;
+          const dy = p.y - p2.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < 100) {
+            const alpha = (1 - dist / 100) * 0.28;
+            ctx.strokeStyle = p.color === "#ffffff" ? `rgba(255, 255, 255, ${alpha})` : `rgba(255, 51, 75, ${alpha})`;
+            ctx.lineWidth = 0.8;
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      animId = requestAnimationFrame(render);
+    };
+
+    render();
+
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   return (
     <div
@@ -956,186 +1125,264 @@ function CinematicLanding({ user, onEnter }) {
         position: "fixed",
         inset: 0,
         background: "#06070a",
-        zIndex: 10000,
+        zIndex: 99999,
         display: "flex",
-        flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
         overflow: "hidden",
+        userSelect: "none",
       }}
     >
-      <div className="ambient-bg">
-        <div className="cyber-grid" />
-      </div>
-
-      <div
-        className="modal-enter"
+      {/* 60FPS Interactive Canvas */}
+      <canvas
+        ref={canvasRef}
         style={{
-          position: "relative",
-          zIndex: 10,
-          textAlign: "center",
-          maxWidth: 580,
-          padding: 30,
+          position: "absolute",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          zIndex: 1,
+        }}
+      />
+
+      {/* Skip Button in Top Right */}
+      <button
+        onClick={onEnter}
+        className="btn-ghost-dark"
+        style={{
+          position: "absolute",
+          top: 24,
+          right: 28,
+          zIndex: 50,
+          padding: "8px 16px",
+          fontSize: 12.5,
+          fontWeight: 600,
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+          backdropFilter: "blur(10px)",
         }}
       >
-        {/* Animated Cybernetic Scanning HUD Ring */}
-        <div
-          style={{
-            position: "relative",
-            width: 140,
-            height: 140,
-            margin: "0 auto 28px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          {/* Outer rotating ring */}
-          <div
-            className="hud-ring-outer"
-            style={{
-              position: "absolute",
-              inset: 0,
-              borderRadius: "50%",
-              border: "2px dashed rgba(255, 51, 75, 0.5)",
-            }}
-          />
-          {/* Inner reverse rotating ring */}
-          <div
-            className="hud-ring-inner"
-            style={{
-              position: "absolute",
-              inset: 12,
-              borderRadius: "50%",
-              border: "2px dotted rgba(255, 255, 255, 0.4)",
-            }}
-          />
-          {/* Glowing central core */}
-          <div
-            className="landing-glow"
-            style={{
-              width: 76,
-              height: 76,
-              borderRadius: "50%",
-              background: "linear-gradient(135deg, #ff334b 0%, #b91c1c 100%)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#ffffff",
-              boxShadow: "0 0 35px rgba(255, 51, 75, 0.8)",
-            }}
-          >
-            <ShieldCheck size={38} />
-          </div>
-        </div>
+        Skip Sequence <ArrowRight size={14} />
+      </button>
 
-        {/* Verification Status */}
-        <div
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 7,
-            padding: "4px 14px",
-            borderRadius: 20,
-            background: "rgba(34, 197, 94, 0.15)",
-            border: "1px solid rgba(34, 197, 94, 0.4)",
-            color: "#4ade80",
-            fontSize: 12,
-            fontWeight: 700,
-            letterSpacing: "1px",
-            textTransform: "uppercase",
-            marginBottom: 14,
-          }}
-        >
-          <span className="pulse-radar-green" /> Authentication Verified
-        </div>
+      {/* Main Animated Sequence Stage */}
+      <div
+        style={{
+          position: "relative",
+          zIndex: 20,
+          textAlign: "center",
+          maxWidth: 680,
+          padding: 24,
+          width: "100%",
+        }}
+      >
+        {/* Phase 0 & 1: Scanning HUD & Terminal */}
+        {phase === "scan" && (
+          <div className="modal-enter">
+            <div
+              style={{
+                width: 70,
+                height: 70,
+                borderRadius: 18,
+                background: "linear-gradient(135deg, #ff334b 0%, #b91c1c 100%)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#ffffff",
+                boxShadow: "0 0 40px rgba(255, 51, 75, 0.8)",
+                margin: "0 auto 20px",
+              }}
+            >
+              <Cpu size={36} />
+            </div>
 
-        {/* Welcome Personalized Title */}
-        <h1
-          style={{
-            fontFamily: "'Outfit', sans-serif",
-            fontSize: 32,
-            fontWeight: 800,
-            color: "#ffffff",
-            margin: "0 0 6px 0",
-            letterSpacing: "-0.5px",
-          }}
-        >
-          Welcome, {user.name}
-        </h1>
-        <div
-          style={{
-            fontSize: 14,
-            color: "#ff334b",
-            fontWeight: 700,
-            letterSpacing: "0.5px",
-            marginBottom: 20,
-          }}
-        >
-          {user.role}
-        </div>
+            <div
+              style={{
+                fontFamily: "'Outfit', sans-serif",
+                fontSize: 26,
+                fontWeight: 800,
+                color: "#ffffff",
+                letterSpacing: "1px",
+                marginBottom: 12,
+              }}
+            >
+              INITIALIZING COMMAND CORE
+            </div>
 
-        {/* HUD Diagnostics Telemetry */}
-        <div
-          className="glass-card"
-          style={{
-            padding: "16px 20px",
-            marginBottom: 24,
-            textAlign: "left",
-            display: "flex",
-            flexDirection: "column",
-            gap: 8,
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 12 }}>
-            <span style={{ color: "#94a3b8" }}>Security Clearance:</span>
-            <span style={{ color: "#ffffff", fontWeight: 600 }}>Level 5 Operations Access</span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 12 }}>
-            <span style={{ color: "#94a3b8" }}>Cloud Sync Status:</span>
-            <span style={{ color: "#4ade80", fontWeight: 600 }}>Real-Time Live Telemetry Online</span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 12 }}>
-            <span style={{ color: "#94a3b8" }}>Management System:</span>
-            <span style={{ color: "#ffffff", fontWeight: 600 }}>ZPBDMS Command Center v2.0</span>
-          </div>
-        </div>
+            {/* Terminal Telemetry Feed */}
+            <div
+              className="glass-card"
+              style={{
+                padding: "16px 20px",
+                background: "rgba(10, 13, 20, 0.85)",
+                border: "1px solid rgba(255, 51, 75, 0.3)",
+                boxShadow: "0 10px 30px rgba(0,0,0,0.6)",
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: 12,
+                textAlign: "left",
+                color: "#4ade80",
+                display: "flex",
+                flexDirection: "column",
+                gap: 6,
+                maxWidth: 480,
+                margin: "0 auto 20px",
+              }}
+            >
+              {terminalLog.map((log, idx) => (
+                <div key={idx} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ color: "#ff334b" }}>▶</span> {log}
+                </div>
+              ))}
+            </div>
 
-        {/* Prominent Developer Showcase */}
-        <div
-          className="developer-badge"
-          style={{
-            padding: "12px 18px",
-            marginBottom: 26,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 10,
-          }}
-        >
-          <Sparkles size={18} color="#ff334b" />
-          <div style={{ fontSize: 13.5, color: "#ffffff", fontWeight: 600 }}>
-            System Architecture & Engineered by{" "}
-            <strong style={{ color: "#ff334b", fontWeight: 800 }}>Sudhanshu Khande</strong>
+            {/* Percentage Bar */}
+            <div style={{ maxWidth: 360, margin: "0 auto" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#94a3b8", marginBottom: 6 }}>
+                <span>Core Telemetry Buffer</span>
+                <span style={{ color: "#ffffff", fontWeight: 700 }}>{progress}%</span>
+              </div>
+              <div style={{ width: "100%", height: 5, background: "rgba(255, 255, 255, 0.1)", borderRadius: 10, overflow: "hidden" }}>
+                <div
+                  style={{
+                    height: "100%",
+                    width: `${progress}%`,
+                    background: "linear-gradient(90deg, #ff334b, #ffffff)",
+                    boxShadow: "0 0 12px rgba(255, 51, 75, 0.9)",
+                    transition: "width 0.3s ease",
+                  }}
+                />
+              </div>
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Enter Button */}
-        <button
-          className="btn-red-gradient"
-          onClick={onEnter}
-          style={{
-            padding: "11px 32px",
-            fontSize: 14,
-            fontWeight: 700,
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 8,
-          }}
-        >
-          Enter Operations Deck <ArrowRight size={16} />
-        </button>
+        {/* Phase 1 & 2: Holographic Developer Branding Reveal ("Comes and Goes") */}
+        {(phase === "branding" || phase === "exit") && (
+          <div className="branding-animation-card">
+            {/* Holographic Glowing Badge */}
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "6px 16px",
+                borderRadius: 20,
+                background: "rgba(255, 51, 75, 0.15)",
+                border: "1px solid rgba(255, 51, 75, 0.45)",
+                boxShadow: "0 0 20px rgba(255, 51, 75, 0.35)",
+                color: "#ffffff",
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing: "1.5px",
+                textTransform: "uppercase",
+                marginBottom: 16,
+              }}
+            >
+              <Sparkles size={14} color="#ff334b" /> SYSTEM ARCHITECT & MASTER LEAD
+            </div>
+
+            {/* Massive Glowing Title */}
+            <h1
+              className="holographic-text"
+              style={{
+                fontFamily: "'Outfit', sans-serif",
+                fontSize: 42,
+                fontWeight: 900,
+                letterSpacing: "1.5px",
+                margin: "0 0 10px 0",
+                textTransform: "uppercase",
+                filter: "drop-shadow(0 0 25px rgba(255, 51, 75, 0.7))",
+              }}
+            >
+              DEVELOPED BY SUDHANSHU KHANDE
+            </h1>
+
+            {/* Sub-banner with dynamic role and project name */}
+            <div
+              style={{
+                fontSize: 16,
+                color: "#f8fafc",
+                fontWeight: 600,
+                letterSpacing: "0.8px",
+                marginBottom: 24,
+              }}
+            >
+              Main Admin / Business Analyst · <span style={{ color: "#ff6479" }}>ZPBDMS Management Tool</span>
+            </div>
+
+            {/* Equalizer Audio / Data Pulsing Bars */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 5,
+                height: 36,
+                marginBottom: 24,
+              }}
+            >
+              <div className="eq-bar-1" style={{ width: 4, background: "#ff334b", borderRadius: 4 }} />
+              <div className="eq-bar-2" style={{ width: 4, background: "#ffffff", borderRadius: 4 }} />
+              <div className="eq-bar-3" style={{ width: 4, background: "#ff334b", borderRadius: 4 }} />
+              <div className="eq-bar-1" style={{ width: 4, background: "#38bdf8", borderRadius: 4 }} />
+              <div className="eq-bar-2" style={{ width: 4, background: "#ffffff", borderRadius: 4 }} />
+              <div className="eq-bar-3" style={{ width: 4, background: "#ff334b", borderRadius: 4 }} />
+              <div className="eq-bar-1" style={{ width: 4, background: "#ffffff", borderRadius: 4 }} />
+            </div>
+
+            {/* Welcome Personnel Card */}
+            <div
+              className="glass-card"
+              style={{
+                padding: "14px 22px",
+                background: "rgba(15, 18, 28, 0.8)",
+                border: "1px solid rgba(255, 255, 255, 0.12)",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 12,
+                borderRadius: 12,
+              }}
+            >
+              <div
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 8,
+                  background: user.avatar,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#ffffff",
+                  fontWeight: 800,
+                  fontSize: 14,
+                }}
+              >
+                {user.name.charAt(0)}
+              </div>
+              <div style={{ textAlign: "left" }}>
+                <div style={{ fontSize: 13.5, fontWeight: 700, color: "#ffffff" }}>
+                  Authorized: {user.name}
+                </div>
+                <div style={{ fontSize: 11, color: "#94a3b8" }}>{user.role}</div>
+              </div>
+              <span
+                style={{
+                  marginLeft: 12,
+                  padding: "3px 10px",
+                  borderRadius: 12,
+                  background: "rgba(34, 197, 94, 0.15)",
+                  color: "#4ade80",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  border: "1px solid rgba(34, 197, 94, 0.3)",
+                }}
+              >
+                ONLINE
+              </span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1459,8 +1706,8 @@ export default function App() {
         overflowX: "hidden",
       }}
     >
-      {/* Cinematic Post-Login Landing Screen Animation */}
-      {showLanding && <CinematicLanding user={currentUser} onEnter={() => setShowLanding(false)} />}
+      {/* Dynamic Cybernetic Canvas Landing Screen Animation */}
+      {showLanding && <DynamicCyberLanding user={currentUser} onEnter={() => setShowLanding(false)} />}
 
       {/* Visual Ambient Atmosphere */}
       <div className="ambient-bg">
