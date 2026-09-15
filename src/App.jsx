@@ -23,12 +23,28 @@ import {
   Filter,
   ArrowRight,
   Database,
+  Bell,
+  LogOut,
+  UserCheck,
+  Lock,
+  KeyRound,
+  ShieldCheck,
+  CheckCheck,
+  Inbox,
 } from "lucide-react";
 
 /* ---------------------------------------------------------------
    ZPBDMS Management Tool — High-Graphic Dark Command Center
-   Red & White Fusion Aesthetics · Glassmorphism · Real-time Firestore
+   Red & White Fusion Aesthetics · Authentication · Real-time Sync
 ----------------------------------------------------------------*/
+
+const TEAM_ROSTER = [
+  { id: "u1", name: "Sudhanshu Khande", role: "Lead Architect & Admin", pin: "1234", avatar: "#ff334b" },
+  { id: "u2", name: "Aditi Sharma", role: "VPDA & Reports Lead", pin: "1234", avatar: "#38bdf8" },
+  { id: "u3", name: "Rajesh Patil", role: "Treasury & Remittance Lead", pin: "1234", avatar: "#f59e0b" },
+  { id: "u4", name: "Vikram Deshmukh", role: "CESS & Tracking Engineer", pin: "1234", avatar: "#a855f7" },
+  { id: "u5", name: "Neha Kulkarni", role: "QA & District Field Ops", pin: "1234", avatar: "#22c55e" },
+];
 
 const MODULES = [
   "VPDA",
@@ -55,10 +71,15 @@ function uid() {
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
 }
+function formatTimeNow() {
+  return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
 function seedData() {
   return {
     issues: [],
     tasks: [],
+    notifications: [],
     districts: DISTRICTS_DEFAULT.map((name) => ({
       id: uid(),
       name,
@@ -73,7 +94,6 @@ function seedData() {
 
 function StatusChip({ value, interactive = false }) {
   const configs = {
-    // Issues
     Open: {
       bg: "rgba(239, 68, 68, 0.15)",
       fg: "#ff6479",
@@ -95,7 +115,6 @@ function StatusChip({ value, interactive = false }) {
       glow: "0 0 8px rgba(34, 197, 94, 0.15)",
       dot: "#22c55e",
     },
-    // Tasks
     "To Do": {
       bg: "rgba(148, 163, 184, 0.12)",
       fg: "#cbd5e1",
@@ -110,7 +129,6 @@ function StatusChip({ value, interactive = false }) {
       glow: "0 0 8px rgba(34, 197, 94, 0.15)",
       dot: "#22c55e",
     },
-    // Districts
     "Not Started": {
       bg: "rgba(100, 116, 139, 0.14)",
       fg: "#94a3b8",
@@ -194,7 +212,6 @@ function StatusChip({ value, interactive = false }) {
 
 function PriorityBadge({ value }) {
   const isCritical = value === "Critical";
-  const isHigh = value === "High";
 
   const colorMap = {
     Critical: {
@@ -472,7 +489,7 @@ function Modal({ title, icon: Icon, onClose, children }) {
   );
 }
 
-/* ---------------------------- Forms ---------------------------- */
+/* ---------------------------- Forms with Fixed Assignees ---------------------------- */
 
 function IssueForm({ initial, districts, onSave, onCancel }) {
   const [f, setF] = useState(
@@ -482,10 +499,12 @@ function IssueForm({ initial, districts, onSave, onCancel }) {
       district: districts[0] || "",
       priority: "Medium",
       status: "Open",
-      assignee: "",
+      assignee: TEAM_ROSTER[0].name,
       notes: "",
     }
   );
+
+  const assigneeOptions = TEAM_ROSTER.map((u) => u.name);
 
   return (
     <div>
@@ -516,16 +535,15 @@ function IssueForm({ initial, districts, onSave, onCancel }) {
         </FormField>
       </div>
 
-      <FormField label="Assignee">
-        <input
-          style={darkInputStyle}
+      <FormField label="Fixed Assigned Lead (Role Owner)">
+        <SelectInput
           value={f.assignee}
-          onChange={(e) => setF({ ...f, assignee: e.target.value })}
-          placeholder="Responsible team member"
+          onChange={(v) => setF({ ...f, assignee: v })}
+          options={assigneeOptions}
         />
       </FormField>
 
-      <FormField label="Investigation Notes / Logs">
+      <FormField label="Investigation Notes / Reproduction Steps">
         <textarea
           style={{ ...darkInputStyle, minHeight: 70, resize: "vertical" }}
           value={f.notes}
@@ -559,15 +577,17 @@ function TaskForm({ initial, onSave, onCancel }) {
     initial || {
       title: "",
       module: MODULES[0],
-      assignee: "",
+      assignee: TEAM_ROSTER[0].name,
       dueDate: "",
       status: "To Do",
     }
   );
 
+  const assigneeOptions = TEAM_ROSTER.map((u) => u.name);
+
   return (
     <div>
-      <FormField label="Task Objective">
+      <FormField label="Task Directive">
         <input
           style={darkInputStyle}
           value={f.title}
@@ -586,12 +606,11 @@ function TaskForm({ initial, onSave, onCancel }) {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-        <FormField label="Assigned Lead">
-          <input
-            style={darkInputStyle}
+        <FormField label="Fixed Assigned Lead">
+          <SelectInput
             value={f.assignee}
-            onChange={(e) => setF({ ...f, assignee: e.target.value })}
-            placeholder="Owner name"
+            onChange={(v) => setF({ ...f, assignee: v })}
+            options={assigneeOptions}
           />
         </FormField>
         <FormField label="Target Due Date">
@@ -677,15 +696,230 @@ function DistrictForm({ initial, onSave, onCancel }) {
   );
 }
 
+/* ---------------------------- High-Graphic Login View ---------------------------- */
+
+function LoginScreen({ onLogin }) {
+  const [selectedUser, setSelectedUser] = useState(TEAM_ROSTER[0]);
+  const [pin, setPin] = useState("1234");
+  const [error, setError] = useState("");
+
+  const handleLoginSubmit = (e) => {
+    e?.preventDefault();
+    if (pin === selectedUser.pin || pin === "1234") {
+      onLogin(selectedUser);
+    } else {
+      setError("Incorrect Passcode. (Default PIN is 1234)");
+    }
+  };
+
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "#07080c",
+        padding: 20,
+        position: "relative",
+      }}
+    >
+      <div className="ambient-bg">
+        <div className="cyber-grid" />
+      </div>
+
+      <div
+        className="glass-card modal-enter"
+        style={{
+          width: 440,
+          maxWidth: "100%",
+          padding: "36px 32px",
+          position: "relative",
+          zIndex: 10,
+          borderTop: "2px solid #ff334b",
+          boxShadow: "0 20px 60px rgba(0, 0, 0, 0.8), 0 0 35px rgba(255, 51, 75, 0.15)",
+        }}
+      >
+        {/* Brand Header */}
+        <div style={{ textAlign: "center", marginBottom: 26 }}>
+          <div
+            style={{
+              width: 52,
+              height: 52,
+              borderRadius: 14,
+              background: "linear-gradient(135deg, #ff334b 0%, #b91c1c 100%)",
+              boxShadow: "0 0 25px rgba(255, 51, 75, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.4)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#ffffff",
+              margin: "0 auto 14px",
+            }}
+          >
+            <Activity size={26} />
+          </div>
+          <div
+            style={{
+              fontFamily: "'Outfit', sans-serif",
+              fontSize: 24,
+              fontWeight: 800,
+              color: "#ffffff",
+              letterSpacing: "0.5px",
+            }}
+          >
+            ZPBDMS PORTAL
+          </div>
+          <p style={{ margin: "4px 0 0 0", fontSize: 13, color: "#94a3b8" }}>
+            Select your assigned role profile to access your desk
+          </p>
+        </div>
+
+        {/* User Selection Roster */}
+        <div style={{ marginBottom: 18 }}>
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              color: "#cbd5e1",
+              textTransform: "uppercase",
+              letterSpacing: "0.6px",
+              marginBottom: 8,
+            }}
+          >
+            Authorized Team Personnel
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 180, overflowY: "auto", paddingRight: 4 }}>
+            {TEAM_ROSTER.map((user) => {
+              const isSelected = selectedUser.id === user.id;
+              return (
+                <div
+                  key={user.id}
+                  onClick={() => {
+                    setSelectedUser(user);
+                    setError("");
+                  }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "10px 12px",
+                    borderRadius: 8,
+                    cursor: "pointer",
+                    border: isSelected
+                      ? "1px solid rgba(255, 51, 75, 0.5)"
+                      : "1px solid rgba(255, 255, 255, 0.08)",
+                    background: isSelected
+                      ? "linear-gradient(90deg, rgba(255, 51, 75, 0.16) 0%, rgba(255, 51, 75, 0.04) 100%)"
+                      : "rgba(255, 255, 255, 0.03)",
+                    transition: "all 0.15s ease",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div
+                      style={{
+                        width: 28,
+                        height: 28,
+                        borderRadius: 6,
+                        background: user.avatar,
+                        color: "#ffffff",
+                        fontWeight: 700,
+                        fontSize: 12,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        boxShadow: `0 0 10px ${user.avatar}66`,
+                      }}
+                    >
+                      {user.name.charAt(0)}
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: "#ffffff" }}>{user.name}</div>
+                      <div style={{ fontSize: 11, color: "#94a3b8" }}>{user.role}</div>
+                    </div>
+                  </div>
+                  {isSelected && <CheckCheck size={16} color="#ff334b" />}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Passcode input */}
+        <form onSubmit={handleLoginSubmit}>
+          <FormField label="Security Passcode / PIN">
+            <div style={{ position: "relative" }}>
+              <Lock
+                size={14}
+                style={{
+                  position: "absolute",
+                  left: 11,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  color: "#94a3b8",
+                }}
+              />
+              <input
+                type="password"
+                value={pin}
+                onChange={(e) => setPin(e.target.value)}
+                placeholder="Default PIN: 1234"
+                style={{ ...darkInputStyle, paddingLeft: 34 }}
+              />
+            </div>
+          </FormField>
+
+          {error && (
+            <div
+              style={{
+                color: "#ff6479",
+                fontSize: 12,
+                marginBottom: 14,
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              <AlertTriangle size={13} /> {error}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            className="btn-red-gradient"
+            style={{ width: "100%", padding: "11px 0", fontSize: 14, marginTop: 8 }}
+          >
+            Authenticate & Open Operations Desk
+          </button>
+        </form>
+
+        <div style={{ marginTop: 18, textAlign: "center", fontSize: 11.5, color: "#64748b" }}>
+          Default access PIN is <strong style={{ color: "#ffffff" }}>1234</strong> for all roles
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ---------------------------- Main App Component ---------------------------- */
 
 export default function App() {
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem("zpbdms_auth_user");
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      return null;
+    }
+  });
+
   const [data, setData] = useState(null);
   const [connected, setConnected] = useState(false);
   const [saveState, setSaveState] = useState("idle");
   const [tab, setTab] = useState("dashboard");
   const [query, setQuery] = useState("");
   const [modal, setModal] = useState(null);
+  const [showNotifications, setShowNotifications] = useState(false);
   const saveTimer = useRef(null);
 
   useEffect(() => {
@@ -694,7 +928,9 @@ export default function App() {
       (snap) => {
         setConnected(true);
         if (snap.exists()) {
-          setData(snap.data());
+          const fetched = snap.data();
+          if (!fetched.notifications) fetched.notifications = [];
+          setData(fetched);
         } else {
           const seed = seedData();
           setDoc(DOC_REF(), seed);
@@ -708,6 +944,17 @@ export default function App() {
     );
     return () => unsub();
   }, []);
+
+  const handleLogin = (user) => {
+    localStorage.setItem("zpbdms_auth_user", JSON.stringify(user));
+    setCurrentUser(user);
+    setTab("my_desk"); // Jump right to their personal desk!
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("zpbdms_auth_user");
+    setCurrentUser(null);
+  };
 
   const persist = useCallback((next) => {
     setData(next);
@@ -725,6 +972,10 @@ export default function App() {
     }, 400);
   }, []);
 
+  if (!currentUser) {
+    return <LoginScreen onLogin={handleLogin} />;
+  }
+
   if (connected === "error") {
     return (
       <div
@@ -737,14 +988,7 @@ export default function App() {
           padding: 24,
         }}
       >
-        <div
-          className="glass-card-accent"
-          style={{
-            maxWidth: 480,
-            padding: 32,
-            textAlign: "center",
-          }}
-        >
+        <div className="glass-card-accent" style={{ maxWidth: 480, padding: 32, textAlign: "center" }}>
           <div
             style={{
               width: 54,
@@ -765,8 +1009,8 @@ export default function App() {
             Database Disconnected
           </h2>
           <p style={{ color: "#94a3b8", fontSize: 13.5, lineHeight: 1.6, margin: "0 0 20px 0" }}>
-            Unable to connect to Cloud Firestore. Please verify that your credentials in{" "}
-            <code style={{ color: "#ff6479" }}>src/firebase.js</code> are configured and Firestore is active.
+            Unable to connect to Cloud Firestore. Verify your credentials in{" "}
+            <code style={{ color: "#ff6479" }}>src/firebase.js</code>.
           </p>
           <button className="btn-red-gradient" onClick={() => window.location.reload()} style={{ padding: "10px 24px" }}>
             Retry Connection
@@ -822,7 +1066,7 @@ export default function App() {
           </div>
           <div style={{ color: "#94a3b8", fontSize: 13, marginTop: 6, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
             <span className="pulse-radar-red" />
-            Initializing live secure sync...
+            Initializing live secure session for {currentUser.name}...
           </div>
         </div>
       </div>
@@ -831,19 +1075,70 @@ export default function App() {
 
   const districtNames = data.districts.map((d) => d.name);
 
+  // Notification helper
+  const notifyAssignee = (targetAssignee, title, message, type, refId) => {
+    if (!targetAssignee || targetAssignee === currentUser.name) return [];
+    return [
+      {
+        id: uid(),
+        recipient: targetAssignee,
+        sender: currentUser.name,
+        title,
+        message,
+        type,
+        refId,
+        createdAt: formatTimeNow(),
+        read: false,
+      },
+    ];
+  };
+
   function addOrUpdate(list, item, editingId) {
     if (editingId) return list.map((x) => (x.id === editingId ? { ...x, ...item } : x));
     return [{ id: uid(), createdAt: todayISO(), ...item }, ...list];
   }
 
   const saveIssue = (item) => {
-    persist({ ...data, issues: addOrUpdate(data.issues, item, modal?.editing?.id) });
+    const isNew = !modal?.editing?.id;
+    const targetId = modal?.editing?.id || uid();
+    const updatedIssues = addOrUpdate(data.issues, item, modal?.editing?.id);
+
+    // Trigger notification if assigned
+    const newNotifications = [
+      ...notifyAssignee(
+        item.assignee,
+        isNew ? "New Issue Assignment" : "Issue Reassigned",
+        item.title,
+        "issue",
+        targetId
+      ),
+      ...(data.notifications || []),
+    ];
+
+    persist({ ...data, issues: updatedIssues, notifications: newNotifications });
     setModal(null);
   };
+
   const saveTask = (item) => {
-    persist({ ...data, tasks: addOrUpdate(data.tasks, item, modal?.editing?.id) });
+    const isNew = !modal?.editing?.id;
+    const targetId = modal?.editing?.id || uid();
+    const updatedTasks = addOrUpdate(data.tasks, item, modal?.editing?.id);
+
+    const newNotifications = [
+      ...notifyAssignee(
+        item.assignee,
+        isNew ? "New Directive Assigned" : "Directive Updated",
+        item.title,
+        "task",
+        targetId
+      ),
+      ...(data.notifications || []),
+    ];
+
+    persist({ ...data, tasks: updatedTasks, notifications: newNotifications });
     setModal(null);
   };
+
   const saveDistrict = (item) => {
     persist({ ...data, districts: addOrUpdate(data.districts, item, modal?.editing?.id) });
     setModal(null);
@@ -862,6 +1157,27 @@ export default function App() {
     persist({ ...data, tasks: data.tasks.map((x) => (x.id === item.id ? { ...x, status: next } : x)) });
   };
 
+  // Notification actions
+  const myNotifications = (data.notifications || []).filter((n) => n.recipient === currentUser.name);
+  const unreadNotifications = myNotifications.filter((n) => !n.read);
+
+  const markAllNotificationsRead = () => {
+    const updated = (data.notifications || []).map((n) =>
+      n.recipient === currentUser.name ? { ...n, read: true } : n
+    );
+    persist({ ...data, notifications: updated });
+  };
+
+  const markNotificationRead = (id) => {
+    const updated = (data.notifications || []).map((n) => (n.id === id ? { ...n, read: true } : n));
+    persist({ ...data, notifications: updated });
+  };
+
+  const clearMyNotifications = () => {
+    const updated = (data.notifications || []).filter((n) => n.recipient !== currentUser.name);
+    persist({ ...data, notifications: updated });
+  };
+
   const q = query.trim().toLowerCase();
   const filteredIssues = data.issues.filter(
     (i) => !q || [i.title, i.module, i.district, i.assignee].join(" ").toLowerCase().includes(q)
@@ -870,12 +1186,20 @@ export default function App() {
     (t) => !q || [t.title, t.module, t.assignee].join(" ").toLowerCase().includes(q)
   );
 
+  // My Personal Desk filtering
+  const myIssues = data.issues.filter((i) => i.assignee === currentUser.name);
+  const myOpenIssues = myIssues.filter((i) => i.status !== "Resolved").length;
+  const myCriticalIssues = myIssues.filter((i) => i.status !== "Resolved" && i.priority === "Critical").length;
+  const myTasks = data.tasks.filter((t) => t.assignee === currentUser.name);
+  const myPendingTasks = myTasks.filter((t) => t.status !== "Done").length;
+
   const openIssues = data.issues.filter((i) => i.status !== "Resolved").length;
   const criticalOpen = data.issues.filter((i) => i.status !== "Resolved" && i.priority === "Critical").length;
   const pendingTasks = data.tasks.filter((t) => t.status !== "Done").length;
   const liveDistrictsCount = data.districts.filter((d) => d.stage === "Live").length;
 
   const navItems = [
+    { key: "my_desk", label: "My Desk & Tasks", icon: UserCheck, count: myOpenIssues + myPendingTasks, highlight: true },
     { key: "dashboard", label: "Operations Deck", icon: LayoutGrid },
     { key: "issues", label: "Issues Matrix", icon: AlertTriangle, count: openIssues, isAlert: criticalOpen > 0 },
     { key: "tasks", label: "Task Directives", icon: ListChecks, count: pendingTasks },
@@ -901,7 +1225,7 @@ export default function App() {
       {/* Futuristic Command Sidebar */}
       <aside
         style={{
-          width: 240,
+          width: 250,
           flexShrink: 0,
           background: "linear-gradient(180deg, rgba(13, 16, 26, 0.95) 0%, rgba(8, 10, 17, 0.98) 100%)",
           backdropFilter: "blur(20px)",
@@ -915,7 +1239,7 @@ export default function App() {
         }}
       >
         {/* Brand Banner */}
-        <div style={{ marginBottom: 28, padding: "0 6px" }}>
+        <div style={{ marginBottom: 24, padding: "0 6px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div
               style={{
@@ -956,33 +1280,95 @@ export default function App() {
                     fontWeight: 700,
                     padding: "1px 5px",
                     borderRadius: 4,
-                    letterSpacing: "0.5px",
                   }}
                 >
                   v2.0
                 </span>
               </div>
-              <div
-                style={{
-                  fontSize: 11,
-                  color: "#94a3b8",
-                  fontWeight: 500,
-                  letterSpacing: "0.4px",
-                  marginTop: 2,
-                }}
-              >
+              <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 500, letterSpacing: "0.4px", marginTop: 2 }}>
                 MANAGEMENT TOOL
               </div>
             </div>
           </div>
         </div>
 
+        {/* Current Logged In Profile Badge */}
+        <div
+          style={{
+            padding: "10px 12px",
+            borderRadius: 10,
+            background: "rgba(255, 255, 255, 0.03)",
+            border: "1px solid rgba(255, 255, 255, 0.08)",
+            marginBottom: 20,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+            <div
+              style={{
+                width: 30,
+                height: 30,
+                borderRadius: 7,
+                background: currentUser.avatar,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#ffffff",
+                fontWeight: 700,
+                fontSize: 13,
+                boxShadow: `0 0 10px ${currentUser.avatar}66`,
+              }}
+            >
+              {currentUser.name.charAt(0)}
+            </div>
+            <div style={{ maxWidth: 135 }}>
+              <div
+                style={{
+                  fontSize: 12.5,
+                  fontWeight: 600,
+                  color: "#ffffff",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {currentUser.name}
+              </div>
+              <div
+                style={{
+                  fontSize: 10.5,
+                  color: "#94a3b8",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {currentUser.role}
+              </div>
+            </div>
+          </div>
+          <IconButton onClick={handleLogout} title="Switch Profile / Sign Out">
+            <LogOut size={14} />
+          </IconButton>
+        </div>
+
         {/* Navigation Items */}
-        <div style={{ fontSize: 10.5, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "1px", padding: "0 10px 8px" }}>
+        <div
+          style={{
+            fontSize: 10.5,
+            fontWeight: 700,
+            color: "#64748b",
+            textTransform: "uppercase",
+            letterSpacing: "1px",
+            padding: "0 10px 8px",
+          }}
+        >
           Control Navigation
         </div>
         <nav style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-          {navItems.map(({ key, label, icon: Icon, count, isAlert }) => {
+          {navItems.map(({ key, label, icon: Icon, count, isAlert, highlight }) => {
             const active = tab === key;
             return (
               <button
@@ -1000,7 +1386,7 @@ export default function App() {
                   background: active
                     ? "linear-gradient(90deg, rgba(255, 51, 75, 0.16) 0%, rgba(255, 51, 75, 0.04) 100%)"
                     : "transparent",
-                  color: active ? "#ffffff" : "#94a3b8",
+                  color: active ? "#ffffff" : highlight ? "#cbd5e1" : "#94a3b8",
                   padding: "10px 12px",
                   borderRadius: 8,
                   fontSize: 13.5,
@@ -1017,7 +1403,7 @@ export default function App() {
                 }}
                 onMouseLeave={(e) => {
                   if (!active) {
-                    e.currentTarget.style.color = "#94a3b8";
+                    e.currentTarget.style.color = highlight ? "#cbd5e1" : "#94a3b8";
                     e.currentTarget.style.background = "transparent";
                   }
                 }}
@@ -1039,7 +1425,7 @@ export default function App() {
                 <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <Icon
                     size={16}
-                    color={active ? "#ff334b" : "currentColor"}
+                    color={active ? "#ff334b" : highlight ? "#ff6479" : "currentColor"}
                     style={{
                       filter: active ? "drop-shadow(0 0 6px rgba(255, 51, 75, 0.5))" : "none",
                     }}
@@ -1054,12 +1440,15 @@ export default function App() {
                       fontWeight: 700,
                       background: isAlert
                         ? "#ff334b"
+                        : highlight
+                        ? "rgba(255, 51, 75, 0.25)"
                         : active
                         ? "rgba(255, 255, 255, 0.2)"
                         : "rgba(255, 255, 255, 0.08)",
                       color: "#ffffff",
                       borderRadius: 12,
                       padding: "1px 7px",
+                      border: highlight ? "1px solid rgba(255, 51, 75, 0.4)" : "none",
                       boxShadow: isAlert ? "0 0 10px rgba(255, 51, 75, 0.6)" : "none",
                     }}
                   >
@@ -1169,7 +1558,9 @@ export default function App() {
               {navItems.find((n) => n.key === tab)?.label}
             </h1>
             <p style={{ margin: "4px 0 0 0", fontSize: 12.5, color: "#94a3b8" }}>
-              District rollouts, live defect tracking, and sprint task register
+              {tab === "my_desk"
+                ? `Assigned directives and active defects for ${currentUser.name}`
+                : "District rollouts, live defect tracking, and sprint task register"}
             </p>
           </div>
 
@@ -1194,8 +1585,140 @@ export default function App() {
               {saveState === "idle" && <span>Real-time Connected</span>}
             </div>
 
+            {/* In-App Notifications Bell */}
+            <div style={{ position: "relative" }}>
+              <button
+                onClick={() => setShowNotifications(!showNotifications)}
+                style={{
+                  border: "1px solid rgba(255, 255, 255, 0.08)",
+                  background: unreadNotifications.length > 0 ? "rgba(255, 51, 75, 0.12)" : "rgba(255, 255, 255, 0.04)",
+                  color: unreadNotifications.length > 0 ? "#ff334b" : "#94a3b8",
+                  cursor: "pointer",
+                  padding: "8px 10px",
+                  borderRadius: 8,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  position: "relative",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                <Bell size={16} />
+                {unreadNotifications.length > 0 && (
+                  <span
+                    style={{
+                      background: "#ff334b",
+                      color: "#ffffff",
+                      fontSize: 10,
+                      fontWeight: 800,
+                      borderRadius: "10px",
+                      padding: "1px 6px",
+                      boxShadow: "0 0 10px rgba(255, 51, 75, 0.8)",
+                    }}
+                  >
+                    {unreadNotifications.length}
+                  </span>
+                )}
+              </button>
+
+              {/* Notifications Dropdown Drawer */}
+              {showNotifications && (
+                <div
+                  className="glass-card dropdown-enter"
+                  style={{
+                    position: "absolute",
+                    right: 0,
+                    top: "120%",
+                    width: 360,
+                    zIndex: 100,
+                    padding: 16,
+                    borderTop: "2px solid #ff334b",
+                    boxShadow: "0 20px 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(255, 51, 75, 0.15)",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: "#ffffff", display: "flex", alignItems: "center", gap: 6 }}>
+                      <Bell size={14} color="#ff334b" /> Notifications ({myNotifications.length})
+                    </div>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      {unreadNotifications.length > 0 && (
+                        <button
+                          onClick={markAllNotificationsRead}
+                          style={{
+                            background: "transparent",
+                            border: "none",
+                            color: "#ff6479",
+                            fontSize: 11,
+                            cursor: "pointer",
+                            fontWeight: 600,
+                          }}
+                        >
+                          Mark all read
+                        </button>
+                      )}
+                      {myNotifications.length > 0 && (
+                        <button
+                          onClick={clearMyNotifications}
+                          style={{
+                            background: "transparent",
+                            border: "none",
+                            color: "#94a3b8",
+                            fontSize: 11,
+                            cursor: "pointer",
+                          }}
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <div style={{ maxHeight: 280, overflowY: "auto", display: "flex", flexDirection: "column", gap: 8 }}>
+                    {myNotifications.length === 0 ? (
+                      <div style={{ padding: "24px 0", textAlign: "center", color: "#64748b", fontSize: 12.5 }}>
+                        No assignments or alerts for you yet.
+                      </div>
+                    ) : (
+                      myNotifications.map((n) => (
+                        <div
+                          key={n.id}
+                          onClick={() => {
+                            markNotificationRead(n.id);
+                            if (n.type === "issue") setTab("my_desk");
+                            if (n.type === "task") setTab("my_desk");
+                            setShowNotifications(false);
+                          }}
+                          style={{
+                            padding: "10px 12px",
+                            borderRadius: 8,
+                            background: n.read ? "rgba(255, 255, 255, 0.02)" : "rgba(255, 51, 75, 0.08)",
+                            border: n.read
+                              ? "1px solid rgba(255, 255, 255, 0.05)"
+                              : "1px solid rgba(255, 51, 75, 0.3)",
+                            cursor: "pointer",
+                            transition: "all 0.15s ease",
+                          }}
+                        >
+                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 3 }}>
+                            <span style={{ fontSize: 11.5, fontWeight: 700, color: n.read ? "#cbd5e1" : "#ffffff" }}>
+                              {n.title}
+                            </span>
+                            <span style={{ fontSize: 10.5, color: "#94a3b8" }}>{n.createdAt}</span>
+                          </div>
+                          <div style={{ fontSize: 12, color: "#94a3b8", lineHeight: 1.4 }}>
+                            {n.sender && <strong style={{ color: "#ff6479" }}>{n.sender}: </strong>}
+                            {n.message}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Quick Search */}
-            {tab !== "dashboard" && (
+            {tab !== "dashboard" && tab !== "my_desk" && (
               <div style={{ position: "relative" }}>
                 <Search
                   size={14}
@@ -1213,7 +1736,7 @@ export default function App() {
                   placeholder="Filter records..."
                   style={{
                     ...darkInputStyle,
-                    width: 220,
+                    width: 200,
                     padding: "8px 12px 8px 32px",
                     fontSize: 12.5,
                     borderRadius: 20,
@@ -1224,31 +1747,36 @@ export default function App() {
             )}
 
             {/* View Actions */}
-            {tab === "issues" && (
-              <button className="btn-red-gradient" onClick={() => setModal({ type: "issue" })} style={{ padding: "8px 16px" }}>
-                <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
-                  <Plus size={15} /> Log Issue
-                </span>
-              </button>
-            )}
-            {tab === "tasks" && (
-              <button className="btn-red-gradient" onClick={() => setModal({ type: "task" })} style={{ padding: "8px 16px" }}>
-                <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
-                  <Plus size={15} /> Create Task
-                </span>
-              </button>
-            )}
-            {tab === "districts" && (
-              <button className="btn-red-gradient" onClick={() => setModal({ type: "district" })} style={{ padding: "8px 16px" }}>
-                <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
-                  <Plus size={15} /> Add District
-                </span>
-              </button>
-            )}
+            <button className="btn-red-gradient" onClick={() => setModal({ type: "issue" })} style={{ padding: "8px 16px" }}>
+              <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
+                <Plus size={15} /> Log Issue
+              </span>
+            </button>
+            <button className="btn-ghost-dark" onClick={() => setModal({ type: "task" })} style={{ padding: "8px 16px" }}>
+              <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
+                <Plus size={15} /> Create Task
+              </span>
+            </button>
           </div>
         </header>
 
         {/* View Switches */}
+        {tab === "my_desk" && (
+          <MyDeskView
+            currentUser={currentUser}
+            issues={myIssues}
+            tasks={myTasks}
+            onCycleIssue={cycleIssueStatus}
+            onCycleTask={cycleTaskStatus}
+            onEditIssue={(i) => setModal({ type: "issue", editing: i })}
+            onEditTask={(t) => setModal({ type: "task", editing: t })}
+            onDeleteIssue={removeIssue}
+            onDeleteTask={removeTask}
+            onOpenIssueModal={() => setModal({ type: "issue" })}
+            onOpenTaskModal={() => setModal({ type: "task" })}
+          />
+        )}
+
         {tab === "dashboard" && (
           <Dashboard
             data={data}
@@ -1323,6 +1851,150 @@ export default function App() {
           <DistrictForm initial={modal.editing} onSave={saveDistrict} onCancel={() => setModal(null)} />
         </Modal>
       )}
+    </div>
+  );
+}
+
+/* ---------------------------- Personalized "My Desk" View ---------------------------- */
+
+function MyDeskView({
+  currentUser,
+  issues,
+  tasks,
+  onCycleIssue,
+  onCycleTask,
+  onEditIssue,
+  onEditTask,
+  onDeleteIssue,
+  onDeleteTask,
+  onOpenIssueModal,
+  onOpenTaskModal,
+}) {
+  const openIssues = issues.filter((i) => i.status !== "Resolved").length;
+  const criticalOpen = issues.filter((i) => i.status !== "Resolved" && i.priority === "Critical").length;
+  const pendingTasks = tasks.filter((t) => t.status !== "Done").length;
+
+  return (
+    <div>
+      {/* Personalized Welcome Banner */}
+      <div
+        className="glass-card-accent"
+        style={{
+          padding: "22px 26px",
+          marginBottom: 24,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: 16,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <div
+            style={{
+              width: 46,
+              height: 46,
+              borderRadius: 12,
+              background: currentUser.avatar,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#ffffff",
+              fontWeight: 800,
+              fontSize: 18,
+              boxShadow: `0 0 20px ${currentUser.avatar}88`,
+            }}
+          >
+            {currentUser.name.charAt(0)}
+          </div>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 20, fontWeight: 700, color: "#ffffff" }}>
+                Welcome back, {currentUser.name}
+              </div>
+              <span
+                style={{
+                  background: "rgba(255, 51, 75, 0.2)",
+                  border: "1px solid rgba(255, 51, 75, 0.4)",
+                  color: "#ff334b",
+                  fontSize: 11,
+                  fontWeight: 600,
+                  padding: "2px 7px",
+                  borderRadius: 12,
+                }}
+              >
+                {currentUser.role}
+              </span>
+            </div>
+            <div style={{ fontSize: 12.5, color: "#94a3b8", marginTop: 3 }}>
+              Here are the active incidents and directives specifically assigned to your docket.
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", gap: 10 }}>
+          <button className="btn-red-gradient" onClick={onOpenIssueModal} style={{ fontSize: 12.5, padding: "7px 14px" }}>
+            + Assign Issue
+          </button>
+          <button className="btn-ghost-dark" onClick={onOpenTaskModal} style={{ fontSize: 12.5, padding: "7px 14px" }}>
+            + Assign Task
+          </button>
+        </div>
+      </div>
+
+      {/* 3 Personal Metric Cards */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16, marginBottom: 28 }}>
+        <StatMetricCard
+          title="My Open Issues"
+          value={openIssues}
+          subtitle={`${issues.filter((i) => i.status === "In Progress").length} currently in progress`}
+          icon={AlertTriangle}
+          tone={criticalOpen > 0 ? "warn" : "default"}
+        />
+        <StatMetricCard
+          title="My Critical Alerts"
+          value={criticalOpen}
+          subtitle={criticalOpen > 0 ? "Requires urgent attention" : "All clean, no blockers"}
+          icon={ShieldAlert}
+          tone={criticalOpen > 0 ? "warn" : "default"}
+        />
+        <StatMetricCard
+          title="My Pending Tasks"
+          value={pendingTasks}
+          subtitle={`${tasks.filter((t) => t.status === "Done").length} completed directives`}
+          icon={ListChecks}
+        />
+      </div>
+
+      {/* Assigned Issues Section */}
+      <div style={{ marginBottom: 30 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+          <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 700, color: "#ffffff", display: "flex", alignItems: "center", gap: 8 }}>
+            <AlertTriangle size={17} color="#ff334b" /> Incidents Assigned to You ({issues.length})
+          </div>
+        </div>
+        <IssueTable
+          issues={issues}
+          onCycle={onCycleIssue}
+          onEdit={onEditIssue}
+          onDelete={onDeleteIssue}
+        />
+      </div>
+
+      {/* Assigned Tasks Section */}
+      <div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+          <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 700, color: "#ffffff", display: "flex", alignItems: "center", gap: 8 }}>
+            <ListChecks size={17} color="#38bdf8" /> Directives & Tasks Assigned to You ({tasks.length})
+          </div>
+        </div>
+        <TaskTable
+          tasks={tasks}
+          onCycle={onCycleTask}
+          onEdit={onEditTask}
+          onDelete={onDeleteTask}
+        />
+      </div>
     </div>
   );
 }
@@ -1573,7 +2245,7 @@ function Dashboard({ data, openIssues, criticalOpen, pendingTasks, liveDistricts
             }}
           >
             <div style={{ fontSize: 12, color: "#f8fafc" }}>
-              <strong style={{ color: "#ff334b" }}>Quick Dispatch:</strong> Need to report a new bug?
+              <strong style={{ color: "#ff334b" }}>Quick Dispatch:</strong> Need to report a new defect?
             </div>
             <button
               className="btn-red-gradient"
@@ -1690,7 +2362,7 @@ function TaskTable({ tasks, onCycle, onEdit, onDelete }) {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "36px 2.2fr 130px 130px 120px 130px 80px",
+          gridTemplateColumns: "36px 2.2fr 130px 140px 120px 130px 80px",
           padding: "12px 18px",
           background: "rgba(255, 255, 255, 0.03)",
           borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
@@ -1722,7 +2394,7 @@ function TaskTable({ tasks, onCycle, onEdit, onDelete }) {
             className="custom-table-row"
             style={{
               display: "grid",
-              gridTemplateColumns: "36px 2.2fr 130px 130px 120px 130px 80px",
+              gridTemplateColumns: "36px 2.2fr 130px 140px 120px 130px 80px",
               padding: "14px 18px",
               borderBottom: idx === tasks.length - 1 ? "none" : "1px solid rgba(255, 255, 255, 0.05)",
               alignItems: "center",

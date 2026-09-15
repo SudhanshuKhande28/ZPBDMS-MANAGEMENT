@@ -206,11 +206,28 @@
   animation: modal-fade 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* High-contrast Table row styling */
-.custom-table-row {
-  transition: background 0.15s ease, transform 0.15s ease;
+/* Notification & Dropdown animation */
+@keyframes dropdown-slide {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
-.custom-table-row:hover {
-  background: rgba(255, 255, 255, 0.035);
+.dropdown-enter {
+  animation: dropdown-slide 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+.notification-unread-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #ff334b;
+  box-shadow: 0 0 8px #ff334b;
+  flex-shrink: 0;
+}
+
