@@ -12,7 +12,7 @@ class ErrorBoundary extends React.Component {
     return { hasError: true, error };
   }
   componentDidCatch(error, errorInfo) {
-    console.error("Management Portal Error:", error, errorInfo);
+    console.error("Management Portal Runtime Error:", error, errorInfo);
   }
   handleReset = () => {
     try {
@@ -39,8 +39,8 @@ class ErrorBoundary extends React.Component {
         >
           <div
             style={{
-              maxWidth: 440,
-              background: "rgba(18, 22, 34, 0.9)",
+              maxWidth: 460,
+              background: "rgba(18, 22, 34, 0.95)",
               border: "1px solid rgba(255, 51, 75, 0.4)",
               borderRadius: 14,
               padding: 36,
@@ -67,9 +67,27 @@ class ErrorBoundary extends React.Component {
             <h2 style={{ margin: "0 0 10px", fontSize: 20, fontFamily: "'Outfit', sans-serif" }}>
               Session State Recovered
             </h2>
-            <p style={{ color: "#94a3b8", fontSize: 13, lineHeight: 1.6, marginBottom: 24 }}>
+            <p style={{ color: "#94a3b8", fontSize: 13, lineHeight: 1.6, marginBottom: 16 }}>
               The application encountered an outdated local session cache. Click below to refresh your environment and open the portal.
             </p>
+            {this.state.error && (
+              <div
+                style={{
+                  background: "rgba(255, 51, 75, 0.08)",
+                  border: "1px solid rgba(255, 51, 75, 0.25)",
+                  padding: "8px 12px",
+                  borderRadius: 6,
+                  marginBottom: 20,
+                  textAlign: "left",
+                  fontSize: 11,
+                  color: "#ff8093",
+                  wordBreak: "break-all",
+                  fontFamily: "'JetBrains Mono', monospace",
+                }}
+              >
+                {this.state.error.message || String(this.state.error)}
+              </div>
+            )}
             <button
               onClick={this.handleReset}
               style={{

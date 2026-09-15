@@ -1755,7 +1755,7 @@ function DynamicCyberLanding({ user, onEnter }) {
                   width: 32,
                   height: 32,
                   borderRadius: 8,
-                  background: user.avatar,
+                  background: user?.avatar || "#ff334b",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -1764,13 +1764,13 @@ function DynamicCyberLanding({ user, onEnter }) {
                   fontSize: 14,
                 }}
               >
-                {user.name.charAt(0)}
+                {(user?.name || "S").charAt(0)}
               </div>
               <div style={{ textAlign: "left" }}>
                 <div style={{ fontSize: 13.5, fontWeight: 700, color: "#ffffff" }}>
-                  Authorized: {user.name}
+                  Authorized: {user?.name || "Sudhanshu Khande"}
                 </div>
-                <div style={{ fontSize: 11, color: "#94a3b8" }}>{user.role}</div>
+                <div style={{ fontSize: 11, color: "#94a3b8" }}>{user?.role || "Main Admin / Business Analyst"}</div>
               </div>
               <span
                 style={{
@@ -2011,7 +2011,7 @@ export default function App() {
           </div>
           <div style={{ color: "#94a3b8", fontSize: 13, marginTop: 6, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
             <span className="pulse-radar-red" />
-            Initializing live secure session for {currentUser.name}...
+            Initializing live secure session for {currentUser?.name || "User"}...
           </div>
         </div>
       </div>
@@ -2022,12 +2022,12 @@ export default function App() {
 
   // Notification helper
   const notifyAssignee = (targetAssignee, title, message, type, refId) => {
-    if (!targetAssignee || targetAssignee === currentUser.name) return [];
+    if (!targetAssignee || targetAssignee === currentUser?.name) return [];
     return [
       {
         id: uid(),
         recipient: targetAssignee,
-        sender: currentUser.name,
+        sender: currentUser?.name || "System",
         title,
         message,
         type,
@@ -2151,23 +2151,23 @@ export default function App() {
   };
 
   // Notification actions
-  const myNotifications = (data.notifications || []).filter((n) => n.recipient === currentUser.name);
+  const myNotifications = (data?.notifications || []).filter((n) => n.recipient === currentUser?.name);
   const unreadNotifications = myNotifications.filter((n) => !n.read);
 
   const markAllNotificationsRead = () => {
-    const updated = (data.notifications || []).map((n) =>
-      n.recipient === currentUser.name ? { ...n, read: true } : n
+    const updated = (data?.notifications || []).map((n) =>
+      n.recipient === currentUser?.name ? { ...n, read: true } : n
     );
     persist({ ...data, notifications: updated });
   };
 
   const markNotificationRead = (id) => {
-    const updated = (data.notifications || []).map((n) => (n.id === id ? { ...n, read: true } : n));
+    const updated = (data?.notifications || []).map((n) => (n.id === id ? { ...n, read: true } : n));
     persist({ ...data, notifications: updated });
   };
 
   const clearMyNotifications = () => {
-    const updated = (data.notifications || []).filter((n) => n.recipient !== currentUser.name);
+    const updated = (data?.notifications || []).filter((n) => n.recipient !== currentUser?.name);
     persist({ ...data, notifications: updated });
   };
 
@@ -2243,7 +2243,7 @@ export default function App() {
       }}
     >
       {/* Dynamic Cybernetic Canvas Landing Screen Animation */}
-      {showLanding && <DynamicCyberLanding user={currentUser} onEnter={() => setShowLanding(false)} />}
+      {showLanding && currentUser && <DynamicCyberLanding user={currentUser} onEnter={() => setShowLanding(false)} />}
 
       {/* Visual Ambient Atmosphere */}
       <div className="ambient-bg">
@@ -2614,7 +2614,7 @@ export default function App() {
             </h1>
             <p style={{ margin: "4px 0 0 0", fontSize: 12.5, color: "#94a3b8" }}>
               {tab === "my_desk"
-                ? `Assigned directives and active defects for ${currentUser.name}`
+                ? `Assigned directives and active defects for ${currentUser?.name || "User"}`
                 : tab === "test_hub"
                 ? "Unified QA Test Matrix, Google Sheet sync, and developer defect resolution log"
                 : "District rollouts, live defect tracking, and sprint task register"}
@@ -3018,9 +3018,11 @@ function MyDeskView({
   onOpenIssueModal,
   onOpenTaskModal,
 }) {
-  const openIssues = issues.filter((i) => i.status !== "Resolved").length;
-  const criticalOpen = issues.filter((i) => i.status !== "Resolved" && i.priority === "Critical").length;
-  const pendingTasks = tasks.filter((t) => t.status !== "Done").length;
+  const safeIssues = issues || [];
+  const safeTasks = tasks || [];
+  const openIssues = safeIssues.filter((i) => i.status !== "Resolved").length;
+  const criticalOpen = safeIssues.filter((i) => i.status !== "Resolved" && i.priority === "Critical").length;
+  const pendingTasks = safeTasks.filter((t) => t.status !== "Done").length;
 
   return (
     <div>
@@ -3095,7 +3097,7 @@ function MyDeskView({
         <StatMetricCard
           title="My Open Issues"
           value={openIssues}
-          subtitle={`${issues.filter((i) => i.status === "In Progress").length} currently in progress`}
+          subtitle={`${safeIssues.filter((i) => i.status === "In Progress").length} currently in progress`}
           icon={AlertTriangle}
           tone={criticalOpen > 0 ? "warn" : "default"}
         />
@@ -3109,7 +3111,7 @@ function MyDeskView({
         <StatMetricCard
           title="My Pending Tasks"
           value={pendingTasks}
-          subtitle={`${tasks.filter((t) => t.status === "Done").length} completed directives`}
+          subtitle={`${safeTasks.filter((t) => t.status === "Done").length} completed directives`}
           icon={ListChecks}
         />
       </div>
@@ -3118,11 +3120,11 @@ function MyDeskView({
       <div style={{ marginBottom: 30 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
           <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 700, color: "#ffffff", display: "flex", alignItems: "center", gap: 8 }}>
-            <AlertTriangle size={17} color="#ff334b" /> Incidents Assigned to You ({issues.length})
+            <AlertTriangle size={17} color="#ff334b" /> Incidents Assigned to You ({safeIssues.length})
           </div>
         </div>
         <IssueTable
-          issues={issues}
+          issues={safeIssues}
           onCycle={onCycleIssue}
           onEdit={onEditIssue}
           onDelete={onDeleteIssue}
@@ -3133,11 +3135,11 @@ function MyDeskView({
       <div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
           <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 17, fontWeight: 700, color: "#ffffff", display: "flex", alignItems: "center", gap: 8 }}>
-            <ListChecks size={17} color="#38bdf8" /> Directives & Tasks Assigned to You ({tasks.length})
+            <ListChecks size={17} color="#38bdf8" /> Directives & Tasks Assigned to You ({safeTasks.length})
           </div>
         </div>
         <TaskTable
-          tasks={tasks}
+          tasks={safeTasks}
           onCycle={onCycleTask}
           onEdit={onEditTask}
           onDelete={onDeleteTask}
