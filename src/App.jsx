@@ -1822,6 +1822,10 @@ export default function App() {
   const [query, setQuery] = useState("");
   const [modal, setModal] = useState(null);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [qaModule, setQaModule] = useState("All Modules");
+  const [qaTestStatus, setQaTestStatus] = useState("All Test Statuses");
+  const [qaDevStatus, setQaDevStatus] = useState("All Dev Statuses");
+  const [qaSearch, setQaSearch] = useState("");
   const saveTimer = useRef(null);
 
   useEffect(() => {
@@ -2180,11 +2184,6 @@ export default function App() {
   );
 
   // QA Spreadsheet filtering
-  const [qaModule, setQaModule] = useState("All Modules");
-  const [qaTestStatus, setQaTestStatus] = useState("All Test Statuses");
-  const [qaDevStatus, setQaDevStatus] = useState("All Dev Statuses");
-  const [qaSearch, setQaSearch] = useState("");
-
   const allTestPoints = data?.testPoints || [];
   const failedTestPointsCount = allTestPoints.filter((t) => t.status === "Failed").length;
   const filteredTestPoints = allTestPoints.filter((tp) => {
