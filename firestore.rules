@@ -1,0 +1,12 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Anyone with the app link can read and write the shared tracker
+    // document. Fine for a small internal team tool behind an
+    // unguessable Firebase project + URL; add Firebase Auth later if
+    // you want to restrict this to signed-in teammates.
+    match /trackerData/main {
+      allow read, write: if true;
+    }
+  }
+}
