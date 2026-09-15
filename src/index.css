@@ -231,3 +231,62 @@
   flex-shrink: 0;
 }
 
+/* Cinematic Landing Page Animations */
+@keyframes hud-spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes hud-spin-reverse {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes glow-pulse-strong {
+  0%, 100% {
+    opacity: 0.8;
+    filter: drop-shadow(0 0 15px rgba(255, 51, 75, 0.6));
+  }
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 35px rgba(255, 51, 75, 0.9));
+  }
+}
+
+@keyframes scan-sweep {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(1000%);
+  }
+}
+
+.hud-ring-outer {
+  animation: hud-spin-slow 20s linear infinite;
+}
+
+.hud-ring-inner {
+  animation: hud-spin-reverse 14s linear infinite;
+}
+
+.landing-glow {
+  animation: glow-pulse-strong 2.5s ease-in-out infinite;
+}
+
+.developer-badge {
+  background: linear-gradient(135deg, rgba(255, 51, 75, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
+  border: 1px solid rgba(255, 51, 75, 0.35);
+  box-shadow: 0 0 15px rgba(255, 51, 75, 0.15);
+  border-radius: 8px;
+}
+
+

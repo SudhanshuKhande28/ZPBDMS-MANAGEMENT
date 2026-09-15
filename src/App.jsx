@@ -31,19 +31,40 @@ import {
   ShieldCheck,
   CheckCheck,
   Inbox,
+  Code2,
+  Cpu,
 } from "lucide-react";
 
 /* ---------------------------------------------------------------
-   ZPBDMS Management Tool — High-Graphic Dark Command Center
-   Red & White Fusion Aesthetics · Authentication · Real-time Sync
+   Management Portal — ZPBDMS Operations & Command System
+   Red & White Fusion · High Graphics · Developed by Sudhanshu Khande
 ----------------------------------------------------------------*/
 
 const TEAM_ROSTER = [
-  { id: "u1", name: "Sudhanshu Khande", role: "Lead Architect & Admin", pin: "1234", avatar: "#ff334b" },
-  { id: "u2", name: "Aditi Sharma", role: "VPDA & Reports Lead", pin: "1234", avatar: "#38bdf8" },
-  { id: "u3", name: "Rajesh Patil", role: "Treasury & Remittance Lead", pin: "1234", avatar: "#f59e0b" },
-  { id: "u4", name: "Vikram Deshmukh", role: "CESS & Tracking Engineer", pin: "1234", avatar: "#a855f7" },
-  { id: "u5", name: "Neha Kulkarni", role: "QA & District Field Ops", pin: "1234", avatar: "#22c55e" },
+  {
+    id: "u1",
+    name: "Sudhanshu Khande",
+    username: "sudhanshu",
+    role: "Main Admin / Business Analyst",
+    password: "Admin@2026",
+    avatar: "#ff334b",
+  },
+  {
+    id: "u2",
+    name: "Sankalp",
+    username: "sankalp",
+    role: "Lead Developer",
+    password: "Dev@2026",
+    avatar: "#38bdf8",
+  },
+  {
+    id: "u3",
+    name: "Rutuja",
+    username: "rutuja",
+    role: "Tester",
+    password: "Qa@2026",
+    avatar: "#a855f7",
+  },
 ];
 
 const MODULES = [
@@ -354,8 +375,8 @@ function SelectInput({ value, onChange, options, style }) {
         }}
       >
         {options.map((o) => (
-          <option key={o} value={o} style={{ background: "#0e111a", color: "#f8fafc" }}>
-            {o}
+          <option key={typeof o === "object" ? o.value : o} value={typeof o === "object" ? o.value : o} style={{ background: "#0e111a", color: "#f8fafc" }}>
+            {typeof o === "object" ? o.label : o}
           </option>
         ))}
       </select>
@@ -398,7 +419,7 @@ const darkInputStyle = {
   width: "100%",
   fontFamily: "'Inter', sans-serif",
   fontSize: 13.5,
-  padding: "9px 12px",
+  padding: "10px 14px",
   borderRadius: 8,
   border: "1px solid rgba(255, 255, 255, 0.12)",
   background: "rgba(12, 15, 24, 0.9)",
@@ -504,7 +525,10 @@ function IssueForm({ initial, districts, onSave, onCancel }) {
     }
   );
 
-  const assigneeOptions = TEAM_ROSTER.map((u) => u.name);
+  const assigneeOptions = TEAM_ROSTER.map((u) => ({
+    value: u.name,
+    label: `${u.name} (${u.role})`,
+  }));
 
   return (
     <div>
@@ -583,7 +607,10 @@ function TaskForm({ initial, onSave, onCancel }) {
     }
   );
 
-  const assigneeOptions = TEAM_ROSTER.map((u) => u.name);
+  const assigneeOptions = TEAM_ROSTER.map((u) => ({
+    value: u.name,
+    label: `${u.name} (${u.role})`,
+  }));
 
   return (
     <div>
@@ -696,19 +723,29 @@ function DistrictForm({ initial, onSave, onCancel }) {
   );
 }
 
-/* ---------------------------- High-Graphic Login View ---------------------------- */
+/* ---------------------------- Clean Management Login View ---------------------------- */
 
 function LoginScreen({ onLogin }) {
-  const [selectedUser, setSelectedUser] = useState(TEAM_ROSTER[0]);
-  const [pin, setPin] = useState("1234");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
   const handleLoginSubmit = (e) => {
     e?.preventDefault();
-    if (pin === selectedUser.pin || pin === "1234") {
-      onLogin(selectedUser);
+    const cleanUser = username.trim().toLowerCase();
+    const cleanPass = password.trim();
+
+    // Match either by username or full name (case-insensitive)
+    const foundUser = TEAM_ROSTER.find(
+      (u) =>
+        (u.username.toLowerCase() === cleanUser || u.name.toLowerCase() === cleanUser) &&
+        u.password === cleanPass
+    );
+
+    if (foundUser) {
+      onLogin(foundUser);
     } else {
-      setError("Incorrect Passcode. (Default PIN is 1234)");
+      setError("Invalid username or password. Access denied.");
     }
   };
 
@@ -731,129 +768,84 @@ function LoginScreen({ onLogin }) {
       <div
         className="glass-card modal-enter"
         style={{
-          width: 440,
+          width: 420,
           maxWidth: "100%",
-          padding: "36px 32px",
+          padding: "40px 34px",
           position: "relative",
           zIndex: 10,
           borderTop: "2px solid #ff334b",
-          boxShadow: "0 20px 60px rgba(0, 0, 0, 0.8), 0 0 35px rgba(255, 51, 75, 0.15)",
+          boxShadow: "0 25px 65px rgba(0, 0, 0, 0.85), 0 0 35px rgba(255, 51, 75, 0.15)",
         }}
       >
         {/* Brand Header */}
-        <div style={{ textAlign: "center", marginBottom: 26 }}>
+        <div style={{ textAlign: "center", marginBottom: 30 }}>
           <div
             style={{
-              width: 52,
-              height: 52,
+              width: 56,
+              height: 56,
               borderRadius: 14,
               background: "linear-gradient(135deg, #ff334b 0%, #b91c1c 100%)",
-              boxShadow: "0 0 25px rgba(255, 51, 75, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.4)",
+              boxShadow: "0 0 30px rgba(255, 51, 75, 0.55), inset 0 1px 2px rgba(255, 255, 255, 0.4)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               color: "#ffffff",
-              margin: "0 auto 14px",
+              margin: "0 auto 16px",
             }}
           >
-            <Activity size={26} />
+            <Activity size={28} />
           </div>
           <div
             style={{
               fontFamily: "'Outfit', sans-serif",
-              fontSize: 24,
+              fontSize: 28,
               fontWeight: 800,
               color: "#ffffff",
               letterSpacing: "0.5px",
             }}
           >
-            ZPBDMS PORTAL
+            Management
           </div>
-          <p style={{ margin: "4px 0 0 0", fontSize: 13, color: "#94a3b8" }}>
-            Select your assigned role profile to access your desk
+          <p style={{ margin: "5px 0 0 0", fontSize: 13, color: "#94a3b8" }}>
+            ZPBDMS Operations & Command System
           </p>
         </div>
 
-        {/* User Selection Roster */}
-        <div style={{ marginBottom: 18 }}>
-          <div
-            style={{
-              fontSize: 11,
-              fontWeight: 700,
-              color: "#cbd5e1",
-              textTransform: "uppercase",
-              letterSpacing: "0.6px",
-              marginBottom: 8,
-            }}
-          >
-            Authorized Team Personnel
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 180, overflowY: "auto", paddingRight: 4 }}>
-            {TEAM_ROSTER.map((user) => {
-              const isSelected = selectedUser.id === user.id;
-              return (
-                <div
-                  key={user.id}
-                  onClick={() => {
-                    setSelectedUser(user);
-                    setError("");
-                  }}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "10px 12px",
-                    borderRadius: 8,
-                    cursor: "pointer",
-                    border: isSelected
-                      ? "1px solid rgba(255, 51, 75, 0.5)"
-                      : "1px solid rgba(255, 255, 255, 0.08)",
-                    background: isSelected
-                      ? "linear-gradient(90deg, rgba(255, 51, 75, 0.16) 0%, rgba(255, 51, 75, 0.04) 100%)"
-                      : "rgba(255, 255, 255, 0.03)",
-                    transition: "all 0.15s ease",
-                  }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <div
-                      style={{
-                        width: 28,
-                        height: 28,
-                        borderRadius: 6,
-                        background: user.avatar,
-                        color: "#ffffff",
-                        fontWeight: 700,
-                        fontSize: 12,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        boxShadow: `0 0 10px ${user.avatar}66`,
-                      }}
-                    >
-                      {user.name.charAt(0)}
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: "#ffffff" }}>{user.name}</div>
-                      <div style={{ fontSize: 11, color: "#94a3b8" }}>{user.role}</div>
-                    </div>
-                  </div>
-                  {isSelected && <CheckCheck size={16} color="#ff334b" />}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Passcode input */}
+        {/* Clean Username & Password Form */}
         <form onSubmit={handleLoginSubmit}>
-          <FormField label="Security Passcode / PIN">
+          <FormField label="Username">
             <div style={{ position: "relative" }}>
-              <Lock
-                size={14}
+              <User
+                size={16}
                 style={{
                   position: "absolute",
-                  left: 11,
+                  left: 12,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  color: "#94a3b8",
+                }}
+              />
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => {
+                  setUsername(e.target.value);
+                  setError("");
+                }}
+                placeholder="Enter authorized username"
+                style={{ ...darkInputStyle, paddingLeft: 38 }}
+                autoFocus
+              />
+            </div>
+          </FormField>
+
+          <FormField label="Password">
+            <div style={{ position: "relative" }}>
+              <Lock
+                size={16}
+                style={{
+                  position: "absolute",
+                  left: 12,
                   top: "50%",
                   transform: "translateY(-50%)",
                   color: "#94a3b8",
@@ -861,10 +853,13 @@ function LoginScreen({ onLogin }) {
               />
               <input
                 type="password"
-                value={pin}
-                onChange={(e) => setPin(e.target.value)}
-                placeholder="Default PIN: 1234"
-                style={{ ...darkInputStyle, paddingLeft: 34 }}
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setError("");
+                }}
+                placeholder="Enter password"
+                style={{ ...darkInputStyle, paddingLeft: 38 }}
               />
             </div>
           </FormField>
@@ -874,28 +869,273 @@ function LoginScreen({ onLogin }) {
               style={{
                 color: "#ff6479",
                 fontSize: 12,
-                marginBottom: 14,
+                marginBottom: 16,
                 display: "flex",
                 alignItems: "center",
                 gap: 6,
+                padding: "8px 12px",
+                background: "rgba(255, 51, 75, 0.1)",
+                border: "1px solid rgba(255, 51, 75, 0.25)",
+                borderRadius: 6,
               }}
             >
-              <AlertTriangle size={13} /> {error}
+              <AlertTriangle size={14} /> {error}
             </div>
           )}
 
           <button
             type="submit"
             className="btn-red-gradient"
-            style={{ width: "100%", padding: "11px 0", fontSize: 14, marginTop: 8 }}
+            style={{
+              width: "100%",
+              padding: "12px 0",
+              fontSize: 14.5,
+              fontWeight: 700,
+              marginTop: 10,
+              letterSpacing: "0.4px",
+            }}
           >
-            Authenticate & Open Operations Desk
+            Access Management Portal →
           </button>
         </form>
 
-        <div style={{ marginTop: 18, textAlign: "center", fontSize: 11.5, color: "#64748b" }}>
-          Default access PIN is <strong style={{ color: "#ffffff" }}>1234</strong> for all roles
+        {/* Developer Credit Footer Badge */}
+        <div
+          className="developer-badge"
+          style={{
+            marginTop: 26,
+            padding: "12px 14px",
+            textAlign: "center",
+          }}
+        >
+          <div
+            style={{
+              fontSize: 10,
+              color: "#94a3b8",
+              textTransform: "uppercase",
+              letterSpacing: "1.2px",
+              fontWeight: 700,
+            }}
+          >
+            System Architecture
+          </div>
+          <div
+            style={{
+              fontSize: 13,
+              fontWeight: 700,
+              color: "#ffffff",
+              marginTop: 3,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 6,
+            }}
+          >
+            <Sparkles size={14} color="#ff334b" /> Developed by{" "}
+            <span style={{ color: "#ff334b", fontWeight: 800 }}>Sudhanshu Khande</span>
+          </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------------------- Cinematic Post-Login Landing Page ---------------------------- */
+
+function CinematicLanding({ user, onEnter }) {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onEnter();
+    }, 3200);
+    return () => clearTimeout(timer);
+  }, [onEnter]);
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "#06070a",
+        zIndex: 10000,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        overflow: "hidden",
+      }}
+    >
+      <div className="ambient-bg">
+        <div className="cyber-grid" />
+      </div>
+
+      <div
+        className="modal-enter"
+        style={{
+          position: "relative",
+          zIndex: 10,
+          textAlign: "center",
+          maxWidth: 580,
+          padding: 30,
+        }}
+      >
+        {/* Animated Cybernetic Scanning HUD Ring */}
+        <div
+          style={{
+            position: "relative",
+            width: 140,
+            height: 140,
+            margin: "0 auto 28px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          {/* Outer rotating ring */}
+          <div
+            className="hud-ring-outer"
+            style={{
+              position: "absolute",
+              inset: 0,
+              borderRadius: "50%",
+              border: "2px dashed rgba(255, 51, 75, 0.5)",
+            }}
+          />
+          {/* Inner reverse rotating ring */}
+          <div
+            className="hud-ring-inner"
+            style={{
+              position: "absolute",
+              inset: 12,
+              borderRadius: "50%",
+              border: "2px dotted rgba(255, 255, 255, 0.4)",
+            }}
+          />
+          {/* Glowing central core */}
+          <div
+            className="landing-glow"
+            style={{
+              width: 76,
+              height: 76,
+              borderRadius: "50%",
+              background: "linear-gradient(135deg, #ff334b 0%, #b91c1c 100%)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#ffffff",
+              boxShadow: "0 0 35px rgba(255, 51, 75, 0.8)",
+            }}
+          >
+            <ShieldCheck size={38} />
+          </div>
+        </div>
+
+        {/* Verification Status */}
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 7,
+            padding: "4px 14px",
+            borderRadius: 20,
+            background: "rgba(34, 197, 94, 0.15)",
+            border: "1px solid rgba(34, 197, 94, 0.4)",
+            color: "#4ade80",
+            fontSize: 12,
+            fontWeight: 700,
+            letterSpacing: "1px",
+            textTransform: "uppercase",
+            marginBottom: 14,
+          }}
+        >
+          <span className="pulse-radar-green" /> Authentication Verified
+        </div>
+
+        {/* Welcome Personalized Title */}
+        <h1
+          style={{
+            fontFamily: "'Outfit', sans-serif",
+            fontSize: 32,
+            fontWeight: 800,
+            color: "#ffffff",
+            margin: "0 0 6px 0",
+            letterSpacing: "-0.5px",
+          }}
+        >
+          Welcome, {user.name}
+        </h1>
+        <div
+          style={{
+            fontSize: 14,
+            color: "#ff334b",
+            fontWeight: 700,
+            letterSpacing: "0.5px",
+            marginBottom: 20,
+          }}
+        >
+          {user.role}
+        </div>
+
+        {/* HUD Diagnostics Telemetry */}
+        <div
+          className="glass-card"
+          style={{
+            padding: "16px 20px",
+            marginBottom: 24,
+            textAlign: "left",
+            display: "flex",
+            flexDirection: "column",
+            gap: 8,
+            border: "1px solid rgba(255, 255, 255, 0.1)",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 12 }}>
+            <span style={{ color: "#94a3b8" }}>Security Clearance:</span>
+            <span style={{ color: "#ffffff", fontWeight: 600 }}>Level 5 Operations Access</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 12 }}>
+            <span style={{ color: "#94a3b8" }}>Cloud Sync Status:</span>
+            <span style={{ color: "#4ade80", fontWeight: 600 }}>Real-Time Live Telemetry Online</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 12 }}>
+            <span style={{ color: "#94a3b8" }}>Management System:</span>
+            <span style={{ color: "#ffffff", fontWeight: 600 }}>ZPBDMS Command Center v2.0</span>
+          </div>
+        </div>
+
+        {/* Prominent Developer Showcase */}
+        <div
+          className="developer-badge"
+          style={{
+            padding: "12px 18px",
+            marginBottom: 26,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 10,
+          }}
+        >
+          <Sparkles size={18} color="#ff334b" />
+          <div style={{ fontSize: 13.5, color: "#ffffff", fontWeight: 600 }}>
+            System Architecture & Engineered by{" "}
+            <strong style={{ color: "#ff334b", fontWeight: 800 }}>Sudhanshu Khande</strong>
+          </div>
+        </div>
+
+        {/* Enter Button */}
+        <button
+          className="btn-red-gradient"
+          onClick={onEnter}
+          style={{
+            padding: "11px 32px",
+            fontSize: 14,
+            fontWeight: 700,
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          Enter Operations Deck <ArrowRight size={16} />
+        </button>
       </div>
     </div>
   );
@@ -913,6 +1153,7 @@ export default function App() {
     }
   });
 
+  const [showLanding, setShowLanding] = useState(false);
   const [data, setData] = useState(null);
   const [connected, setConnected] = useState(false);
   const [saveState, setSaveState] = useState("idle");
@@ -948,12 +1189,14 @@ export default function App() {
   const handleLogin = (user) => {
     localStorage.setItem("zpbdms_auth_user", JSON.stringify(user));
     setCurrentUser(user);
-    setTab("my_desk"); // Jump right to their personal desk!
+    setShowLanding(true); // Trigger graphical landing animation!
+    setTab("my_desk");
   };
 
   const handleLogout = () => {
     localStorage.removeItem("zpbdms_auth_user");
     setCurrentUser(null);
+    setShowLanding(false);
   };
 
   const persist = useCallback((next) => {
@@ -1062,7 +1305,7 @@ export default function App() {
               letterSpacing: "1px",
             }}
           >
-            ZPBDMS COMMAND CENTER
+            MANAGEMENT COMMAND CENTER
           </div>
           <div style={{ color: "#94a3b8", fontSize: 13, marginTop: 6, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
             <span className="pulse-radar-red" />
@@ -1103,7 +1346,6 @@ export default function App() {
     const targetId = modal?.editing?.id || uid();
     const updatedIssues = addOrUpdate(data.issues, item, modal?.editing?.id);
 
-    // Trigger notification if assigned
     const newNotifications = [
       ...notifyAssignee(
         item.assignee,
@@ -1217,6 +1459,9 @@ export default function App() {
         overflowX: "hidden",
       }}
     >
+      {/* Cinematic Post-Login Landing Screen Animation */}
+      {showLanding && <CinematicLanding user={currentUser} onEnter={() => setShowLanding(false)} />}
+
       {/* Visual Ambient Atmosphere */}
       <div className="ambient-bg">
         <div className="cyber-grid" />
@@ -1286,7 +1531,7 @@ export default function App() {
                 </span>
               </div>
               <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 500, letterSpacing: "0.4px", marginTop: 2 }}>
-                MANAGEMENT TOOL
+                MANAGEMENT SYSTEM
               </div>
             </div>
           </div>
@@ -1349,7 +1594,7 @@ export default function App() {
               </div>
             </div>
           </div>
-          <IconButton onClick={handleLogout} title="Switch Profile / Sign Out">
+          <IconButton onClick={handleLogout} title="Sign Out">
             <LogOut size={14} />
           </IconButton>
         </div>
@@ -1461,17 +1706,17 @@ export default function App() {
         </nav>
 
         {/* Live System Diagnostics Box */}
-        <div style={{ marginTop: "auto", paddingTop: 20 }}>
+        <div style={{ marginTop: "auto", paddingTop: 16 }}>
           <div
             className="glass-card"
             style={{
-              padding: 14,
+              padding: 12,
               border: criticalOpen > 0 ? "1px solid rgba(255, 51, 75, 0.35)" : "1px solid rgba(255, 255, 255, 0.08)",
               background: criticalOpen > 0 ? "rgba(255, 51, 75, 0.07)" : "rgba(18, 22, 34, 0.6)",
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: "#cbd5e1", letterSpacing: "0.5px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+              <span style={{ fontSize: 10.5, fontWeight: 700, color: "#cbd5e1", letterSpacing: "0.5px" }}>
                 TELEMETRY
               </span>
               <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -1482,10 +1727,10 @@ export default function App() {
               </span>
             </div>
 
-            <div style={{ fontSize: 12, color: "#94a3b8", lineHeight: 1.5 }}>
+            <div style={{ fontSize: 11.5, color: "#94a3b8" }}>
               {criticalOpen > 0 ? (
                 <span style={{ color: "#ff6479", fontWeight: 600 }}>
-                  {criticalOpen} critical incident{criticalOpen > 1 ? "s" : ""} active
+                  {criticalOpen} critical issue active
                 </span>
               ) : (
                 <span style={{ color: "#f8fafc" }}>Zero critical alerts</span>
@@ -1493,25 +1738,40 @@ export default function App() {
             </div>
 
             {/* Rollout Progress Indicator */}
-            <div style={{ marginTop: 10 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10.5, color: "#94a3b8", marginBottom: 4 }}>
+            <div style={{ marginTop: 8 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#94a3b8", marginBottom: 3 }}>
                 <span>Rollout Live</span>
                 <span style={{ color: "#ffffff", fontWeight: 600 }}>
                   {liveDistrictsCount}/{data.districts.length}
                 </span>
               </div>
-              <div style={{ width: "100%", height: 5, background: "rgba(255, 255, 255, 0.1)", borderRadius: 4, overflow: "hidden" }}>
+              <div style={{ width: "100%", height: 4, background: "rgba(255, 255, 255, 0.1)", borderRadius: 4, overflow: "hidden" }}>
                 <div
                   style={{
                     height: "100%",
                     width: `${data.districts.length ? (liveDistrictsCount / data.districts.length) * 100 : 0}%`,
                     background: "linear-gradient(90deg, #ff334b, #22c55e)",
                     borderRadius: 4,
-                    boxShadow: "0 0 8px rgba(255, 51, 75, 0.5)",
-                    transition: "width 0.4s ease",
                   }}
                 />
               </div>
+            </div>
+          </div>
+
+          {/* Sidebar Developer Badge */}
+          <div
+            className="developer-badge"
+            style={{
+              padding: "9px 10px",
+              marginTop: 12,
+              textAlign: "center",
+            }}
+          >
+            <div style={{ fontSize: 9, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.8px", fontWeight: 700 }}>
+              System Architect
+            </div>
+            <div style={{ fontSize: 11.5, fontWeight: 700, color: "#ffffff", marginTop: 2 }}>
+              Developed by <span style={{ color: "#ff334b" }}>Sudhanshu Khande</span>
             </div>
           </div>
         </div>
@@ -1565,6 +1825,22 @@ export default function App() {
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+            {/* Developer Credit Top Badge */}
+            <div
+              className="developer-badge"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "6px 12px",
+                fontSize: 11.5,
+                color: "#cbd5e1",
+              }}
+            >
+              <Sparkles size={12} color="#ff334b" />
+              <span>Developed by <strong style={{ color: "#ffffff" }}>Sudhanshu Khande</strong></span>
+            </div>
+
             {/* Live Firestore Sync State Indicator */}
             <div
               style={{
@@ -1684,8 +1960,7 @@ export default function App() {
                           key={n.id}
                           onClick={() => {
                             markNotificationRead(n.id);
-                            if (n.type === "issue") setTab("my_desk");
-                            if (n.type === "task") setTab("my_desk");
+                            if (n.type === "issue" || n.type === "task") setTab("my_desk");
                             setShowNotifications(false);
                           }}
                           style={{
@@ -2362,7 +2637,7 @@ function TaskTable({ tasks, onCycle, onEdit, onDelete }) {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "36px 2.2fr 130px 140px 120px 130px 80px",
+          gridTemplateColumns: "36px 2.2fr 130px 160px 120px 130px 80px",
           padding: "12px 18px",
           background: "rgba(255, 255, 255, 0.03)",
           borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
@@ -2394,7 +2669,7 @@ function TaskTable({ tasks, onCycle, onEdit, onDelete }) {
             className="custom-table-row"
             style={{
               display: "grid",
-              gridTemplateColumns: "36px 2.2fr 130px 140px 120px 130px 80px",
+              gridTemplateColumns: "36px 2.2fr 130px 160px 120px 130px 80px",
               padding: "14px 18px",
               borderBottom: idx === tasks.length - 1 ? "none" : "1px solid rgba(255, 255, 255, 0.05)",
               alignItems: "center",
