@@ -1356,13 +1356,16 @@ function DynamicCyberLanding({ user, onEnter }) {
 
   // Terminal logs sequence & phase shifts
   useEffect(() => {
+    const uName = (user?.name || "Sudhanshu Khande").toUpperCase();
+    const uRole = (user?.role || "Main Admin / Business Analyst").toUpperCase();
+
     const t1 = setTimeout(() => {
-      setTerminalLog((prev) => [...prev, `IDENTITY CONFIRMED: ${user.name.toUpperCase()}`]);
+      setTerminalLog((prev) => [...prev, `IDENTITY CONFIRMED: ${uName}`]);
       setProgress(55);
     }, 500);
 
     const t2 = setTimeout(() => {
-      setTerminalLog((prev) => [...prev, `SECURITY CLEARANCE: ${user.role.toUpperCase()}`]);
+      setTerminalLog((prev) => [...prev, `SECURITY CLEARANCE: ${uRole}`]);
       setProgress(85);
     }, 900);
 
@@ -1376,7 +1379,7 @@ function DynamicCyberLanding({ user, onEnter }) {
     }, 3800);
 
     const t5 = setTimeout(() => {
-      onEnter();
+      if (onEnter) onEnter();
     }, 4200);
 
     return () => {
@@ -1386,7 +1389,7 @@ function DynamicCyberLanding({ user, onEnter }) {
       clearTimeout(t4);
       clearTimeout(t5);
     };
-  }, [user, onEnter]);
+  }, []);
 
   // Canvas 60fps particle and 3D perspective cyber-grid animation
   useEffect(() => {
@@ -1797,7 +1800,15 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState(() => {
     try {
       const saved = localStorage.getItem("zpbdms_auth_user");
-      return saved ? JSON.parse(saved) : null;
+      if (!saved) return null;
+      const parsed = JSON.parse(saved);
+      // Validate that saved session belongs to a valid team member
+      const match = TEAM_ROSTER.find(
+        (u) =>
+          (parsed.username && u.username.toLowerCase() === parsed.username.toLowerCase()) ||
+          (parsed.name && u.name.toLowerCase() === parsed.name.toLowerCase())
+      );
+      return match || null;
     } catch (e) {
       return null;
     }
@@ -1814,15 +1825,33 @@ export default function App() {
   const saveTimer = useRef(null);
 
   useEffect(() => {
+    let mounted = true;
     const unsub = onSnapshot(
       DOC_REF(),
       (snap) => {
+        if (!mounted) return;
         setConnected(true);
         if (snap.exists()) {
-          const fetched = snap.data();
-          if (!fetched.notifications) fetched.notifications = [];
-          if (!fetched.testPoints) fetched.testPoints = seedTestPoints();
-          setData(fetched);
+          const fetched = snap.data() || {};
+          setData({
+            issues: Array.isArray(fetched.issues) ? fetched.issues : [],
+            tasks: Array.isArray(fetched.tasks) ? fetched.tasks : [],
+            districts:
+              Array.isArray(fetched.districts) && fetched.districts.length > 0
+                ? fetched.districts
+                : DISTRICTS_DEFAULT.map((name) => ({
+                    id: uid(),
+                    name,
+                    stage: "UAT",
+                    notes: "",
+                    updatedAt: todayISO(),
+                  })),
+            notifications: Array.isArray(fetched.notifications) ? fetched.notifications : [],
+            testPoints:
+              Array.isArray(fetched.testPoints) && fetched.testPoints.length > 0
+                ? fetched.testPoints
+                : seedTestPoints(),
+          });
         } else {
           const seed = seedData();
           setDoc(DOC_REF(), seed);
@@ -1830,11 +1859,33 @@ export default function App() {
         }
       },
       (err) => {
-        console.error("Firestore error", err);
-        setConnected("error");
+        console.error("Firestore sync notice, using local offline state:", err);
+        if (mounted) {
+          setConnected(true);
+          setData((prev) => prev || seedData());
+        }
       }
     );
-    return () => unsub();
+
+    // Timeout safety: if Firestore takes longer than 2.0s, fall back immediately to seedData so page is never blocked
+    const fallbackTimer = setTimeout(() => {
+      if (mounted) {
+        setData((prev) => {
+          if (!prev) {
+            console.warn("Firestore connection slow, loaded seed fallback for immediate responsiveness.");
+            setConnected(true);
+            return seedData();
+          }
+          return prev;
+        });
+      }
+    }, 2000);
+
+    return () => {
+      mounted = false;
+      unsub();
+      clearTimeout(fallbackTimer);
+    };
   }, []);
 
   const handleLogin = (user) => {
@@ -1967,7 +2018,7 @@ export default function App() {
     );
   }
 
-  const districtNames = data.districts.map((d) => d.name);
+  const districtNames = (data?.districts || []).map((d) => d.name);
 
   // Notification helper
   const notifyAssignee = (targetAssignee, title, message, type, refId) => {
@@ -1995,7 +2046,7 @@ export default function App() {
   const saveIssue = (item) => {
     const isNew = !modal?.editing?.id;
     const targetId = modal?.editing?.id || uid();
-    const updatedIssues = addOrUpdate(data.issues, item, modal?.editing?.id);
+    const updatedIssues = addOrUpdate(data?.issues || [], item, modal?.editing?.id);
 
     const newNotifications = [
       ...notifyAssignee(
@@ -2015,7 +2066,7 @@ export default function App() {
   const saveTask = (item) => {
     const isNew = !modal?.editing?.id;
     const targetId = modal?.editing?.id || uid();
-    const updatedTasks = addOrUpdate(data.tasks, item, modal?.editing?.id);
+    const updatedTasks = addOrUpdate(data?.tasks || [], item, modal?.editing?.id);
 
     const newNotifications = [
       ...notifyAssignee(
@@ -2033,40 +2084,40 @@ export default function App() {
   };
 
   const saveDistrict = (item) => {
-    persist({ ...data, districts: addOrUpdate(data.districts, item, modal?.editing?.id) });
+    persist({ ...data, districts: addOrUpdate(data?.districts || [], item, modal?.editing?.id) });
     setModal(null);
   };
 
   const saveTestPoint = (item) => {
-    persist({ ...data, testPoints: addOrUpdate(data.testPoints || [], item, modal?.editing?.id) });
+    persist({ ...data, testPoints: addOrUpdate(data?.testPoints || [], item, modal?.editing?.id) });
     setModal(null);
   };
 
-  const removeIssue = (id) => persist({ ...data, issues: data.issues.filter((x) => x.id !== id) });
-  const removeTask = (id) => persist({ ...data, tasks: data.tasks.filter((x) => x.id !== id) });
-  const removeDistrict = (id) => persist({ ...data, districts: data.districts.filter((x) => x.id !== id) });
-  const removeTestPoint = (id) => persist({ ...data, testPoints: (data.testPoints || []).filter((t) => t.id !== id) });
+  const removeIssue = (id) => persist({ ...data, issues: (data?.issues || []).filter((x) => x.id !== id) });
+  const removeTask = (id) => persist({ ...data, tasks: (data?.tasks || []).filter((x) => x.id !== id) });
+  const removeDistrict = (id) => persist({ ...data, districts: (data?.districts || []).filter((x) => x.id !== id) });
+  const removeTestPoint = (id) => persist({ ...data, testPoints: (data?.testPoints || []).filter((t) => t.id !== id) });
 
   const cycleIssueStatus = (item) => {
     const next = ISSUE_STATUSES[(ISSUE_STATUSES.indexOf(item.status) + 1) % ISSUE_STATUSES.length];
-    persist({ ...data, issues: data.issues.map((x) => (x.id === item.id ? { ...x, status: next } : x)) });
+    persist({ ...data, issues: (data?.issues || []).map((x) => (x.id === item.id ? { ...x, status: next } : x)) });
   };
   const cycleTaskStatus = (item) => {
     const next = TASK_STATUSES[(TASK_STATUSES.indexOf(item.status) + 1) % TASK_STATUSES.length];
-    persist({ ...data, tasks: data.tasks.map((x) => (x.id === item.id ? { ...x, status: next } : x)) });
+    persist({ ...data, tasks: (data?.tasks || []).map((x) => (x.id === item.id ? { ...x, status: next } : x)) });
   };
 
   const cycleTestPointStatus = (tp) => {
     const next = TEST_STATUSES[(TEST_STATUSES.indexOf(tp.status) + 1) % TEST_STATUSES.length];
     persist({
       ...data,
-      testPoints: (data.testPoints || []).map((t) => (t.id === tp.id ? { ...t, status: next, updatedAt: todayISO() } : t)),
+      testPoints: (data?.testPoints || []).map((t) => (t.id === tp.id ? { ...t, status: next, updatedAt: todayISO() } : t)),
     });
   };
 
   const resolveTestPoint = (id, resolution) => {
-    const target = (data.testPoints || []).find((t) => t.id === id);
-    const updatedPoints = (data.testPoints || []).map((t) =>
+    const target = (data?.testPoints || []).find((t) => t.id === id);
+    const updatedPoints = (data?.testPoints || []).map((t) =>
       t.id === id ? { ...t, ...resolution, updatedAt: todayISO() } : t
     );
     const testerName = target?.tester || "Rutuja";
@@ -2121,10 +2172,10 @@ export default function App() {
   };
 
   const q = query.trim().toLowerCase();
-  const filteredIssues = data.issues.filter(
+  const filteredIssues = (data?.issues || []).filter(
     (i) => !q || [i.title, i.module, i.district, i.assignee].join(" ").toLowerCase().includes(q)
   );
-  const filteredTasks = data.tasks.filter(
+  const filteredTasks = (data?.tasks || []).filter(
     (t) => !q || [t.title, t.module, t.assignee].join(" ").toLowerCase().includes(q)
   );
 
@@ -2134,7 +2185,7 @@ export default function App() {
   const [qaDevStatus, setQaDevStatus] = useState("All Dev Statuses");
   const [qaSearch, setQaSearch] = useState("");
 
-  const allTestPoints = data.testPoints || [];
+  const allTestPoints = data?.testPoints || [];
   const failedTestPointsCount = allTestPoints.filter((t) => t.status === "Failed").length;
   const filteredTestPoints = allTestPoints.filter((tp) => {
     if (qaModule !== "All Modules" && tp.module !== qaModule) return false;
@@ -2160,16 +2211,16 @@ export default function App() {
   });
 
   // My Personal Desk filtering
-  const myIssues = data.issues.filter((i) => i.assignee === currentUser.name);
+  const myIssues = (data?.issues || []).filter((i) => i.assignee === currentUser?.name);
   const myOpenIssues = myIssues.filter((i) => i.status !== "Resolved").length;
   const myCriticalIssues = myIssues.filter((i) => i.status !== "Resolved" && i.priority === "Critical").length;
-  const myTasks = data.tasks.filter((t) => t.assignee === currentUser.name);
+  const myTasks = (data?.tasks || []).filter((t) => t.assignee === currentUser?.name);
   const myPendingTasks = myTasks.filter((t) => t.status !== "Done").length;
 
-  const openIssues = data.issues.filter((i) => i.status !== "Resolved").length;
-  const criticalOpen = data.issues.filter((i) => i.status !== "Resolved" && i.priority === "Critical").length;
-  const pendingTasks = data.tasks.filter((t) => t.status !== "Done").length;
-  const liveDistrictsCount = data.districts.filter((d) => d.stage === "Live").length;
+  const openIssues = (data?.issues || []).filter((i) => i.status !== "Resolved").length;
+  const criticalOpen = (data?.issues || []).filter((i) => i.status !== "Resolved" && i.priority === "Critical").length;
+  const pendingTasks = (data?.tasks || []).filter((t) => t.status !== "Done").length;
+  const liveDistrictsCount = (data?.districts || []).filter((d) => d.stage === "Live").length;
 
   const navItems = [
     { key: "my_desk", label: "My Desk & Tasks", icon: UserCheck, count: myOpenIssues + myPendingTasks, highlight: true },
@@ -2177,7 +2228,7 @@ export default function App() {
     { key: "dashboard", label: "Operations Deck", icon: LayoutGrid },
     { key: "issues", label: "Issues Matrix", icon: AlertTriangle, count: openIssues, isAlert: criticalOpen > 0 },
     { key: "tasks", label: "Task Directives", icon: ListChecks, count: pendingTasks },
-    { key: "districts", label: "District Deployments", icon: MapPin, count: data.districts.length },
+    { key: "districts", label: "District Deployments", icon: MapPin, count: (data?.districts || []).length },
   ];
 
   return (
@@ -2288,17 +2339,17 @@ export default function App() {
                 width: 30,
                 height: 30,
                 borderRadius: 7,
-                background: currentUser.avatar,
+                background: currentUser?.avatar || "#ff334b",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 color: "#ffffff",
                 fontWeight: 700,
                 fontSize: 13,
-                boxShadow: `0 0 10px ${currentUser.avatar}66`,
+                boxShadow: `0 0 10px ${currentUser?.avatar || "#ff334b"}66`,
               }}
             >
-              {currentUser.name.charAt(0)}
+              {(currentUser?.name || "U").charAt(0)}
             </div>
             <div style={{ maxWidth: 135 }}>
               <div
@@ -2311,7 +2362,7 @@ export default function App() {
                   textOverflow: "ellipsis",
                 }}
               >
-                {currentUser.name}
+                {currentUser?.name || "User"}
               </div>
               <div
                 style={{
@@ -2322,7 +2373,7 @@ export default function App() {
                   textOverflow: "ellipsis",
                 }}
               >
-                {currentUser.role}
+                {currentUser?.role || "Authorized Access"}
               </div>
             </div>
           </div>
@@ -2448,40 +2499,52 @@ export default function App() {
             }}
           >
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-              <span style={{ fontSize: 10.5, fontWeight: 700, color: "#cbd5e1", letterSpacing: "0.5px" }}>
-                TELEMETRY
+              <span style={{ fontSize: 10.5, fontWeight: 700, textTransform: "uppercase", color: "#94a3b8", letterSpacing: "0.8px" }}>
+                System Telemetry
               </span>
-              <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <span className={criticalOpen > 0 ? "pulse-radar-red" : "pulse-radar-green"} />
-                <span style={{ fontSize: 10, color: criticalOpen > 0 ? "#ff6479" : "#4ade80", fontWeight: 600 }}>
-                  {criticalOpen > 0 ? "ALERT" : "ONLINE"}
-                </span>
+              <span
+                style={{
+                  width: 7,
+                  height: 7,
+                  borderRadius: "50%",
+                  background: criticalOpen > 0 ? "#ff334b" : "#22c55e",
+                  boxShadow: criticalOpen > 0 ? "0 0 8px #ff334b" : "0 0 8px #22c55e",
+                }}
+              />
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 11.5 }}>
+              <span style={{ color: "#94a3b8" }}>Health Status</span>
+              <span style={{ color: criticalOpen > 0 ? "#ff6479" : "#4ade80", fontWeight: 600 }}>
+                {criticalOpen > 0 ? "Defects Pending" : "Operational Normal"}
               </span>
             </div>
 
-            <div style={{ fontSize: 11.5, color: "#94a3b8" }}>
-              {criticalOpen > 0 ? (
-                <span style={{ color: "#ff6479", fontWeight: 600 }}>
-                  {criticalOpen} critical issue active
-                </span>
-              ) : (
-                <span style={{ color: "#f8fafc" }}>Zero critical alerts</span>
-              )}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 11.5, marginTop: 4 }}>
+              <span style={{ color: "#94a3b8" }}>Active Directives</span>
+              <span style={{ color: "#ffffff", fontWeight: 600 }}>{pendingTasks} sprint items</span>
             </div>
+
+            {failedTestPointsCount > 0 && (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 11.5, marginTop: 4 }}>
+                <span style={{ color: "#ff6479" }}>QA Defects</span>
+                <span style={{ color: "#ff334b", fontWeight: 700 }}>{failedTestPointsCount} failed</span>
+              </div>
+            )}
 
             {/* Rollout Progress Indicator */}
             <div style={{ marginTop: 8 }}>
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#94a3b8", marginBottom: 3 }}>
                 <span>Rollout Live</span>
                 <span style={{ color: "#ffffff", fontWeight: 600 }}>
-                  {liveDistrictsCount}/{data.districts.length}
+                  {liveDistrictsCount}/{(data?.districts || []).length}
                 </span>
               </div>
               <div style={{ width: "100%", height: 4, background: "rgba(255, 255, 255, 0.1)", borderRadius: 4, overflow: "hidden" }}>
                 <div
                   style={{
                     height: "100%",
-                    width: `${data.districts.length ? (liveDistrictsCount / data.districts.length) * 100 : 0}%`,
+                    width: `${(data?.districts || []).length ? (liveDistrictsCount / (data?.districts || []).length) * 100 : 0}%`,
                     background: "linear-gradient(90deg, #ff334b, #22c55e)",
                     borderRadius: 4,
                   }}
@@ -2844,7 +2907,7 @@ export default function App() {
 
         {tab === "districts" && (
           <DistrictTable
-            districts={data.districts}
+            districts={data?.districts || []}
             onEdit={(d) => setModal({ type: "district", editing: d })}
             onDelete={removeDistrict}
           />
@@ -2980,22 +3043,22 @@ function MyDeskView({
               width: 46,
               height: 46,
               borderRadius: 12,
-              background: currentUser.avatar,
+              background: currentUser?.avatar || "#ff334b",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               color: "#ffffff",
               fontWeight: 800,
               fontSize: 18,
-              boxShadow: `0 0 20px ${currentUser.avatar}88`,
+              boxShadow: `0 0 20px ${currentUser?.avatar || "#ff334b"}88`,
             }}
           >
-            {currentUser.name.charAt(0)}
+            {(currentUser?.name || "U").charAt(0)}
           </div>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 20, fontWeight: 700, color: "#ffffff" }}>
-                Welcome back, {currentUser.name}
+                Welcome back, {currentUser?.name || "User"}
               </div>
               <span
                 style={{
@@ -3008,7 +3071,7 @@ function MyDeskView({
                   borderRadius: 12,
                 }}
               >
-                {currentUser.role}
+                {currentUser?.role || "Authorized Access"}
               </span>
             </div>
             <div style={{ fontSize: 12.5, color: "#94a3b8", marginTop: 3 }}>
@@ -3157,11 +3220,11 @@ function StatMetricCard({ title, value, subtitle, icon: Icon, tone = "default", 
 }
 
 function Dashboard({ data, openIssues, criticalOpen, pendingTasks, liveDistrictsCount, onGo, onOpenModal }) {
-  const recentIssues = [...data.issues]
+  const recentIssues = [...(data?.issues || [])]
     .sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""))
     .slice(0, 6);
 
-  const totalDistricts = data.districts.length || 1;
+  const totalDistricts = (data?.districts || []).length || 1;
   const rolloutPercentage = Math.round((liveDistrictsCount / totalDistricts) * 100);
 
   return (
@@ -3171,7 +3234,7 @@ function Dashboard({ data, openIssues, criticalOpen, pendingTasks, liveDistricts
         <StatMetricCard
           title="Open Issues"
           value={openIssues}
-          subtitle={`${data.issues.filter((i) => i.status === "In Progress").length} currently in resolution`}
+          subtitle={`${(data?.issues || []).filter((i) => i.status === "In Progress").length} currently in resolution`}
           icon={AlertTriangle}
           tone={criticalOpen > 0 ? "warn" : "default"}
           onClick={() => onGo("issues")}
@@ -3187,14 +3250,14 @@ function Dashboard({ data, openIssues, criticalOpen, pendingTasks, liveDistricts
         <StatMetricCard
           title="Active Directives"
           value={pendingTasks}
-          subtitle={`${data.tasks.filter((t) => t.status === "Done").length} completed sprints`}
+          subtitle={`${(data?.tasks || []).filter((t) => t.status === "Done").length} completed sprints`}
           icon={ListChecks}
           onClick={() => onGo("tasks")}
         />
         <StatMetricCard
           title="Rollout Deployment"
           value={`${rolloutPercentage}%`}
-          subtitle={`${liveDistrictsCount} of ${data.districts.length} jurisdictions live`}
+          subtitle={`${liveDistrictsCount} of ${(data?.districts || []).length} jurisdictions live`}
           icon={MapPin}
           tone={liveDistrictsCount === totalDistricts ? "success" : "default"}
           onClick={() => onGo("districts")}
@@ -3290,7 +3353,7 @@ function Dashboard({ data, openIssues, criticalOpen, pendingTasks, liveDistricts
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {data.districts.map((d) => (
+            {(data?.districts || []).map((d) => (
               <div
                 key={d.id}
                 style={{
