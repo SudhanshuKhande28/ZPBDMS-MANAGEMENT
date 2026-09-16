@@ -78,6 +78,14 @@ const TEAM_ROSTER = [
     password: "Qa@2026",
     avatar: "#a855f7",
   },
+  {
+    id: "u4",
+    name: "Snehal Jagtap",
+    username: "snehal",
+    role: "Manager",
+    password: "Snehal@123",
+    avatar: "#10b981",
+  },
 ];
 
 const MODULES = [
@@ -1448,12 +1456,21 @@ function LoginScreen({ onLogin, theme = "dark", toggleTheme }) {
     const cleanUser = username.trim().toLowerCase();
     const cleanPass = password.trim();
 
-    // Match either by username or full name (case-insensitive)
-    const foundUser = TEAM_ROSTER.find(
-      (u) =>
-        (u.username.toLowerCase() === cleanUser || u.name.toLowerCase() === cleanUser) &&
-        u.password === cleanPass
-    );
+    // Match either by username, full name, dot-notation, compact, or role (case-insensitive)
+    const foundUser = TEAM_ROSTER.find((u) => {
+      const uName = u.name.toLowerCase();
+      const uUser = u.username.toLowerCase();
+      const uRole = u.role.toLowerCase();
+      const uNormalized = uName.replace(/\s+/g, ".");
+      const uCompact = uName.replace(/\s+/g, "");
+      const matchIdentity =
+        uUser === cleanUser ||
+        uName === cleanUser ||
+        uNormalized === cleanUser ||
+        uCompact === cleanUser ||
+        uRole === cleanUser;
+      return matchIdentity && u.password === cleanPass;
+    });
 
     if (foundUser) {
       onLogin(foundUser);
@@ -1597,7 +1614,7 @@ function LoginScreen({ onLogin, theme = "dark", toggleTheme }) {
                   setUsername(e.target.value);
                   setError("");
                 }}
-                placeholder="Enter username (e.g. sudhanshu, sankalp, rutuja)"
+                placeholder="Enter username (e.g. sudhanshu, snehal, sankalp, rutuja)"
                 style={{
                   width: "100%",
                   boxSizing: "border-box",
