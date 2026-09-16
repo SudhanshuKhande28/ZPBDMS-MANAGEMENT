@@ -87,7 +87,7 @@ const MODULES = [
 ];
 
 const DISTRICTS_DEFAULT = [
-  "Ahmednagar",
+  "Ahilyanagar",
   "Akola",
   "Amravati",
   "Beed",
@@ -149,13 +149,26 @@ function formatTimeNow() {
   return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
+const DISTRICT_ALIASES = {
+  ahmednagar: "Ahilyanagar",
+  aurangabad: "Chhatrapati Sambhajinagar",
+  osmanabad: "Dharashiv",
+};
+
 function mergeDistrictsWithDefaults(existingDistricts = []) {
   const existingMap = new Map();
   const matchedNames = new Set();
 
   (existingDistricts || []).forEach((d) => {
     if (d && d.name) {
-      existingMap.set(d.name.trim().toLowerCase(), d);
+      const lower = d.name.trim().toLowerCase();
+      const canonical = DISTRICT_ALIASES[lower] ? DISTRICT_ALIASES[lower].toLowerCase() : lower;
+      existingMap.set(canonical, {
+        ...d,
+        name: DISTRICT_ALIASES[lower] || d.name,
+      });
+      matchedNames.add(lower);
+      matchedNames.add(canonical);
     }
   });
 
@@ -1912,16 +1925,27 @@ export default function App() {
           const existingDistricts = Array.isArray(fetched.districts) ? fetched.districts : [];
           const fullDistricts = mergeDistrictsWithDefaults(existingDistricts);
 
-          // Auto-migrate Firestore if fewer districts are stored than full 34 ZP list
-          if (!hasAutoMigratedDistricts && existingDistricts.length < fullDistricts.length) {
+          const hasOldDistrictName = existingDistricts.some(
+            (d) => d && d.name && (d.name.toLowerCase() === "ahmednagar" || d.name.toLowerCase() === "aurangabad" || d.name.toLowerCase() === "osmanabad")
+          );
+
+          // Auto-migrate Firestore if fewer districts are stored than full 34 ZP list or if renaming is needed
+          if (!hasAutoMigratedDistricts && (existingDistricts.length < fullDistricts.length || hasOldDistrictName)) {
             hasAutoMigratedDistricts = true;
             setDoc(DOC_REF(), { districts: fullDistricts }, { merge: true }).catch((err) =>
               console.warn("Auto-sync districts to Firestore error:", err)
             );
           }
 
+          const rawIssues = Array.isArray(fetched.issues) ? fetched.issues : [];
+          const normalizedIssues = rawIssues.map((i) =>
+            i && i.district && i.district.toLowerCase() === "ahmednagar"
+              ? { ...i, district: "Ahilyanagar" }
+              : i
+          );
+
           setData({
-            issues: Array.isArray(fetched.issues) ? fetched.issues : [],
+            issues: normalizedIssues,
             tasks: Array.isArray(fetched.tasks) ? fetched.tasks : [],
             districts: fullDistricts,
             notifications: Array.isArray(fetched.notifications) ? fetched.notifications : [],
