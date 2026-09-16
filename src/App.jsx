@@ -86,7 +86,42 @@ const MODULES = [
   "Other",
 ];
 
-const DISTRICTS_DEFAULT = ["Satara", "Buldhana", "Nashik"];
+const DISTRICTS_DEFAULT = [
+  "Ahmednagar",
+  "Akola",
+  "Amravati",
+  "Beed",
+  "Bhandara",
+  "Buldhana",
+  "Chandrapur",
+  "Chhatrapati Sambhajinagar",
+  "Dharashiv",
+  "Dhule",
+  "Gadchiroli",
+  "Gondia",
+  "Hingoli",
+  "Jalgaon",
+  "Jalna",
+  "Kolhapur",
+  "Latur",
+  "Nagpur",
+  "Nanded",
+  "Nandurbar",
+  "Nashik",
+  "Palghar",
+  "Parbhani",
+  "Pune",
+  "Raigad",
+  "Ratnagiri",
+  "Sangli",
+  "Satara",
+  "Sindhudurg",
+  "Solapur",
+  "Thane",
+  "Wardha",
+  "Washim",
+  "Yavatmal",
+];
 const PRIORITIES = ["Critical", "High", "Medium", "Low"];
 const ISSUE_STATUSES = ["Open", "In Progress", "Resolved"];
 const TASK_STATUSES = ["To Do", "In Progress", "Done"];
@@ -112,6 +147,48 @@ function todayISO() {
 }
 function formatTimeNow() {
   return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+function mergeDistrictsWithDefaults(existingDistricts = []) {
+  const existingMap = new Map();
+  const matchedNames = new Set();
+
+  (existingDistricts || []).forEach((d) => {
+    if (d && d.name) {
+      existingMap.set(d.name.trim().toLowerCase(), d);
+    }
+  });
+
+  const merged = DISTRICTS_DEFAULT.map((name) => {
+    const key = name.trim().toLowerCase();
+    const existing = existingMap.get(key);
+    if (existing) {
+      matchedNames.add(key);
+      return {
+        ...existing,
+        name, // Standardized official casing
+      };
+    }
+    const isPilot = ["Satara", "Nashik", "Buldhana"].includes(name);
+    return {
+      id: uid(),
+      name,
+      stage: isPilot ? "Live" : "Requirements",
+      notes: isPilot
+        ? "Primary pilot ZP jurisdiction active on live system"
+        : "ZP rollout scheduled / system onboarding in progress",
+      updatedAt: todayISO(),
+    };
+  });
+
+  // Retain any custom district added by users
+  (existingDistricts || []).forEach((d) => {
+    if (d && d.name && !matchedNames.has(d.name.trim().toLowerCase())) {
+      merged.push(d);
+    }
+  });
+
+  return merged;
 }
 
 function seedTestPoints() {
@@ -185,13 +262,7 @@ function seedData() {
     tasks: [],
     notifications: [],
     testPoints: seedTestPoints(),
-    districts: DISTRICTS_DEFAULT.map((name) => ({
-      id: uid(),
-      name,
-      stage: "UAT",
-      notes: "",
-      updatedAt: todayISO(),
-    })),
+    districts: mergeDistrictsWithDefaults([]),
   };
 }
 
@@ -1830,6 +1901,7 @@ export default function App() {
 
   useEffect(() => {
     let mounted = true;
+    let hasAutoMigratedDistricts = false;
     const unsub = onSnapshot(
       DOC_REF(),
       (snap) => {
@@ -1837,19 +1909,21 @@ export default function App() {
         setConnected(true);
         if (snap.exists()) {
           const fetched = snap.data() || {};
+          const existingDistricts = Array.isArray(fetched.districts) ? fetched.districts : [];
+          const fullDistricts = mergeDistrictsWithDefaults(existingDistricts);
+
+          // Auto-migrate Firestore if fewer districts are stored than full 34 ZP list
+          if (!hasAutoMigratedDistricts && existingDistricts.length < fullDistricts.length) {
+            hasAutoMigratedDistricts = true;
+            setDoc(DOC_REF(), { districts: fullDistricts }, { merge: true }).catch((err) =>
+              console.warn("Auto-sync districts to Firestore error:", err)
+            );
+          }
+
           setData({
             issues: Array.isArray(fetched.issues) ? fetched.issues : [],
             tasks: Array.isArray(fetched.tasks) ? fetched.tasks : [],
-            districts:
-              Array.isArray(fetched.districts) && fetched.districts.length > 0
-                ? fetched.districts
-                : DISTRICTS_DEFAULT.map((name) => ({
-                    id: uid(),
-                    name,
-                    stage: "UAT",
-                    notes: "",
-                    updatedAt: todayISO(),
-                  })),
+            districts: fullDistricts,
             notifications: Array.isArray(fetched.notifications) ? fetched.notifications : [],
             testPoints:
               Array.isArray(fetched.testPoints) && fetched.testPoints.length > 0
@@ -2181,6 +2255,9 @@ export default function App() {
   );
   const filteredTasks = (data?.tasks || []).filter(
     (t) => !q || [t.title, t.module, t.assignee].join(" ").toLowerCase().includes(q)
+  );
+  const filteredDistricts = (data?.districts || []).filter(
+    (d) => !q || [d.name, d.stage, d.notes].join(" ").toLowerCase().includes(q)
   );
 
   // QA Spreadsheet filtering
@@ -2840,6 +2917,16 @@ export default function App() {
                   </span>
                 </button>
               </div>
+            ) : tab === "districts" ? (
+              <button
+                className="btn-red-gradient"
+                onClick={() => setModal({ type: "district" })}
+                style={{ padding: "8px 16px" }}
+              >
+                <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
+                  <Plus size={15} /> Add District
+                </span>
+              </button>
             ) : (
               <>
                 <button className="btn-red-gradient" onClick={() => setModal({ type: "issue" })} style={{ padding: "8px 16px" }}>
@@ -2906,7 +2993,7 @@ export default function App() {
 
         {tab === "districts" && (
           <DistrictTable
-            districts={data?.districts || []}
+            districts={filteredDistricts}
             onEdit={(d) => setModal({ type: "district", editing: d })}
             onDelete={removeDistrict}
           />
@@ -3353,7 +3440,7 @@ function Dashboard({ data, openIssues, criticalOpen, pendingTasks, liveDistricts
             </button>
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, maxHeight: 420, overflowY: "auto", paddingRight: 4 }}>
             {(data?.districts || []).map((d) => (
               <div
                 key={d.id}
@@ -3627,57 +3714,63 @@ function DistrictTable({ districts, onEdit, onDelete }) {
         <span style={{ textAlign: "right" }}>Actions</span>
       </div>
 
-      {districts.map((d, idx) => (
-        <div
-          key={d.id}
-          className="custom-table-row"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "36px 1.5fr 150px 2fr 80px",
-            padding: "14px 18px",
-            borderBottom: idx === districts.length - 1 ? "none" : "1px solid rgba(255, 255, 255, 0.05)",
-            alignItems: "center",
-          }}
-        >
-          <span style={{ fontFamily: "'JetBrains Mono', monospace", color: "#64748b", fontSize: 12 }}>
-            {idx + 1}
-          </span>
-
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <div
-              style={{
-                width: 28,
-                height: 28,
-                borderRadius: 6,
-                background: "rgba(255, 51, 75, 0.12)",
-                border: "1px solid rgba(255, 51, 75, 0.25)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#ff334b",
-              }}
-            >
-              <MapPin size={14} />
-            </div>
-            <span style={{ fontSize: 14, fontWeight: 600, color: "#ffffff" }}>{d.name}</span>
-          </div>
-
-          <div>
-            <StatusChip value={d.stage} />
-          </div>
-
-          <div style={{ fontSize: 12.5, color: "#94a3b8" }}>{d.notes || "—"}</div>
-
-          <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
-            <IconButton onClick={() => onEdit(d)} title="Edit District">
-              <Pencil size={13} />
-            </IconButton>
-            <IconButton onClick={() => onDelete(d.id)} title="Delete District" variant="danger">
-              <Trash2 size={13} />
-            </IconButton>
-          </div>
+      {districts.length === 0 ? (
+        <div style={{ padding: "40px 20px", textAlign: "center", color: "#64748b", fontSize: 13 }}>
+          No districts found matching your criteria.
         </div>
-      ))}
+      ) : (
+        districts.map((d, idx) => (
+          <div
+            key={d.id}
+            className="custom-table-row"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "36px 1.5fr 150px 2fr 80px",
+              padding: "14px 18px",
+              borderBottom: idx === districts.length - 1 ? "none" : "1px solid rgba(255, 255, 255, 0.05)",
+              alignItems: "center",
+            }}
+          >
+            <span style={{ fontFamily: "'JetBrains Mono', monospace", color: "#64748b", fontSize: 12 }}>
+              {idx + 1}
+            </span>
+
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: 6,
+                  background: "rgba(255, 51, 75, 0.12)",
+                  border: "1px solid rgba(255, 51, 75, 0.25)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#ff334b",
+                }}
+              >
+                <MapPin size={14} />
+              </div>
+              <span style={{ fontSize: 14, fontWeight: 600, color: "#ffffff" }}>{d.name}</span>
+            </div>
+
+            <div>
+              <StatusChip value={d.stage} />
+            </div>
+
+            <div style={{ fontSize: 12.5, color: "#94a3b8" }}>{d.notes || "—"}</div>
+
+            <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
+              <IconButton onClick={() => onEdit(d)} title="Edit District">
+                <Pencil size={13} />
+              </IconButton>
+              <IconButton onClick={() => onDelete(d.id)} title="Delete District" variant="danger">
+                <Trash2 size={13} />
+              </IconButton>
+            </div>
+          </div>
+        ))
+      )}
     </div>
   );
 }
