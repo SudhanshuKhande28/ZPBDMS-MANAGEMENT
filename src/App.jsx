@@ -43,6 +43,9 @@ import {
   XCircle,
   AlertCircle,
   ExternalLink,
+  Receipt,
+  TrendingUp,
+  BarChart2,
 } from "lucide-react";
 
 /* ---------------------------------------------------------------
@@ -206,6 +209,80 @@ function mergeDistrictsWithDefaults(existingDistricts = []) {
   return merged;
 }
 
+const BILL_TRACKER_DEFAULT = [
+  { id: "bill-1", srNo: 1, district: "Ahilyanagar", gatheringDetails: 0, inProcess: 0, completed: 1, totalBills: 1, notes: "1 bill completed", updatedAt: "2026-09-01" },
+  { id: "bill-2", srNo: 2, district: "Akola", gatheringDetails: 0, inProcess: 0, completed: 0, totalBills: 0, notes: "", updatedAt: "2026-09-01" },
+  { id: "bill-3", srNo: 3, district: "Amravati", gatheringDetails: 0, inProcess: 0, completed: 1, totalBills: 1, notes: "1 bill completed", updatedAt: "2026-09-01" },
+  { id: "bill-4", srNo: 4, district: "Beed", gatheringDetails: 1, inProcess: 4, completed: 1, totalBills: 6, notes: "1 bill completed, 4 in process, 1 gathering details", updatedAt: "2026-09-01" },
+  { id: "bill-5", srNo: 5, district: "Bhandara", gatheringDetails: 0, inProcess: 1, completed: 1, totalBills: 2, notes: "1 bill completed, 1 in process", updatedAt: "2026-09-01" },
+  { id: "bill-6", srNo: 6, district: "Buldhana", gatheringDetails: 0, inProcess: 1, completed: 1, totalBills: 2, notes: "1 bill completed, 1 in process", updatedAt: "2026-09-01" },
+  { id: "bill-7", srNo: 7, district: "Chandrapur", gatheringDetails: 0, inProcess: 11, completed: 6, totalBills: 17, notes: "6 bills completed, 11 in process", updatedAt: "2026-09-01" },
+  { id: "bill-8", srNo: 8, district: "Chhatrapati Sambhajinagar", gatheringDetails: 0, inProcess: 4, completed: 1, totalBills: 5, notes: "1 bill completed, 4 in process", updatedAt: "2026-09-01" },
+  { id: "bill-9", srNo: 9, district: "Dharashiv", gatheringDetails: 1, inProcess: 0, completed: 1, totalBills: 2, notes: "1 bill completed, 1 gathering details", updatedAt: "2026-09-01" },
+  { id: "bill-10", srNo: 10, district: "Dhule", gatheringDetails: 0, inProcess: 0, completed: 7, totalBills: 7, notes: "7 bills 100% completed", updatedAt: "2026-09-01" },
+  { id: "bill-11", srNo: 11, district: "Gadchiroli", gatheringDetails: 0, inProcess: 0, completed: 1, totalBills: 1, notes: "1 bill completed", updatedAt: "2026-09-01" },
+  { id: "bill-12", srNo: 12, district: "Gondia", gatheringDetails: 1, inProcess: 0, completed: 0, totalBills: 1, notes: "1 bill gathering details", updatedAt: "2026-09-01" },
+  { id: "bill-13", srNo: 13, district: "Hingoli", gatheringDetails: 0, inProcess: 1, completed: 0, totalBills: 1, notes: "1 bill in process", updatedAt: "2026-09-01" },
+  { id: "bill-14", srNo: 14, district: "Jalgaon", gatheringDetails: 0, inProcess: 1, completed: 2, totalBills: 3, notes: "2 bills completed, 1 in process", updatedAt: "2026-09-01" },
+  { id: "bill-15", srNo: 15, district: "Jalna", gatheringDetails: 1, inProcess: 0, completed: 0, totalBills: 1, notes: "1 bill gathering details", updatedAt: "2026-09-01" },
+  { id: "bill-16", srNo: 16, district: "Kolhapur", gatheringDetails: 0, inProcess: 1, completed: 1, totalBills: 2, notes: "1 bill completed, 1 in process", updatedAt: "2026-09-01" },
+  { id: "bill-17", srNo: 17, district: "Latur", gatheringDetails: 0, inProcess: 0, completed: 1, totalBills: 1, notes: "1 bill completed", updatedAt: "2026-09-01" },
+  { id: "bill-18", srNo: 18, district: "Nagpur", gatheringDetails: 1, inProcess: 4, completed: 2, totalBills: 6, notes: "2 bills completed, 4 in process, 1 gathering details", updatedAt: "2026-09-01" },
+  { id: "bill-19", srNo: 19, district: "Nanded", gatheringDetails: 0, inProcess: 3, completed: 0, totalBills: 3, notes: "3 bills in process", updatedAt: "2026-09-01" },
+  { id: "bill-20", srNo: 20, district: "Nandurbar", gatheringDetails: 0, inProcess: 3, completed: 0, totalBills: 3, notes: "3 bills in process", updatedAt: "2026-09-01" },
+  { id: "bill-21", srNo: 21, district: "Nashik", gatheringDetails: 0, inProcess: 0, completed: 1, totalBills: 1, notes: "1 bill completed", updatedAt: "2026-09-01" },
+  { id: "bill-22", srNo: 22, district: "Palghar", gatheringDetails: 0, inProcess: 0, completed: 1, totalBills: 1, notes: "1 bill completed", updatedAt: "2026-09-01" },
+  { id: "bill-23", srNo: 23, district: "Parbhani", gatheringDetails: 0, inProcess: 0, completed: 1, totalBills: 1, notes: "1 bill completed", updatedAt: "2026-09-01" },
+  { id: "bill-24", srNo: 24, district: "Pune", gatheringDetails: 0, inProcess: 1, completed: 0, totalBills: 1, notes: "1 bill in process", updatedAt: "2026-09-01" },
+  { id: "bill-25", srNo: 25, district: "Raigad", gatheringDetails: 0, inProcess: 1, completed: 0, totalBills: 1, notes: "1 bill in process", updatedAt: "2026-09-01" },
+  { id: "bill-26", srNo: 26, district: "Ratnagiri", gatheringDetails: 0, inProcess: 1, completed: 0, totalBills: 1, notes: "1 bill in process", updatedAt: "2026-09-01" },
+  { id: "bill-27", srNo: 27, district: "Sangli", gatheringDetails: 0, inProcess: 0, completed: 1, totalBills: 1, notes: "1 bill completed", updatedAt: "2026-09-01" },
+  { id: "bill-28", srNo: 28, district: "Satara", gatheringDetails: 0, inProcess: 0, completed: 6, totalBills: 6, notes: "6 bills 100% completed", updatedAt: "2026-09-01" },
+  { id: "bill-29", srNo: 29, district: "Sindhudurg", gatheringDetails: 0, inProcess: 1, completed: 0, totalBills: 1, notes: "1 bill in process", updatedAt: "2026-09-01" },
+  { id: "bill-30", srNo: 30, district: "Solapur", gatheringDetails: 0, inProcess: 1, completed: 0, totalBills: 1, notes: "1 bill in process", updatedAt: "2026-09-01" },
+  { id: "bill-31", srNo: 31, district: "Thane", gatheringDetails: 0, inProcess: 2, completed: 1, totalBills: 3, notes: "1 bill completed, 2 in process", updatedAt: "2026-09-01" },
+  { id: "bill-32", srNo: 32, district: "Wardha", gatheringDetails: 0, inProcess: 1, completed: 1, totalBills: 2, notes: "1 bill completed, 1 in process", updatedAt: "2026-09-01" },
+  { id: "bill-33", srNo: 33, district: "Washim", gatheringDetails: 0, inProcess: 0, completed: 4, totalBills: 4, notes: "4 bills 100% completed", updatedAt: "2026-09-01" },
+  { id: "bill-34", srNo: 34, district: "Yavatmal", gatheringDetails: 0, inProcess: 3, completed: 0, totalBills: 3, notes: "3 bills in process", updatedAt: "2026-09-01" },
+];
+
+function mergeDistrictBillsWithDefaults(existingBills = []) {
+  const existingMap = new Map();
+  (existingBills || []).forEach((b) => {
+    if (b && b.district) {
+      const lower = b.district.trim().toLowerCase();
+      const canonical = DISTRICT_ALIASES[lower] ? DISTRICT_ALIASES[lower].toLowerCase() : lower;
+      existingMap.set(canonical, b);
+      existingMap.set(lower, b);
+    }
+  });
+
+  return BILL_TRACKER_DEFAULT.map((def) => {
+    const key = def.district.trim().toLowerCase();
+    const existing = existingMap.get(key);
+    if (existing) {
+      const gathering = Number(existing.gatheringDetails ?? def.gatheringDetails ?? 0);
+      const inProc = Number(existing.inProcess ?? def.inProcess ?? 0);
+      const comp = Number(existing.completed ?? def.completed ?? 0);
+      return {
+        ...def,
+        ...existing,
+        id: existing.id || def.id,
+        district: def.district,
+        gatheringDetails: gathering,
+        inProcess: inProc,
+        completed: comp,
+        totalBills: gathering + inProc + comp,
+        notes: existing.notes !== undefined ? existing.notes : def.notes,
+        updatedAt: existing.updatedAt || def.updatedAt || todayISO(),
+      };
+    }
+    return {
+      ...def,
+    };
+  });
+}
+
 function seedTestPoints() {
   return [
     {
@@ -278,6 +355,7 @@ function seedData() {
     notifications: [],
     testPoints: seedTestPoints(),
     districts: mergeDistrictsWithDefaults([]),
+    districtBills: mergeDistrictBillsWithDefaults([]),
   };
 }
 
@@ -1031,6 +1109,145 @@ function DistrictForm({ initial, onSave, onCancel }) {
           onClick={() => f.name.trim() && onSave(f)}
         >
           Save District
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function DistrictBillForm({ initial, onSave, onCancel, isLight }) {
+  const [gathering, setGathering] = useState(initial?.gatheringDetails ?? 0);
+  const [inProcess, setInProcess] = useState(initial?.inProcess ?? 0);
+  const [completed, setCompleted] = useState(initial?.completed ?? 0);
+  const [notes, setNotes] = useState(initial?.notes || "");
+
+  const gVal = Math.max(0, parseInt(gathering, 10) || 0);
+  const pVal = Math.max(0, parseInt(inProcess, 10) || 0);
+  const cVal = Math.max(0, parseInt(completed, 10) || 0);
+  const total = gVal + pVal + cVal;
+  const pct = total > 0 ? Math.round((cVal / total) * 100) : 0;
+
+  return (
+    <div>
+      <div
+        style={{
+          padding: "12px 16px",
+          borderRadius: 8,
+          background: isLight ? "#f8fafc" : "rgba(255, 255, 255, 0.04)",
+          border: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
+          marginBottom: 16,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <div>
+          <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", textTransform: "uppercase", fontWeight: 700 }}>
+            Maharashtra Zilla Parishad #{initial?.srNo || ""}
+          </div>
+          <div style={{ fontSize: 16, color: isLight ? "#0f172a" : "#ffffff", fontWeight: 800, marginTop: 2 }}>
+            {initial?.district}
+          </div>
+        </div>
+        <div style={{ textAlign: "right" }}>
+          <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", textTransform: "uppercase", fontWeight: 700 }}>
+            Total Bills
+          </div>
+          <div style={{ fontSize: 22, color: "#ff334b", fontWeight: 900 }}>
+            {total}
+          </div>
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+        <FormField label="Gathering Details">
+          <input
+            type="number"
+            min="0"
+            style={{ ...darkInputStyle, textAlign: "center", fontSize: 16, fontWeight: 700 }}
+            value={gathering}
+            onChange={(e) => setGathering(e.target.value)}
+          />
+        </FormField>
+        <FormField label="In Process">
+          <input
+            type="number"
+            min="0"
+            style={{ ...darkInputStyle, textAlign: "center", fontSize: 16, fontWeight: 700 }}
+            value={inProcess}
+            onChange={(e) => setInProcess(e.target.value)}
+          />
+        </FormField>
+        <FormField label="Completed">
+          <input
+            type="number"
+            min="0"
+            style={{ ...darkInputStyle, textAlign: "center", fontSize: 16, fontWeight: 700 }}
+            value={completed}
+            onChange={(e) => setCompleted(e.target.value)}
+          />
+        </FormField>
+      </div>
+
+      {/* Dynamic Completion Rate Bar */}
+      <div
+        style={{
+          padding: "12px 14px",
+          borderRadius: 8,
+          background: isLight ? "#f1f5f9" : "rgba(255, 51, 75, 0.06)",
+          border: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 51, 75, 0.25)",
+          marginBottom: 16,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <TrendingUp size={15} color="#ff334b" />
+          <span style={{ fontSize: 12.5, fontWeight: 600, color: isLight ? "#334155" : "#e2e8f0" }}>
+            Completion Metric:{" "}
+            <strong style={{ color: pct === 100 ? "#22c55e" : pct > 0 ? "#38bdf8" : "#94a3b8" }}>
+              {pct}% Completed
+            </strong>
+          </span>
+        </div>
+        <span style={{ fontSize: 12, color: isLight ? "#64748b" : "#94a3b8" }}>
+          {cVal} of {total} bills cleared
+        </span>
+      </div>
+
+      <FormField label="District Remarks / Operational Notes">
+        <textarea
+          style={{ ...darkInputStyle, minHeight: 65, resize: "vertical" }}
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="e.g. 1 bill completed; 4 bills undergoing treasury audit."
+        />
+      </FormField>
+
+      <div style={{ display: "flex", gap: 10, marginTop: 20, justifyContent: "flex-end" }}>
+        <button
+          className="btn-ghost-dark"
+          style={{ padding: "9px 18px", fontSize: 13, fontWeight: 500 }}
+          onClick={onCancel}
+        >
+          Cancel
+        </button>
+        <button
+          className="btn-red-gradient"
+          style={{ padding: "9px 20px", fontSize: 13 }}
+          onClick={() => {
+            onSave({
+              ...initial,
+              gatheringDetails: gVal,
+              inProcess: pVal,
+              completed: cVal,
+              totalBills: total,
+              notes,
+            });
+          }}
+        >
+          Save Bill Counts
         </button>
       </div>
     </div>
@@ -1952,6 +2169,8 @@ export default function App() {
   const [qaTestStatus, setQaTestStatus] = useState("All Test Statuses");
   const [qaDevStatus, setQaDevStatus] = useState("All Dev Statuses");
   const [qaSearch, setQaSearch] = useState("");
+  const [billFilterStatus, setBillFilterStatus] = useState("All Districts");
+  const [billSearch, setBillSearch] = useState("");
   const saveTimer = useRef(null);
 
   const [theme, setTheme] = useState(() => {
@@ -1983,6 +2202,7 @@ export default function App() {
   useEffect(() => {
     let mounted = true;
     let hasAutoMigratedDistricts = false;
+    let hasAutoMigratedBills = false;
     const unsub = onSnapshot(
       DOC_REF(),
       (snap) => {
@@ -2005,6 +2225,16 @@ export default function App() {
             );
           }
 
+          // Auto-migrate District Bills if not yet stored or incomplete
+          const existingBills = Array.isArray(fetched.districtBills) ? fetched.districtBills : [];
+          const fullDistrictBills = mergeDistrictBillsWithDefaults(existingBills);
+          if (!hasAutoMigratedBills && (!fetched.districtBills || existingBills.length < fullDistrictBills.length)) {
+            hasAutoMigratedBills = true;
+            setDoc(DOC_REF(), { districtBills: fullDistrictBills }, { merge: true }).catch((err) =>
+              console.warn("Auto-sync district bills to Firestore error:", err)
+            );
+          }
+
           const rawIssues = Array.isArray(fetched.issues) ? fetched.issues : [];
           const normalizedIssues = rawIssues.map((i) =>
             i && i.district && i.district.toLowerCase() === "ahmednagar"
@@ -2016,6 +2246,7 @@ export default function App() {
             issues: normalizedIssues,
             tasks: Array.isArray(fetched.tasks) ? fetched.tasks : [],
             districts: fullDistricts,
+            districtBills: fullDistrictBills,
             notifications: Array.isArray(fetched.notifications) ? fetched.notifications : [],
             testPoints:
               Array.isArray(fetched.testPoints) && fetched.testPoints.length > 0
@@ -2378,6 +2609,58 @@ export default function App() {
     return true;
   });
 
+  // District Bill Matrix filtering & calculations
+  const allDistrictBills = data?.districtBills || BILL_TRACKER_DEFAULT;
+  const totalBillsCount = allDistrictBills.reduce(
+    (acc, b) => acc + (Number(b.gatheringDetails || 0) + Number(b.inProcess || 0) + Number(b.completed || 0)),
+    0
+  );
+  const gatheringBillsCount = allDistrictBills.reduce((acc, b) => acc + Number(b.gatheringDetails || 0), 0);
+  const inProcessBillsCount = allDistrictBills.reduce((acc, b) => acc + Number(b.inProcess || 0), 0);
+  const completedBillsCount = allDistrictBills.reduce((acc, b) => acc + Number(b.completed || 0), 0);
+
+  const filteredDistrictBills = allDistrictBills.filter((b) => {
+    const total = Number(b.gatheringDetails || 0) + Number(b.inProcess || 0) + Number(b.completed || 0);
+    const completed = Number(b.completed || 0);
+    const inProc = Number(b.inProcess || 0);
+    const gathering = Number(b.gatheringDetails || 0);
+
+    if (billFilterStatus === "100% Completed" && (total === 0 || completed !== total)) return false;
+    if (billFilterStatus === "In Process" && inProc === 0) return false;
+    if (billFilterStatus === "Gathering Details" && gathering === 0) return false;
+    if (billFilterStatus === "Zero Bills" && total > 0) return false;
+    if (billFilterStatus === "Active Bills (>0)" && total === 0) return false;
+
+    if (billSearch.trim()) {
+      const bq = billSearch.trim().toLowerCase();
+      const haystack = [b.district, b.notes || "", String(total), String(completed), String(inProc), String(gathering)]
+        .join(" ")
+        .toLowerCase();
+      if (!haystack.includes(bq)) return false;
+    }
+    return true;
+  });
+
+  const saveDistrictBill = (updatedBill) => {
+    const gathering = Math.max(0, parseInt(updatedBill.gatheringDetails, 10) || 0);
+    const inProcess = Math.max(0, parseInt(updatedBill.inProcess, 10) || 0);
+    const completed = Math.max(0, parseInt(updatedBill.completed, 10) || 0);
+    const total = gathering + inProcess + completed;
+
+    const withCalc = {
+      ...updatedBill,
+      gatheringDetails: gathering,
+      inProcess: inProcess,
+      completed: completed,
+      totalBills: total,
+      updatedAt: todayISO(),
+      lastUpdatedBy: currentUser?.name || "Sudhanshu Khande",
+    };
+    const currentList = data?.districtBills || BILL_TRACKER_DEFAULT;
+    const updatedList = currentList.map((b) => (b.id === updatedBill.id || b.district === updatedBill.district ? withCalc : b));
+    persist({ ...data, districtBills: updatedList });
+  };
+
   // My Personal Desk filtering
   const myIssues = (data?.issues || []).filter((i) => i.assignee === currentUser?.name);
   const myOpenIssues = myIssues.filter((i) => i.status !== "Resolved").length;
@@ -2393,6 +2676,7 @@ export default function App() {
   const navItems = [
     { key: "my_desk", label: "My Desk & Tasks", icon: UserCheck, count: myOpenIssues + myPendingTasks, highlight: true },
     { key: "test_hub", label: "QA Test Matrix", icon: FileSpreadsheet, count: failedTestPointsCount, isAlert: failedTestPointsCount > 0 },
+    { key: "bill_tracker", label: "Bill Tracker Matrix", icon: Receipt, count: totalBillsCount },
     { key: "dashboard", label: "Operations Deck", icon: LayoutGrid },
     { key: "issues", label: "Issues Matrix", icon: AlertTriangle, count: openIssues, isAlert: criticalOpen > 0 },
     { key: "tasks", label: "Task Directives", icon: ListChecks, count: pendingTasks },
@@ -2788,6 +3072,8 @@ export default function App() {
                 ? `Assigned directives and active defects for ${currentUser?.name || "User"}`
                 : tab === "test_hub"
                 ? "Unified QA Test Matrix, Google Sheet sync, and developer defect resolution log"
+                : tab === "bill_tracker"
+                ? "Live district-wise bill progress across all 34 fixed Maharashtra ZP jurisdictions (As of 01-Sep-2026 EOD)"
                 : "District rollouts, live defect tracking, and sprint task register"}
             </p>
           </div>
@@ -3006,7 +3292,18 @@ export default function App() {
             )}
 
             {/* View Actions */}
-            {tab === "test_hub" ? (
+            {tab === "bill_tracker" ? (
+              <button
+                className="btn-ghost-dark"
+                onClick={() => exportBillsCSV(allDistrictBills)}
+                style={{ padding: "8px 16px" }}
+                title="Export District Bill Matrix to CSV spreadsheet"
+              >
+                <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
+                  <Download size={14} /> Export CSV
+                </span>
+              </button>
+            ) : tab === "test_hub" ? (
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <button
                   className="btn-red-gradient"
@@ -3079,8 +3376,24 @@ export default function App() {
             criticalOpen={criticalOpen}
             pendingTasks={pendingTasks}
             liveDistrictsCount={liveDistrictsCount}
+            totalBillsCount={totalBillsCount}
+            completedBillsCount={completedBillsCount}
             onGo={setTab}
             onOpenModal={setModal}
+          />
+        )}
+
+        {tab === "bill_tracker" && (
+          <BillTrackerView
+            bills={filteredDistrictBills}
+            allBills={allDistrictBills}
+            onEditBill={(b) => setModal({ type: "edit_bill", editing: b })}
+            onExportCSV={() => exportBillsCSV(allDistrictBills)}
+            filterStatus={billFilterStatus}
+            setFilterStatus={setBillFilterStatus}
+            searchQuery={billSearch}
+            setSearchQuery={setBillSearch}
+            isLight={isLight}
           />
         )}
 
@@ -3214,6 +3527,24 @@ export default function App() {
             initial={modal.editing}
             onSave={(resolution) => resolveTestPoint(modal.editing.id, resolution)}
             onCancel={() => setModal(null)}
+          />
+        </Modal>
+      )}
+
+      {modal?.type === "edit_bill" && (
+        <Modal
+          title={`Update Bill Counts: ${modal.editing?.district || "District"}`}
+          icon={Receipt}
+          onClose={() => setModal(null)}
+        >
+          <DistrictBillForm
+            initial={modal.editing}
+            onSave={(updated) => {
+              saveDistrictBill(updated);
+              setModal(null);
+            }}
+            onCancel={() => setModal(null)}
+            isLight={isLight}
           />
         </Modal>
       )}
@@ -3439,18 +3770,31 @@ function StatMetricCard({ title, value, subtitle, icon: Icon, tone = "default", 
   );
 }
 
-function Dashboard({ data, openIssues, criticalOpen, pendingTasks, liveDistrictsCount, onGo, onOpenModal }) {
+function Dashboard({
+  data,
+  openIssues,
+  criticalOpen,
+  pendingTasks,
+  liveDistrictsCount,
+  totalBillsCount,
+  completedBillsCount,
+  onGo,
+  onOpenModal,
+}) {
   const recentIssues = [...(data?.issues || [])]
     .sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""))
     .slice(0, 6);
 
   const totalDistricts = (data?.districts || []).length || 1;
   const rolloutPercentage = Math.round((liveDistrictsCount / totalDistricts) * 100);
+  const billsTotal = totalBillsCount ?? (data?.districtBills || BILL_TRACKER_DEFAULT).reduce((acc, b) => acc + (Number(b.gatheringDetails || 0) + Number(b.inProcess || 0) + Number(b.completed || 0)), 0);
+  const billsComp = completedBillsCount ?? (data?.districtBills || BILL_TRACKER_DEFAULT).reduce((acc, b) => acc + Number(b.completed || 0), 0);
+  const billsPct = billsTotal > 0 ? Math.round((billsComp / billsTotal) * 100) : 0;
 
   return (
     <div>
-      {/* 4 High-Graphic Stat Cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16, marginBottom: 28 }}>
+      {/* 5 High-Graphic Stat Cards */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16, marginBottom: 28 }}>
         <StatMetricCard
           title="Open Issues"
           value={openIssues}
@@ -3481,6 +3825,14 @@ function Dashboard({ data, openIssues, criticalOpen, pendingTasks, liveDistricts
           icon={MapPin}
           tone={liveDistrictsCount === totalDistricts ? "success" : "default"}
           onClick={() => onGo("districts")}
+        />
+        <StatMetricCard
+          title="District Bill Tracker"
+          value={billsTotal}
+          subtitle={`${billsComp} cleared across 34 ZPs (${billsPct}%)`}
+          icon={Receipt}
+          tone="default"
+          onClick={() => onGo("bill_tracker")}
         />
       </div>
 
@@ -4542,6 +4894,919 @@ function TestHubView({
             </div>
           ))
         )}
+      </div>
+    </div>
+  );
+}
+
+/* ---------------------------- District Bill Tracker Matrix ---------------------------- */
+
+function exportBillsCSV(bills = []) {
+  const headers = [
+    "Sr. No.",
+    "District / Location",
+    "Total Bills",
+    "Gathering Details",
+    "In Process",
+    "Completed",
+    "% Completed",
+  ];
+
+  const rows = bills.map((b, idx) => {
+    const total =
+      Number(b.gatheringDetails || 0) +
+      Number(b.inProcess || 0) +
+      Number(b.completed || 0);
+    const completed = Number(b.completed || 0);
+    const pct = total > 0 ? `${Math.round((completed / total) * 100)}%` : "";
+    return [
+      idx + 1,
+      `"${(b.district || "").replace(/"/g, '""')}"`,
+      total,
+      Number(b.gatheringDetails || 0),
+      Number(b.inProcess || 0),
+      completed,
+      `"${pct}"`,
+    ].join(",");
+  });
+
+  const totalAll = bills.reduce(
+    (acc, b) =>
+      acc +
+      (Number(b.gatheringDetails || 0) +
+        Number(b.inProcess || 0) +
+        Number(b.completed || 0)),
+    0
+  );
+  const gatheringAll = bills.reduce((acc, b) => acc + Number(b.gatheringDetails || 0), 0);
+  const inProcessAll = bills.reduce((acc, b) => acc + Number(b.inProcess || 0), 0);
+  const completedAll = bills.reduce((acc, b) => acc + Number(b.completed || 0), 0);
+  const overallPct = totalAll > 0 ? `${Math.round((completedAll / totalAll) * 100)}%` : "0%";
+
+  const totalRow = [
+    "",
+    "TOTAL",
+    totalAll,
+    gatheringAll,
+    inProcessAll,
+    completedAll,
+    `"${overallPct}"`,
+  ].join(",");
+
+  const csvContent =
+    "\uFEFF" +
+    [
+      "District-wise Summary - Fixed 34 Locations (Auto-calculated from Bill Tracker)",
+      `All 34 districts always shown. Counts update automatically from Bill Tracker. Data as of 01-Sep-2026 EOD. Exported: ${new Date().toLocaleDateString("en-IN")}.`,
+      "",
+      headers.join(","),
+      ...rows,
+      totalRow,
+      "",
+      "Tip: Filter Bill Tracker by District to see all bills under one location. Add new bills anytime - this summary updates automatically.",
+    ].join("\r\n");
+
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `ZPBDMS_District_Bill_Tracker_${todayISO()}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function BillTrackerView({
+  bills,
+  allBills,
+  onEditBill,
+  onExportCSV,
+  filterStatus,
+  setFilterStatus,
+  searchQuery,
+  setSearchQuery,
+  isLight,
+}) {
+  const totalAll = allBills.reduce(
+    (acc, b) =>
+      acc +
+      (Number(b.gatheringDetails || 0) +
+        Number(b.inProcess || 0) +
+        Number(b.completed || 0)),
+    0
+  );
+  const gatheringAll = allBills.reduce((acc, b) => acc + Number(b.gatheringDetails || 0), 0);
+  const inProcessAll = allBills.reduce((acc, b) => acc + Number(b.inProcess || 0), 0);
+  const completedAll = allBills.reduce((acc, b) => acc + Number(b.completed || 0), 0);
+  const overallPct = totalAll > 0 ? Math.round((completedAll / totalAll) * 100) : 0;
+
+  const completedDistrictsCount = allBills.filter((b) => {
+    const total = Number(b.gatheringDetails || 0) + Number(b.inProcess || 0) + Number(b.completed || 0);
+    return total > 0 && Number(b.completed || 0) === total;
+  }).length;
+
+  const filterOptions = [
+    { label: "All Districts", count: allBills.length },
+    { label: "100% Completed", count: completedDistrictsCount },
+    { label: "In Process", count: allBills.filter((b) => Number(b.inProcess || 0) > 0).length },
+    { label: "Gathering Details", count: allBills.filter((b) => Number(b.gatheringDetails || 0) > 0).length },
+    {
+      label: "Zero Bills",
+      count: allBills.filter(
+        (b) =>
+          Number(b.gatheringDetails || 0) +
+            Number(b.inProcess || 0) +
+            Number(b.completed || 0) ===
+          0
+      ).length,
+    },
+    {
+      label: "Active Bills (>0)",
+      count: allBills.filter(
+        (b) =>
+          Number(b.gatheringDetails || 0) +
+            Number(b.inProcess || 0) +
+            Number(b.completed || 0) >
+          0
+      ).length,
+    },
+  ];
+
+  return (
+    <div>
+      {/* 4 High-Graphic Stat KPI Cards */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+          gap: 16,
+          marginBottom: 20,
+        }}
+      >
+        {/* Total Bills */}
+        <div className="glass-card" style={{ padding: "18px 20px", position: "relative" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", textTransform: "uppercase", fontWeight: 700 }}>
+              Total Bills Registered
+            </span>
+            <Receipt size={17} color="#ff334b" />
+          </div>
+          <div style={{ fontSize: 30, fontWeight: 900, color: isLight ? "#0f172a" : "#ffffff", marginTop: 8 }}>
+            {totalAll}
+          </div>
+          <div style={{ fontSize: 12, color: isLight ? "#64748b" : "#94a3b8", marginTop: 4 }}>
+            Across all 34 fixed Maharashtra ZPs
+          </div>
+        </div>
+
+        {/* Gathering Details */}
+        <div
+          className="glass-card"
+          style={{
+            padding: "18px 20px",
+            background: isLight ? "#fffbeb" : "rgba(245, 158, 11, 0.08)",
+            border: isLight ? "1px solid #fde68a" : "1px solid rgba(245, 158, 11, 0.3)",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 11, color: "#d97706", textTransform: "uppercase", fontWeight: 700 }}>
+              Gathering Details
+            </span>
+            <AlertCircle size={17} color="#f59e0b" />
+          </div>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 8 }}>
+            <div style={{ fontSize: 30, fontWeight: 900, color: "#d97706" }}>{gatheringAll}</div>
+            <div style={{ fontSize: 12, color: isLight ? "#92400e" : "#fbbf24" }}>
+              ({totalAll > 0 ? Math.round((gatheringAll / totalAll) * 100) : 0}%)
+            </div>
+          </div>
+          <div style={{ fontSize: 12, color: isLight ? "#78350f" : "#fcd34d", marginTop: 4 }}>
+            Pending vendor or field specifications
+          </div>
+        </div>
+
+        {/* In Process */}
+        <div
+          className="glass-card"
+          style={{
+            padding: "18px 20px",
+            background: isLight ? "#f0f9ff" : "rgba(56, 189, 248, 0.08)",
+            border: isLight ? "1px solid #bae6fd" : "1px solid rgba(56, 189, 248, 0.3)",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 11, color: "#0284c7", textTransform: "uppercase", fontWeight: 700 }}>
+              In Process
+            </span>
+            <TrendingUp size={17} color="#0284c7" />
+          </div>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 8 }}>
+            <div style={{ fontSize: 30, fontWeight: 900, color: "#0284c7" }}>{inProcessAll}</div>
+            <div style={{ fontSize: 12, color: isLight ? "#0369a1" : "#7dd3fc" }}>
+              ({totalAll > 0 ? Math.round((inProcessAll / totalAll) * 100) : 0}%)
+            </div>
+          </div>
+          <div style={{ fontSize: 12, color: isLight ? "#075985" : "#bae6fd", marginTop: 4 }}>
+            Active in treasury & clearance workflow
+          </div>
+        </div>
+
+        {/* Completed */}
+        <div
+          className="glass-card"
+          style={{
+            padding: "18px 20px",
+            background: isLight ? "#f0fdf4" : "rgba(34, 197, 94, 0.08)",
+            border: isLight ? "1px solid #bbf7d0" : "1px solid rgba(34, 197, 94, 0.3)",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 11, color: "#16a34a", textTransform: "uppercase", fontWeight: 700 }}>
+              Completed / Cleared
+            </span>
+            <CheckCircle size={17} color="#16a34a" />
+          </div>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 8 }}>
+            <div style={{ fontSize: 30, fontWeight: 900, color: "#16a34a" }}>{completedAll}</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#16a34a" }}>
+              ({overallPct}% Overall)
+            </div>
+          </div>
+          {/* Progress bar */}
+          <div
+            style={{
+              width: "100%",
+              height: 5,
+              background: isLight ? "#e2e8f0" : "rgba(255, 255, 255, 0.1)",
+              borderRadius: 3,
+              marginTop: 8,
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                width: `${overallPct}%`,
+                height: "100%",
+                background: "#22c55e",
+                borderRadius: 3,
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Filter Toolbar & Search */}
+      <div
+        className="glass-card"
+        style={{
+          padding: "14px 18px",
+          marginBottom: 16,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: 14,
+        }}
+      >
+        {/* Filter Pills */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          {filterOptions.map((opt) => {
+            const active = filterStatus === opt.label;
+            return (
+              <button
+                key={opt.label}
+                onClick={() => setFilterStatus(opt.label)}
+                style={{
+                  border: active
+                    ? "1px solid rgba(255, 51, 75, 0.5)"
+                    : isLight
+                    ? "1px solid #cbd5e1"
+                    : "1px solid rgba(255, 255, 255, 0.08)",
+                  background: active
+                    ? isLight
+                      ? "rgba(255, 51, 75, 0.12)"
+                      : "rgba(255, 51, 75, 0.18)"
+                    : isLight
+                    ? "#ffffff"
+                    : "rgba(255, 255, 255, 0.03)",
+                  color: active ? "#ff334b" : isLight ? "#475569" : "#94a3b8",
+                  padding: "6px 12px",
+                  borderRadius: 20,
+                  fontSize: 12,
+                  fontWeight: active ? 700 : 500,
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  transition: "all 0.15s ease",
+                }}
+              >
+                <span>{opt.label}</span>
+                <span
+                  style={{
+                    fontSize: 10.5,
+                    padding: "1px 6px",
+                    borderRadius: 10,
+                    background: active
+                      ? "#ff334b"
+                      : isLight
+                      ? "#e2e8f0"
+                      : "rgba(255, 255, 255, 0.08)",
+                    color: active ? "#ffffff" : isLight ? "#475569" : "#cbd5e1",
+                    fontWeight: 700,
+                  }}
+                >
+                  {opt.count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Search & Export Actions */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flex: "1 1 240px", justifyContent: "flex-end" }}>
+          <div style={{ position: "relative", minWidth: 200, maxWidth: 300, flex: 1 }}>
+            <Search
+              size={14}
+              style={{
+                position: "absolute",
+                left: 10,
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: isLight ? "#64748b" : "#94a3b8",
+              }}
+            />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search district, counts..."
+              style={{
+                ...darkInputStyle,
+                padding: "7px 10px 7px 32px",
+                fontSize: 12.5,
+                borderRadius: 20,
+              }}
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                style={{
+                  position: "absolute",
+                  right: 8,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "transparent",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "#94a3b8",
+                  padding: 2,
+                }}
+              >
+                <X size={13} />
+              </button>
+            )}
+          </div>
+
+          <button
+            className="btn-ghost-dark"
+            onClick={onExportCSV}
+            style={{ padding: "7px 14px", fontSize: 12, display: "inline-flex", alignItems: "center", gap: 6 }}
+            title="Download full 34 district bill register as Excel-compatible CSV"
+          >
+            <Download size={13} /> Export CSV
+          </button>
+        </div>
+      </div>
+
+      {/* Main District Matrix Table */}
+      <div className="glass-card" style={{ overflow: "hidden" }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "65px 1.8fr 110px 130px 110px 110px 140px 140px 100px",
+            padding: "12px 18px",
+            borderBottom: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
+            fontSize: 11,
+            fontWeight: 700,
+            textTransform: "uppercase",
+            letterSpacing: "0.5px",
+            color: isLight ? "#475569" : "#94a3b8",
+            alignItems: "center",
+          }}
+        >
+          <div style={{ textAlign: "center" }}>Sr. No.</div>
+          <div>District / Location</div>
+          <div style={{ textAlign: "center" }}>Total Bills</div>
+          <div style={{ textAlign: "center" }}>Gathering Details</div>
+          <div style={{ textAlign: "center" }}>In Process</div>
+          <div style={{ textAlign: "center" }}>Completed</div>
+          <div style={{ textAlign: "center" }}>% Completed</div>
+          <div style={{ textAlign: "center" }}>Rollout Status</div>
+          <div style={{ textAlign: "right" }}>Actions</div>
+        </div>
+
+        {bills.length === 0 ? (
+          <div style={{ padding: "40px 20px", textAlign: "center", color: isLight ? "#64748b" : "#94a3b8" }}>
+            <Receipt size={32} style={{ margin: "0 auto 10px", opacity: 0.4 }} />
+            <div style={{ fontSize: 14, fontWeight: 600 }}>No district records match the active filter</div>
+            <button
+              onClick={() => {
+                setFilterStatus("All Districts");
+                setSearchQuery("");
+              }}
+              style={{
+                marginTop: 10,
+                background: "transparent",
+                border: "none",
+                color: "#ff334b",
+                cursor: "pointer",
+                fontSize: 12.5,
+                fontWeight: 600,
+              }}
+            >
+              Reset Filters
+            </button>
+          </div>
+        ) : (
+          bills.map((b, idx) => {
+            const total =
+              Number(b.gatheringDetails || 0) +
+              Number(b.inProcess || 0) +
+              Number(b.completed || 0);
+            const gathering = Number(b.gatheringDetails || 0);
+            const inProc = Number(b.inProcess || 0);
+            const comp = Number(b.completed || 0);
+            const pct = total > 0 ? Math.round((comp / total) * 100) : 0;
+            const isFinished = total > 0 && comp === total;
+            const isZero = total === 0;
+
+            return (
+              <div
+                key={b.id || b.district}
+                className="custom-table-row"
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "65px 1.8fr 110px 130px 110px 110px 140px 140px 100px",
+                  padding: "12px 18px",
+                  borderBottom: isLight ? "1px solid #f1f5f9" : "1px solid rgba(255, 255, 255, 0.04)",
+                  alignItems: "center",
+                  fontSize: 13,
+                  transition: "background 0.15s ease",
+                }}
+              >
+                {/* Sr. No. */}
+                <div
+                  style={{
+                    textAlign: "center",
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: 11.5,
+                    color: isLight ? "#64748b" : "#64748b",
+                    fontWeight: 600,
+                  }}
+                >
+                  #{String(b.srNo || idx + 1).padStart(2, "0")}
+                </div>
+
+                {/* District Name */}
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div
+                    style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: 6,
+                      background: isFinished
+                        ? "rgba(34, 197, 94, 0.12)"
+                        : isZero
+                        ? isLight ? "#e2e8f0" : "rgba(255, 255, 255, 0.05)"
+                        : "rgba(255, 51, 75, 0.1)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: isFinished ? "#22c55e" : isZero ? "#64748b" : "#ff334b",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <Landmark size={14} />
+                  </div>
+                  <div>
+                    <div style={{ fontWeight: 700, color: isLight ? "#0f172a" : "#ffffff", fontSize: 13.5 }}>
+                      {b.district}
+                    </div>
+                    {b.notes && (
+                      <div
+                        style={{
+                          fontSize: 11,
+                          color: isLight ? "#64748b" : "#94a3b8",
+                          marginTop: 1,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: 260,
+                        }}
+                        title={b.notes}
+                      >
+                        {b.notes}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Total Bills */}
+                <div style={{ textAlign: "center" }}>
+                  <span
+                    style={{
+                      display: "inline-block",
+                      padding: "3px 10px",
+                      borderRadius: 6,
+                      background: isZero
+                        ? isLight ? "#f1f5f9" : "rgba(255, 255, 255, 0.04)"
+                        : isLight ? "#f8fafc" : "rgba(255, 255, 255, 0.08)",
+                      border: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.12)",
+                      fontFamily: "'JetBrains Mono', monospace",
+                      fontWeight: 800,
+                      fontSize: 13,
+                      color: isZero ? "#94a3b8" : isLight ? "#0f172a" : "#ffffff",
+                    }}
+                  >
+                    {total}
+                  </span>
+                </div>
+
+                {/* Gathering Details */}
+                <div style={{ textAlign: "center" }}>
+                  {gathering > 0 ? (
+                    <span
+                      style={{
+                        display: "inline-block",
+                        padding: "3px 10px",
+                        borderRadius: 6,
+                        background: "rgba(245, 158, 11, 0.14)",
+                        border: "1px solid rgba(245, 158, 11, 0.35)",
+                        fontFamily: "'JetBrains Mono', monospace",
+                        fontWeight: 800,
+                        fontSize: 13,
+                        color: "#f59e0b",
+                      }}
+                    >
+                      {gathering}
+                    </span>
+                  ) : (
+                    <span style={{ color: isLight ? "#94a3b8" : "#475569", fontSize: 13 }}>0</span>
+                  )}
+                </div>
+
+                {/* In Process */}
+                <div style={{ textAlign: "center" }}>
+                  {inProc > 0 ? (
+                    <span
+                      style={{
+                        display: "inline-block",
+                        padding: "3px 10px",
+                        borderRadius: 6,
+                        background: "rgba(56, 189, 248, 0.14)",
+                        border: "1px solid rgba(56, 189, 248, 0.35)",
+                        fontFamily: "'JetBrains Mono', monospace",
+                        fontWeight: 800,
+                        fontSize: 13,
+                        color: "#38bdf8",
+                      }}
+                    >
+                      {inProc}
+                    </span>
+                  ) : (
+                    <span style={{ color: isLight ? "#94a3b8" : "#475569", fontSize: 13 }}>0</span>
+                  )}
+                </div>
+
+                {/* Completed */}
+                <div style={{ textAlign: "center" }}>
+                  {comp > 0 ? (
+                    <span
+                      style={{
+                        display: "inline-block",
+                        padding: "3px 10px",
+                        borderRadius: 6,
+                        background: "rgba(34, 197, 94, 0.14)",
+                        border: "1px solid rgba(34, 197, 94, 0.35)",
+                        fontFamily: "'JetBrains Mono', monospace",
+                        fontWeight: 800,
+                        fontSize: 13,
+                        color: "#22c55e",
+                      }}
+                    >
+                      {comp}
+                    </span>
+                  ) : (
+                    <span style={{ color: isLight ? "#94a3b8" : "#475569", fontSize: 13 }}>0</span>
+                  )}
+                </div>
+
+                {/* % Completed */}
+                <div style={{ textAlign: "center" }}>
+                  {total > 0 ? (
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                      <span
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 800,
+                          color: isFinished ? "#22c55e" : pct > 0 ? "#38bdf8" : "#94a3b8",
+                        }}
+                      >
+                        {pct}%
+                      </span>
+                      <div
+                        style={{
+                          width: 65,
+                          height: 4,
+                          background: isLight ? "#e2e8f0" : "rgba(255, 255, 255, 0.08)",
+                          borderRadius: 2,
+                          overflow: "hidden",
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: `${pct}%`,
+                            height: "100%",
+                            background: isFinished ? "#22c55e" : "#38bdf8",
+                            borderRadius: 2,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <span style={{ color: isLight ? "#94a3b8" : "#475569" }}>-</span>
+                  )}
+                </div>
+
+                {/* Status Chip */}
+                <div style={{ textAlign: "center" }}>
+                  {isZero ? (
+                    <span
+                      style={{
+                        padding: "3px 8px",
+                        borderRadius: 12,
+                        background: isLight ? "#f1f5f9" : "rgba(255, 255, 255, 0.05)",
+                        color: isLight ? "#64748b" : "#94a3b8",
+                        fontSize: 11,
+                        fontWeight: 600,
+                        border: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.1)",
+                      }}
+                    >
+                      Zero Bills
+                    </span>
+                  ) : isFinished ? (
+                    <span
+                      style={{
+                        padding: "3px 8px",
+                        borderRadius: 12,
+                        background: "rgba(34, 197, 94, 0.14)",
+                        color: "#22c55e",
+                        fontSize: 11,
+                        fontWeight: 700,
+                        border: "1px solid rgba(34, 197, 94, 0.35)",
+                      }}
+                    >
+                      100% Cleared
+                    </span>
+                  ) : inProc > 0 && comp > 0 ? (
+                    <span
+                      style={{
+                        padding: "3px 8px",
+                        borderRadius: 12,
+                        background: "rgba(168, 85, 247, 0.14)",
+                        color: "#a855f7",
+                        fontSize: 11,
+                        fontWeight: 700,
+                        border: "1px solid rgba(168, 85, 247, 0.35)",
+                      }}
+                    >
+                      Partial ({comp}/{total})
+                    </span>
+                  ) : inProc > 0 ? (
+                    <span
+                      style={{
+                        padding: "3px 8px",
+                        borderRadius: 12,
+                        background: "rgba(56, 189, 248, 0.14)",
+                        color: "#38bdf8",
+                        fontSize: 11,
+                        fontWeight: 700,
+                        border: "1px solid rgba(56, 189, 248, 0.35)",
+                      }}
+                    >
+                      In Processing
+                    </span>
+                  ) : (
+                    <span
+                      style={{
+                        padding: "3px 8px",
+                        borderRadius: 12,
+                        background: "rgba(245, 158, 11, 0.14)",
+                        color: "#f59e0b",
+                        fontSize: 11,
+                        fontWeight: 700,
+                        border: "1px solid rgba(245, 158, 11, 0.35)",
+                      }}
+                    >
+                      Gathering Info
+                    </span>
+                  )}
+                </div>
+
+                {/* Actions */}
+                <div style={{ textAlign: "right" }}>
+                  <button
+                    onClick={() => onEditBill(b)}
+                    style={{
+                      background: "rgba(255, 51, 75, 0.1)",
+                      border: "1px solid rgba(255, 51, 75, 0.3)",
+                      color: "#ff6479",
+                      borderRadius: 6,
+                      padding: "4px 9px",
+                      fontSize: 11.5,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 5,
+                      transition: "all 0.15s ease",
+                    }}
+                    title={`Edit bill count figures for ${b.district}`}
+                  >
+                    <Pencil size={12} /> Edit
+                  </button>
+                </div>
+              </div>
+            );
+          })
+        )}
+
+        {/* Dedicated TOTAL Summary Row matching exact CSV numbers */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "65px 1.8fr 110px 130px 110px 110px 140px 140px 100px",
+            padding: "14px 18px",
+            background: isLight ? "#f8fafc" : "rgba(255, 51, 75, 0.05)",
+            borderTop: isLight ? "2px solid #e2e8f0" : "2px solid rgba(255, 51, 75, 0.3)",
+            alignItems: "center",
+            fontSize: 13,
+            fontWeight: 800,
+          }}
+        >
+          <div style={{ textAlign: "center", color: "#ff334b" }}>
+            <BarChart2 size={16} style={{ margin: "0 auto" }} />
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: 14, fontWeight: 900, color: isLight ? "#0f172a" : "#ffffff", letterSpacing: "0.5px" }}>
+              STATEWIDE TOTAL (34 ZPs)
+            </span>
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <span
+              style={{
+                display: "inline-block",
+                padding: "4px 12px",
+                borderRadius: 6,
+                background: "#ff334b",
+                color: "#ffffff",
+                fontFamily: "'JetBrains Mono', monospace",
+                fontWeight: 900,
+                fontSize: 14,
+              }}
+            >
+              {totalAll}
+            </span>
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <span
+              style={{
+                display: "inline-block",
+                padding: "3px 10px",
+                borderRadius: 6,
+                background: "rgba(245, 158, 11, 0.2)",
+                color: "#d97706",
+                fontFamily: "'JetBrains Mono', monospace",
+                fontWeight: 900,
+                fontSize: 14,
+              }}
+            >
+              {gatheringAll}
+            </span>
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <span
+              style={{
+                display: "inline-block",
+                padding: "3px 10px",
+                borderRadius: 6,
+                background: "rgba(56, 189, 248, 0.2)",
+                color: "#0284c7",
+                fontFamily: "'JetBrains Mono', monospace",
+                fontWeight: 900,
+                fontSize: 14,
+              }}
+            >
+              {inProcessAll}
+            </span>
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <span
+              style={{
+                display: "inline-block",
+                padding: "3px 10px",
+                borderRadius: 6,
+                background: "rgba(34, 197, 94, 0.2)",
+                color: "#16a34a",
+                fontFamily: "'JetBrains Mono', monospace",
+                fontWeight: 900,
+                fontSize: 14,
+              }}
+            >
+              {completedAll}
+            </span>
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+              <span style={{ fontSize: 13, fontWeight: 900, color: "#16a34a" }}>
+                {overallPct}%
+              </span>
+              <div
+                style={{
+                  width: 70,
+                  height: 4,
+                  background: isLight ? "#cbd5e1" : "rgba(255, 255, 255, 0.15)",
+                  borderRadius: 2,
+                  overflow: "hidden",
+                }}
+              >
+                <div style={{ width: `${overallPct}%`, height: "100%", background: "#22c55e", borderRadius: 2 }} />
+              </div>
+            </div>
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <span
+              style={{
+                padding: "3px 10px",
+                borderRadius: 12,
+                background: "rgba(255, 51, 75, 0.12)",
+                color: "#ff334b",
+                fontSize: 11,
+                fontWeight: 700,
+                border: "1px solid rgba(255, 51, 75, 0.3)",
+              }}
+            >
+              Live Synchronized
+            </span>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <button
+              onClick={onExportCSV}
+              style={{
+                background: isLight ? "#f1f5f9" : "rgba(255, 255, 255, 0.08)",
+                border: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.12)",
+                color: isLight ? "#0f172a" : "#cbd5e1",
+                borderRadius: 6,
+                padding: "4px 8px",
+                fontSize: 11,
+                fontWeight: 600,
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 4,
+              }}
+              title="Export complete table"
+            >
+              <Download size={11} /> CSV
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Official Footnote / Operational Notice matching spreadsheet instructions */}
+      <div
+        className="glass-card"
+        style={{
+          marginTop: 16,
+          padding: "12px 18px",
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          borderLeft: "3px solid #ff334b",
+          fontSize: 12,
+          color: isLight ? "#475569" : "#94a3b8",
+          lineHeight: 1.5,
+        }}
+      >
+        <Landmark size={18} color="#ff334b" style={{ flexShrink: 0 }} />
+        <div>
+          <strong style={{ color: isLight ? "#0f172a" : "#ffffff" }}>
+            District-wise Summary - Fixed 34 Locations:
+          </strong>{" "}
+          All 34 Maharashtra ZP districts are permanently registered. Counts synchronize live across team members in real-time via cloud storage. Data baseline established as of 01-Sep-2026 EOD. Use "Edit" to modify numbers anytime.
+        </div>
       </div>
     </div>
   );
