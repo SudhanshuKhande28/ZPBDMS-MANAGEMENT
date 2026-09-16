@@ -210,40 +210,40 @@ function mergeDistrictsWithDefaults(existingDistricts = []) {
 }
 
 const BILL_TRACKER_DEFAULT = [
-  { id: "bill-1", srNo: 1, district: "Ahilyanagar", gatheringDetails: 0, inProcess: 0, completed: 1, totalBills: 1, notes: "1 bill completed", updatedAt: "2026-09-01" },
+  { id: "bill-1", srNo: 1, district: "Ahilyanagar", gatheringDetails: 0, inProcess: 0, completed: 1, totalBills: 1, notes: "", updatedAt: "2026-09-01" },
   { id: "bill-2", srNo: 2, district: "Akola", gatheringDetails: 0, inProcess: 0, completed: 0, totalBills: 0, notes: "", updatedAt: "2026-09-01" },
-  { id: "bill-3", srNo: 3, district: "Amravati", gatheringDetails: 0, inProcess: 0, completed: 1, totalBills: 1, notes: "1 bill completed", updatedAt: "2026-09-01" },
-  { id: "bill-4", srNo: 4, district: "Beed", gatheringDetails: 1, inProcess: 4, completed: 1, totalBills: 6, notes: "1 bill completed, 4 in process, 1 gathering details", updatedAt: "2026-09-01" },
-  { id: "bill-5", srNo: 5, district: "Bhandara", gatheringDetails: 0, inProcess: 1, completed: 1, totalBills: 2, notes: "1 bill completed, 1 in process", updatedAt: "2026-09-01" },
-  { id: "bill-6", srNo: 6, district: "Buldhana", gatheringDetails: 0, inProcess: 1, completed: 1, totalBills: 2, notes: "1 bill completed, 1 in process", updatedAt: "2026-09-01" },
-  { id: "bill-7", srNo: 7, district: "Chandrapur", gatheringDetails: 0, inProcess: 11, completed: 6, totalBills: 17, notes: "6 bills completed, 11 in process", updatedAt: "2026-09-01" },
-  { id: "bill-8", srNo: 8, district: "Chhatrapati Sambhajinagar", gatheringDetails: 0, inProcess: 4, completed: 1, totalBills: 5, notes: "1 bill completed, 4 in process", updatedAt: "2026-09-01" },
-  { id: "bill-9", srNo: 9, district: "Dharashiv", gatheringDetails: 1, inProcess: 0, completed: 1, totalBills: 2, notes: "1 bill completed, 1 gathering details", updatedAt: "2026-09-01" },
-  { id: "bill-10", srNo: 10, district: "Dhule", gatheringDetails: 0, inProcess: 0, completed: 7, totalBills: 7, notes: "7 bills 100% completed", updatedAt: "2026-09-01" },
-  { id: "bill-11", srNo: 11, district: "Gadchiroli", gatheringDetails: 0, inProcess: 0, completed: 1, totalBills: 1, notes: "1 bill completed", updatedAt: "2026-09-01" },
-  { id: "bill-12", srNo: 12, district: "Gondia", gatheringDetails: 1, inProcess: 0, completed: 0, totalBills: 1, notes: "1 bill gathering details", updatedAt: "2026-09-01" },
-  { id: "bill-13", srNo: 13, district: "Hingoli", gatheringDetails: 0, inProcess: 1, completed: 0, totalBills: 1, notes: "1 bill in process", updatedAt: "2026-09-01" },
-  { id: "bill-14", srNo: 14, district: "Jalgaon", gatheringDetails: 0, inProcess: 1, completed: 2, totalBills: 3, notes: "2 bills completed, 1 in process", updatedAt: "2026-09-01" },
-  { id: "bill-15", srNo: 15, district: "Jalna", gatheringDetails: 1, inProcess: 0, completed: 0, totalBills: 1, notes: "1 bill gathering details", updatedAt: "2026-09-01" },
-  { id: "bill-16", srNo: 16, district: "Kolhapur", gatheringDetails: 0, inProcess: 1, completed: 1, totalBills: 2, notes: "1 bill completed, 1 in process", updatedAt: "2026-09-01" },
-  { id: "bill-17", srNo: 17, district: "Latur", gatheringDetails: 0, inProcess: 0, completed: 1, totalBills: 1, notes: "1 bill completed", updatedAt: "2026-09-01" },
-  { id: "bill-18", srNo: 18, district: "Nagpur", gatheringDetails: 1, inProcess: 4, completed: 2, totalBills: 6, notes: "2 bills completed, 4 in process, 1 gathering details", updatedAt: "2026-09-01" },
-  { id: "bill-19", srNo: 19, district: "Nanded", gatheringDetails: 0, inProcess: 3, completed: 0, totalBills: 3, notes: "3 bills in process", updatedAt: "2026-09-01" },
-  { id: "bill-20", srNo: 20, district: "Nandurbar", gatheringDetails: 0, inProcess: 3, completed: 0, totalBills: 3, notes: "3 bills in process", updatedAt: "2026-09-01" },
-  { id: "bill-21", srNo: 21, district: "Nashik", gatheringDetails: 0, inProcess: 0, completed: 1, totalBills: 1, notes: "1 bill completed", updatedAt: "2026-09-01" },
-  { id: "bill-22", srNo: 22, district: "Palghar", gatheringDetails: 0, inProcess: 0, completed: 1, totalBills: 1, notes: "1 bill completed", updatedAt: "2026-09-01" },
-  { id: "bill-23", srNo: 23, district: "Parbhani", gatheringDetails: 0, inProcess: 0, completed: 1, totalBills: 1, notes: "1 bill completed", updatedAt: "2026-09-01" },
-  { id: "bill-24", srNo: 24, district: "Pune", gatheringDetails: 0, inProcess: 1, completed: 0, totalBills: 1, notes: "1 bill in process", updatedAt: "2026-09-01" },
-  { id: "bill-25", srNo: 25, district: "Raigad", gatheringDetails: 0, inProcess: 1, completed: 0, totalBills: 1, notes: "1 bill in process", updatedAt: "2026-09-01" },
-  { id: "bill-26", srNo: 26, district: "Ratnagiri", gatheringDetails: 0, inProcess: 1, completed: 0, totalBills: 1, notes: "1 bill in process", updatedAt: "2026-09-01" },
-  { id: "bill-27", srNo: 27, district: "Sangli", gatheringDetails: 0, inProcess: 0, completed: 1, totalBills: 1, notes: "1 bill completed", updatedAt: "2026-09-01" },
-  { id: "bill-28", srNo: 28, district: "Satara", gatheringDetails: 0, inProcess: 0, completed: 6, totalBills: 6, notes: "6 bills 100% completed", updatedAt: "2026-09-01" },
-  { id: "bill-29", srNo: 29, district: "Sindhudurg", gatheringDetails: 0, inProcess: 1, completed: 0, totalBills: 1, notes: "1 bill in process", updatedAt: "2026-09-01" },
-  { id: "bill-30", srNo: 30, district: "Solapur", gatheringDetails: 0, inProcess: 1, completed: 0, totalBills: 1, notes: "1 bill in process", updatedAt: "2026-09-01" },
-  { id: "bill-31", srNo: 31, district: "Thane", gatheringDetails: 0, inProcess: 2, completed: 1, totalBills: 3, notes: "1 bill completed, 2 in process", updatedAt: "2026-09-01" },
-  { id: "bill-32", srNo: 32, district: "Wardha", gatheringDetails: 0, inProcess: 1, completed: 1, totalBills: 2, notes: "1 bill completed, 1 in process", updatedAt: "2026-09-01" },
-  { id: "bill-33", srNo: 33, district: "Washim", gatheringDetails: 0, inProcess: 0, completed: 4, totalBills: 4, notes: "4 bills 100% completed", updatedAt: "2026-09-01" },
-  { id: "bill-34", srNo: 34, district: "Yavatmal", gatheringDetails: 0, inProcess: 3, completed: 0, totalBills: 3, notes: "3 bills in process", updatedAt: "2026-09-01" },
+  { id: "bill-3", srNo: 3, district: "Amravati", gatheringDetails: 0, inProcess: 0, completed: 1, totalBills: 1, notes: "", updatedAt: "2026-09-01" },
+  { id: "bill-4", srNo: 4, district: "Beed", gatheringDetails: 1, inProcess: 4, completed: 1, totalBills: 6, notes: "", updatedAt: "2026-09-01" },
+  { id: "bill-5", srNo: 5, district: "Bhandara", gatheringDetails: 0, inProcess: 1, completed: 1, totalBills: 2, notes: "", updatedAt: "2026-09-01" },
+  { id: "bill-6", srNo: 6, district: "Buldhana", gatheringDetails: 0, inProcess: 1, completed: 1, totalBills: 2, notes: "", updatedAt: "2026-09-01" },
+  { id: "bill-7", srNo: 7, district: "Chandrapur", gatheringDetails: 0, inProcess: 11, completed: 6, totalBills: 17, notes: "", updatedAt: "2026-09-01" },
+  { id: "bill-8", srNo: 8, district: "Chhatrapati Sambhajinagar", gatheringDetails: 0, inProcess: 4, completed: 1, totalBills: 5, notes: "", updatedAt: "2026-09-01" },
+  { id: "bill-9", srNo: 9, district: "Dharashiv", gatheringDetails: 1, inProcess: 0, completed: 1, totalBills: 2, notes: "", updatedAt: "2026-09-01" },
+  { id: "bill-10", srNo: 10, district: "Dhule", gatheringDetails: 0, inProcess: 0, completed: 7, totalBills: 7, notes: "", updatedAt: "2026-09-01" },
+  { id: "bill-11", srNo: 11, district: "Gadchiroli", gatheringDetails: 0, inProcess: 0, completed: 1, totalBills: 1, notes: "", updatedAt: "2026-09-01" },
+  { id: "bill-12", srNo: 12, district: "Gondia", gatheringDetails: 1, inProcess: 0, completed: 0, totalBills: 1, notes: "", updatedAt: "2026-09-01" },
+  { id: "bill-13", srNo: 13, district: "Hingoli", gatheringDetails: 0, inProcess: 1, completed: 0, totalBills: 1, notes: "", updatedAt: "2026-09-01" },
+  { id: "bill-14", srNo: 14, district: "Jalgaon", gatheringDetails: 0, inProcess: 1, completed: 2, totalBills: 3, notes: "", updatedAt: "2026-09-01" },
+  { id: "bill-15", srNo: 15, district: "Jalna", gatheringDetails: 1, inProcess: 0, completed: 0, totalBills: 1, notes: "", updatedAt: "2026-09-01" },
+  { id: "bill-16", srNo: 16, district: "Kolhapur", gatheringDetails: 0, inProcess: 1, completed: 1, totalBills: 2, notes: "", updatedAt: "2026-09-01" },
+  { id: "bill-17", srNo: 17, district: "Latur", gatheringDetails: 0, inProcess: 0, completed: 1, totalBills: 1, notes: "", updatedAt: "2026-09-01" },
+  { id: "bill-18", srNo: 18, district: "Nagpur", gatheringDetails: 1, inProcess: 4, completed: 2, totalBills: 6, notes: "", updatedAt: "2026-09-01" },
+  { id: "bill-19", srNo: 19, district: "Nanded", gatheringDetails: 0, inProcess: 3, completed: 0, totalBills: 3, notes: "", updatedAt: "2026-09-01" },
+  { id: "bill-20", srNo: 20, district: "Nandurbar", gatheringDetails: 0, inProcess: 3, completed: 0, totalBills: 3, notes: "", updatedAt: "2026-09-01" },
+  { id: "bill-21", srNo: 21, district: "Nashik", gatheringDetails: 0, inProcess: 0, completed: 1, totalBills: 1, notes: "", updatedAt: "2026-09-01" },
+  { id: "bill-22", srNo: 22, district: "Palghar", gatheringDetails: 0, inProcess: 0, completed: 1, totalBills: 1, notes: "", updatedAt: "2026-09-01" },
+  { id: "bill-23", srNo: 23, district: "Parbhani", gatheringDetails: 0, inProcess: 0, completed: 1, totalBills: 1, notes: "", updatedAt: "2026-09-01" },
+  { id: "bill-24", srNo: 24, district: "Pune", gatheringDetails: 0, inProcess: 1, completed: 0, totalBills: 1, notes: "", updatedAt: "2026-09-01" },
+  { id: "bill-25", srNo: 25, district: "Raigad", gatheringDetails: 0, inProcess: 1, completed: 0, totalBills: 1, notes: "", updatedAt: "2026-09-01" },
+  { id: "bill-26", srNo: 26, district: "Ratnagiri", gatheringDetails: 0, inProcess: 1, completed: 0, totalBills: 1, notes: "", updatedAt: "2026-09-01" },
+  { id: "bill-27", srNo: 27, district: "Sangli", gatheringDetails: 0, inProcess: 0, completed: 1, totalBills: 1, notes: "", updatedAt: "2026-09-01" },
+  { id: "bill-28", srNo: 28, district: "Satara", gatheringDetails: 0, inProcess: 0, completed: 6, totalBills: 6, notes: "", updatedAt: "2026-09-01" },
+  { id: "bill-29", srNo: 29, district: "Sindhudurg", gatheringDetails: 0, inProcess: 1, completed: 0, totalBills: 1, notes: "", updatedAt: "2026-09-01" },
+  { id: "bill-30", srNo: 30, district: "Solapur", gatheringDetails: 0, inProcess: 1, completed: 0, totalBills: 1, notes: "", updatedAt: "2026-09-01" },
+  { id: "bill-31", srNo: 31, district: "Thane", gatheringDetails: 0, inProcess: 2, completed: 1, totalBills: 3, notes: "", updatedAt: "2026-09-01" },
+  { id: "bill-32", srNo: 32, district: "Wardha", gatheringDetails: 0, inProcess: 1, completed: 1, totalBills: 2, notes: "", updatedAt: "2026-09-01" },
+  { id: "bill-33", srNo: 33, district: "Washim", gatheringDetails: 0, inProcess: 0, completed: 4, totalBills: 4, notes: "", updatedAt: "2026-09-01" },
+  { id: "bill-34", srNo: 34, district: "Yavatmal", gatheringDetails: 0, inProcess: 3, completed: 0, totalBills: 3, notes: "", updatedAt: "2026-09-01" },
 ];
 
 function mergeDistrictBillsWithDefaults(existingBills = []) {
@@ -264,6 +264,13 @@ function mergeDistrictBillsWithDefaults(existingBills = []) {
       const gathering = Number(existing.gatheringDetails ?? def.gatheringDetails ?? 0);
       const inProc = Number(existing.inProcess ?? def.inProcess ?? 0);
       const comp = Number(existing.completed ?? def.completed ?? 0);
+      const rawNotes = existing.notes !== undefined ? existing.notes : "";
+      const isAutoNote =
+        typeof rawNotes === "string" &&
+        (rawNotes.includes("bill completed") ||
+          rawNotes.includes("in process") ||
+          rawNotes.includes("gathering details") ||
+          rawNotes.includes("100% completed"));
       return {
         ...def,
         ...existing,
@@ -273,7 +280,7 @@ function mergeDistrictBillsWithDefaults(existingBills = []) {
         inProcess: inProc,
         completed: comp,
         totalBills: gathering + inProc + comp,
-        notes: existing.notes !== undefined ? existing.notes : def.notes,
+        notes: isAutoNote ? "" : rawNotes,
         updatedAt: existing.updatedAt || def.updatedAt || todayISO(),
       };
     }
@@ -5280,508 +5287,589 @@ function BillTrackerView({
         </div>
       </div>
 
-      {/* Main District Matrix Table */}
+      {/* Main District Matrix Table Container */}
       <div className="glass-card" style={{ overflow: "hidden" }}>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "65px 1.8fr 110px 130px 110px 110px 140px 140px 100px",
-            padding: "12px 18px",
-            borderBottom: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
-            fontSize: 11,
-            fontWeight: 700,
-            textTransform: "uppercase",
-            letterSpacing: "0.5px",
-            color: isLight ? "#475569" : "#94a3b8",
-            alignItems: "center",
-          }}
-        >
-          <div style={{ textAlign: "center" }}>Sr. No.</div>
-          <div>District / Location</div>
-          <div style={{ textAlign: "center" }}>Total Bills</div>
-          <div style={{ textAlign: "center" }}>Gathering Details</div>
-          <div style={{ textAlign: "center" }}>In Process</div>
-          <div style={{ textAlign: "center" }}>Completed</div>
-          <div style={{ textAlign: "center" }}>% Completed</div>
-          <div style={{ textAlign: "center" }}>Rollout Status</div>
-          <div style={{ textAlign: "right" }}>Actions</div>
-        </div>
+        <div style={{ overflowX: "auto", width: "100%" }}>
+          <table
+            style={{
+              width: "100%",
+              minWidth: 1060,
+              borderCollapse: "collapse",
+              tableLayout: "fixed",
+            }}
+          >
+            <colgroup>
+              <col style={{ width: "70px" }} />   {/* Sr. No. */}
+              <col style={{ width: "240px" }} />  {/* District / Location */}
+              <col style={{ width: "110px" }} />  {/* Total Bills */}
+              <col style={{ width: "135px" }} />  {/* Gathering Details */}
+              <col style={{ width: "110px" }} />  {/* In Process */}
+              <col style={{ width: "110px" }} />  {/* Completed */}
+              <col style={{ width: "130px" }} />  {/* % Completed */}
+              <col style={{ width: "140px" }} />  {/* Rollout Status */}
+              <col style={{ width: "95px" }} />   {/* Actions */}
+            </colgroup>
 
-        {bills.length === 0 ? (
-          <div style={{ padding: "40px 20px", textAlign: "center", color: isLight ? "#64748b" : "#94a3b8" }}>
-            <Receipt size={32} style={{ margin: "0 auto 10px", opacity: 0.4 }} />
-            <div style={{ fontSize: 14, fontWeight: 600 }}>No district records match the active filter</div>
-            <button
-              onClick={() => {
-                setFilterStatus("All Districts");
-                setSearchQuery("");
-              }}
-              style={{
-                marginTop: 10,
-                background: "transparent",
-                border: "none",
-                color: "#ff334b",
-                cursor: "pointer",
-                fontSize: 12.5,
-                fontWeight: 600,
-              }}
-            >
-              Reset Filters
-            </button>
-          </div>
-        ) : (
-          bills.map((b, idx) => {
-            const total =
-              Number(b.gatheringDetails || 0) +
-              Number(b.inProcess || 0) +
-              Number(b.completed || 0);
-            const gathering = Number(b.gatheringDetails || 0);
-            const inProc = Number(b.inProcess || 0);
-            const comp = Number(b.completed || 0);
-            const pct = total > 0 ? Math.round((comp / total) * 100) : 0;
-            const isFinished = total > 0 && comp === total;
-            const isZero = total === 0;
-
-            return (
-              <div
-                key={b.id || b.district}
-                className="custom-table-row"
+            <thead>
+              <tr
                 style={{
-                  display: "grid",
-                  gridTemplateColumns: "65px 1.8fr 110px 130px 110px 110px 140px 140px 100px",
-                  padding: "12px 18px",
-                  borderBottom: isLight ? "1px solid #f1f5f9" : "1px solid rgba(255, 255, 255, 0.04)",
-                  alignItems: "center",
-                  fontSize: 13,
-                  transition: "background 0.15s ease",
+                  height: 46,
+                  background: isLight ? "#f8fafc" : "rgba(255, 255, 255, 0.03)",
+                  borderBottom: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.6px",
+                  color: isLight ? "#475569" : "#94a3b8",
                 }}
               >
-                {/* Sr. No. */}
-                <div
-                  style={{
-                    textAlign: "center",
-                    fontFamily: "'JetBrains Mono', monospace",
-                    fontSize: 11.5,
-                    color: isLight ? "#64748b" : "#64748b",
-                    fontWeight: 600,
-                  }}
-                >
-                  #{String(b.srNo || idx + 1).padStart(2, "0")}
-                </div>
+                <th style={{ textAlign: "center", padding: "0 10px", verticalAlign: "middle" }}>Sr. No.</th>
+                <th style={{ textAlign: "left", padding: "0 16px", verticalAlign: "middle" }}>District / Location</th>
+                <th style={{ textAlign: "center", padding: "0 10px", verticalAlign: "middle" }}>Total Bills</th>
+                <th style={{ textAlign: "center", padding: "0 10px", verticalAlign: "middle" }}>Gathering Details</th>
+                <th style={{ textAlign: "center", padding: "0 10px", verticalAlign: "middle" }}>In Process</th>
+                <th style={{ textAlign: "center", padding: "0 10px", verticalAlign: "middle" }}>Completed</th>
+                <th style={{ textAlign: "center", padding: "0 10px", verticalAlign: "middle" }}>% Completed</th>
+                <th style={{ textAlign: "center", padding: "0 10px", verticalAlign: "middle" }}>Rollout Status</th>
+                <th style={{ textAlign: "center", padding: "0 10px", verticalAlign: "middle" }}>Actions</th>
+              </tr>
+            </thead>
 
-                {/* District Name */}
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <div
-                    style={{
-                      width: 28,
-                      height: 28,
-                      borderRadius: 6,
-                      background: isFinished
-                        ? "rgba(34, 197, 94, 0.12)"
-                        : isZero
-                        ? isLight ? "#e2e8f0" : "rgba(255, 255, 255, 0.05)"
-                        : "rgba(255, 51, 75, 0.1)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: isFinished ? "#22c55e" : isZero ? "#64748b" : "#ff334b",
-                      flexShrink: 0,
-                    }}
-                  >
-                    <Landmark size={14} />
-                  </div>
-                  <div>
-                    <div style={{ fontWeight: 700, color: isLight ? "#0f172a" : "#ffffff", fontSize: 13.5 }}>
-                      {b.district}
-                    </div>
-                    {b.notes && (
-                      <div
+            <tbody>
+              {bills.length === 0 ? (
+                <tr>
+                  <td colSpan={9} style={{ padding: "40px 20px", textAlign: "center", color: isLight ? "#64748b" : "#94a3b8" }}>
+                    <Receipt size={32} style={{ margin: "0 auto 10px", opacity: 0.4 }} />
+                    <div style={{ fontSize: 14, fontWeight: 600 }}>No district records match the active filter</div>
+                    <button
+                      onClick={() => {
+                        setFilterStatus("All Districts");
+                        setSearchQuery("");
+                      }}
+                      style={{
+                        marginTop: 10,
+                        background: "transparent",
+                        border: "none",
+                        color: "#ff334b",
+                        cursor: "pointer",
+                        fontSize: 12.5,
+                        fontWeight: 600,
+                      }}
+                    >
+                      Reset Filters
+                    </button>
+                  </td>
+                </tr>
+              ) : (
+                bills.map((b, idx) => {
+                  const total =
+                    Number(b.gatheringDetails || 0) +
+                    Number(b.inProcess || 0) +
+                    Number(b.completed || 0);
+                  const gathering = Number(b.gatheringDetails || 0);
+                  const inProc = Number(b.inProcess || 0);
+                  const comp = Number(b.completed || 0);
+                  const pct = total > 0 ? Math.round((comp / total) * 100) : 0;
+                  const isFinished = total > 0 && comp === total;
+                  const isZero = total === 0;
+
+                  return (
+                    <tr
+                      key={b.id || b.district}
+                      className="custom-table-row"
+                      style={{
+                        height: 52,
+                        borderBottom: isLight ? "1px solid #f1f5f9" : "1px solid rgba(255, 255, 255, 0.04)",
+                        transition: "background 0.15s ease",
+                      }}
+                    >
+                      {/* Sr. No. */}
+                      <td
                         style={{
-                          fontSize: 11,
-                          color: isLight ? "#64748b" : "#94a3b8",
-                          marginTop: 1,
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                          maxWidth: 260,
+                          textAlign: "center",
+                          verticalAlign: "middle",
+                          fontFamily: "'JetBrains Mono', monospace",
+                          fontSize: 11.5,
+                          color: isLight ? "#64748b" : "#64748b",
+                          fontWeight: 600,
+                          padding: "0 10px",
                         }}
-                        title={b.notes}
                       >
-                        {b.notes}
-                      </div>
-                    )}
-                  </div>
-                </div>
+                        #{String(b.srNo || idx + 1).padStart(2, "0")}
+                      </td>
 
-                {/* Total Bills */}
-                <div style={{ textAlign: "center" }}>
+                      {/* District Name */}
+                      <td style={{ textAlign: "left", verticalAlign: "middle", padding: "0 16px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                          <div
+                            style={{
+                              width: 28,
+                              height: 28,
+                              borderRadius: 6,
+                              background: isFinished
+                                ? "rgba(34, 197, 94, 0.12)"
+                                : isZero
+                                ? isLight ? "#e2e8f0" : "rgba(255, 255, 255, 0.05)"
+                                : "rgba(255, 51, 75, 0.1)",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              color: isFinished ? "#22c55e" : isZero ? "#64748b" : "#ff334b",
+                              flexShrink: 0,
+                            }}
+                          >
+                            <Landmark size={14} />
+                          </div>
+                          <span
+                            style={{
+                              fontWeight: 700,
+                              color: isLight ? "#0f172a" : "#ffffff",
+                              fontSize: 13.5,
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                            title={b.district}
+                          >
+                            {b.district}
+                          </span>
+                          {b.notes && b.notes.trim() && (
+                            <span
+                              title={b.notes}
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                color: "#ff6479",
+                                cursor: "help",
+                                flexShrink: 0,
+                              }}
+                            >
+                              <MessageSquare size={13} />
+                            </span>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Total Bills */}
+                      <td style={{ textAlign: "center", verticalAlign: "middle", padding: "0 10px" }}>
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            minWidth: 38,
+                            height: 26,
+                            padding: "0 8px",
+                            borderRadius: 6,
+                            background: isZero
+                              ? isLight ? "#f1f5f9" : "rgba(255, 255, 255, 0.04)"
+                              : isLight ? "#f8fafc" : "rgba(255, 255, 255, 0.08)",
+                            border: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.12)",
+                            fontFamily: "'JetBrains Mono', monospace",
+                            fontWeight: 800,
+                            fontSize: 13,
+                            color: isZero ? "#94a3b8" : isLight ? "#0f172a" : "#ffffff",
+                          }}
+                        >
+                          {total}
+                        </span>
+                      </td>
+
+                      {/* Gathering Details */}
+                      <td style={{ textAlign: "center", verticalAlign: "middle", padding: "0 10px" }}>
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            minWidth: 38,
+                            height: 26,
+                            padding: "0 8px",
+                            borderRadius: 6,
+                            background: gathering > 0 ? "rgba(245, 158, 11, 0.14)" : isLight ? "#f1f5f9" : "rgba(255, 255, 255, 0.03)",
+                            border: gathering > 0 ? "1px solid rgba(245, 158, 11, 0.35)" : isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.06)",
+                            fontFamily: "'JetBrains Mono', monospace",
+                            fontWeight: 800,
+                            fontSize: 13,
+                            color: gathering > 0 ? "#f59e0b" : isLight ? "#94a3b8" : "#475569",
+                          }}
+                        >
+                          {gathering}
+                        </span>
+                      </td>
+
+                      {/* In Process */}
+                      <td style={{ textAlign: "center", verticalAlign: "middle", padding: "0 10px" }}>
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            minWidth: 38,
+                            height: 26,
+                            padding: "0 8px",
+                            borderRadius: 6,
+                            background: inProc > 0 ? "rgba(56, 189, 248, 0.14)" : isLight ? "#f1f5f9" : "rgba(255, 255, 255, 0.03)",
+                            border: inProc > 0 ? "1px solid rgba(56, 189, 248, 0.35)" : isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.06)",
+                            fontFamily: "'JetBrains Mono', monospace",
+                            fontWeight: 800,
+                            fontSize: 13,
+                            color: inProc > 0 ? "#38bdf8" : isLight ? "#94a3b8" : "#475569",
+                          }}
+                        >
+                          {inProc}
+                        </span>
+                      </td>
+
+                      {/* Completed */}
+                      <td style={{ textAlign: "center", verticalAlign: "middle", padding: "0 10px" }}>
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            minWidth: 38,
+                            height: 26,
+                            padding: "0 8px",
+                            borderRadius: 6,
+                            background: comp > 0 ? "rgba(34, 197, 94, 0.14)" : isLight ? "#f1f5f9" : "rgba(255, 255, 255, 0.03)",
+                            border: comp > 0 ? "1px solid rgba(34, 197, 94, 0.35)" : isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.06)",
+                            fontFamily: "'JetBrains Mono', monospace",
+                            fontWeight: 800,
+                            fontSize: 13,
+                            color: comp > 0 ? "#22c55e" : isLight ? "#94a3b8" : "#475569",
+                          }}
+                        >
+                          {comp}
+                        </span>
+                      </td>
+
+                      {/* % Completed */}
+                      <td style={{ textAlign: "center", verticalAlign: "middle", padding: "0 10px" }}>
+                        {total > 0 ? (
+                          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+                            <span
+                              style={{
+                                fontSize: 12,
+                                fontWeight: 800,
+                                color: isFinished ? "#22c55e" : pct > 0 ? "#38bdf8" : "#94a3b8",
+                              }}
+                            >
+                              {pct}%
+                            </span>
+                            <div
+                              style={{
+                                width: 68,
+                                height: 4,
+                                background: isLight ? "#e2e8f0" : "rgba(255, 255, 255, 0.08)",
+                                borderRadius: 2,
+                                overflow: "hidden",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  width: `${pct}%`,
+                                  height: "100%",
+                                  background: isFinished ? "#22c55e" : "#38bdf8",
+                                  borderRadius: 2,
+                                }}
+                              />
+                            </div>
+                          </div>
+                        ) : (
+                          <span style={{ color: isLight ? "#94a3b8" : "#475569", fontWeight: 600 }}>-</span>
+                        )}
+                      </td>
+
+                      {/* Rollout Status */}
+                      <td style={{ textAlign: "center", verticalAlign: "middle", padding: "0 10px" }}>
+                        {isZero ? (
+                          <span
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              minWidth: 95,
+                              height: 24,
+                              padding: "0 10px",
+                              borderRadius: 12,
+                              background: isLight ? "#f1f5f9" : "rgba(255, 255, 255, 0.05)",
+                              color: isLight ? "#64748b" : "#94a3b8",
+                              fontSize: 11,
+                              fontWeight: 600,
+                              border: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.1)",
+                            }}
+                          >
+                            Zero Bills
+                          </span>
+                        ) : isFinished ? (
+                          <span
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              minWidth: 95,
+                              height: 24,
+                              padding: "0 10px",
+                              borderRadius: 12,
+                              background: "rgba(34, 197, 94, 0.14)",
+                              color: "#22c55e",
+                              fontSize: 11,
+                              fontWeight: 700,
+                              border: "1px solid rgba(34, 197, 94, 0.35)",
+                            }}
+                          >
+                            100% Cleared
+                          </span>
+                        ) : inProc > 0 && comp > 0 ? (
+                          <span
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              minWidth: 95,
+                              height: 24,
+                              padding: "0 10px",
+                              borderRadius: 12,
+                              background: "rgba(168, 85, 247, 0.14)",
+                              color: "#a855f7",
+                              fontSize: 11,
+                              fontWeight: 700,
+                              border: "1px solid rgba(168, 85, 247, 0.35)",
+                            }}
+                          >
+                            Partial ({comp}/{total})
+                          </span>
+                        ) : inProc > 0 ? (
+                          <span
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              minWidth: 95,
+                              height: 24,
+                              padding: "0 10px",
+                              borderRadius: 12,
+                              background: "rgba(56, 189, 248, 0.14)",
+                              color: "#38bdf8",
+                              fontSize: 11,
+                              fontWeight: 700,
+                              border: "1px solid rgba(56, 189, 248, 0.35)",
+                            }}
+                          >
+                            In Process
+                          </span>
+                        ) : (
+                          <span
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              minWidth: 95,
+                              height: 24,
+                              padding: "0 10px",
+                              borderRadius: 12,
+                              background: "rgba(245, 158, 11, 0.14)",
+                              color: "#f59e0b",
+                              fontSize: 11,
+                              fontWeight: 700,
+                              border: "1px solid rgba(245, 158, 11, 0.35)",
+                            }}
+                          >
+                            Gathering Info
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Actions */}
+                      <td style={{ textAlign: "center", verticalAlign: "middle", padding: "0 10px" }}>
+                        <button
+                          onClick={() => onEditBill(b)}
+                          style={{
+                            background: "rgba(255, 51, 75, 0.1)",
+                            border: "1px solid rgba(255, 51, 75, 0.3)",
+                            color: "#ff6479",
+                            borderRadius: 6,
+                            padding: "4px 10px",
+                            fontSize: 11.5,
+                            fontWeight: 600,
+                            cursor: "pointer",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 5,
+                            transition: "all 0.15s ease",
+                          }}
+                          title={`Edit bill count figures for ${b.district}`}
+                        >
+                          <Pencil size={12} /> Edit
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+
+            {/* Dedicated TOTAL Summary Row matching exact CSV numbers */}
+            <tfoot>
+              <tr
+                style={{
+                  height: 56,
+                  background: isLight ? "#f8fafc" : "rgba(255, 51, 75, 0.05)",
+                  borderTop: isLight ? "2px solid #e2e8f0" : "2px solid rgba(255, 51, 75, 0.3)",
+                  fontSize: 13,
+                  fontWeight: 800,
+                }}
+              >
+                <td style={{ textAlign: "center", verticalAlign: "middle", padding: "0 10px", color: "#ff334b" }}>
+                  <BarChart2 size={16} style={{ margin: "0 auto" }} />
+                </td>
+                <td style={{ textAlign: "left", verticalAlign: "middle", padding: "0 16px" }}>
+                  <span style={{ fontSize: 13.5, fontWeight: 900, color: isLight ? "#0f172a" : "#ffffff", letterSpacing: "0.5px" }}>
+                    STATEWIDE TOTAL (34 ZPs)
+                  </span>
+                </td>
+                <td style={{ textAlign: "center", verticalAlign: "middle", padding: "0 10px" }}>
                   <span
                     style={{
-                      display: "inline-block",
-                      padding: "3px 10px",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      minWidth: 42,
+                      height: 28,
+                      padding: "0 8px",
                       borderRadius: 6,
-                      background: isZero
-                        ? isLight ? "#f1f5f9" : "rgba(255, 255, 255, 0.04)"
-                        : isLight ? "#f8fafc" : "rgba(255, 255, 255, 0.08)",
-                      border: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.12)",
+                      background: "#ff334b",
+                      color: "#ffffff",
                       fontFamily: "'JetBrains Mono', monospace",
-                      fontWeight: 800,
-                      fontSize: 13,
-                      color: isZero ? "#94a3b8" : isLight ? "#0f172a" : "#ffffff",
+                      fontWeight: 900,
+                      fontSize: 14,
                     }}
                   >
-                    {total}
+                    {totalAll}
                   </span>
-                </div>
-
-                {/* Gathering Details */}
-                <div style={{ textAlign: "center" }}>
-                  {gathering > 0 ? (
-                    <span
-                      style={{
-                        display: "inline-block",
-                        padding: "3px 10px",
-                        borderRadius: 6,
-                        background: "rgba(245, 158, 11, 0.14)",
-                        border: "1px solid rgba(245, 158, 11, 0.35)",
-                        fontFamily: "'JetBrains Mono', monospace",
-                        fontWeight: 800,
-                        fontSize: 13,
-                        color: "#f59e0b",
-                      }}
-                    >
-                      {gathering}
-                    </span>
-                  ) : (
-                    <span style={{ color: isLight ? "#94a3b8" : "#475569", fontSize: 13 }}>0</span>
-                  )}
-                </div>
-
-                {/* In Process */}
-                <div style={{ textAlign: "center" }}>
-                  {inProc > 0 ? (
-                    <span
-                      style={{
-                        display: "inline-block",
-                        padding: "3px 10px",
-                        borderRadius: 6,
-                        background: "rgba(56, 189, 248, 0.14)",
-                        border: "1px solid rgba(56, 189, 248, 0.35)",
-                        fontFamily: "'JetBrains Mono', monospace",
-                        fontWeight: 800,
-                        fontSize: 13,
-                        color: "#38bdf8",
-                      }}
-                    >
-                      {inProc}
-                    </span>
-                  ) : (
-                    <span style={{ color: isLight ? "#94a3b8" : "#475569", fontSize: 13 }}>0</span>
-                  )}
-                </div>
-
-                {/* Completed */}
-                <div style={{ textAlign: "center" }}>
-                  {comp > 0 ? (
-                    <span
-                      style={{
-                        display: "inline-block",
-                        padding: "3px 10px",
-                        borderRadius: 6,
-                        background: "rgba(34, 197, 94, 0.14)",
-                        border: "1px solid rgba(34, 197, 94, 0.35)",
-                        fontFamily: "'JetBrains Mono', monospace",
-                        fontWeight: 800,
-                        fontSize: 13,
-                        color: "#22c55e",
-                      }}
-                    >
-                      {comp}
-                    </span>
-                  ) : (
-                    <span style={{ color: isLight ? "#94a3b8" : "#475569", fontSize: 13 }}>0</span>
-                  )}
-                </div>
-
-                {/* % Completed */}
-                <div style={{ textAlign: "center" }}>
-                  {total > 0 ? (
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-                      <span
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 800,
-                          color: isFinished ? "#22c55e" : pct > 0 ? "#38bdf8" : "#94a3b8",
-                        }}
-                      >
-                        {pct}%
-                      </span>
-                      <div
-                        style={{
-                          width: 65,
-                          height: 4,
-                          background: isLight ? "#e2e8f0" : "rgba(255, 255, 255, 0.08)",
-                          borderRadius: 2,
-                          overflow: "hidden",
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: `${pct}%`,
-                            height: "100%",
-                            background: isFinished ? "#22c55e" : "#38bdf8",
-                            borderRadius: 2,
-                          }}
-                        />
-                      </div>
-                    </div>
-                  ) : (
-                    <span style={{ color: isLight ? "#94a3b8" : "#475569" }}>-</span>
-                  )}
-                </div>
-
-                {/* Status Chip */}
-                <div style={{ textAlign: "center" }}>
-                  {isZero ? (
-                    <span
-                      style={{
-                        padding: "3px 8px",
-                        borderRadius: 12,
-                        background: isLight ? "#f1f5f9" : "rgba(255, 255, 255, 0.05)",
-                        color: isLight ? "#64748b" : "#94a3b8",
-                        fontSize: 11,
-                        fontWeight: 600,
-                        border: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.1)",
-                      }}
-                    >
-                      Zero Bills
-                    </span>
-                  ) : isFinished ? (
-                    <span
-                      style={{
-                        padding: "3px 8px",
-                        borderRadius: 12,
-                        background: "rgba(34, 197, 94, 0.14)",
-                        color: "#22c55e",
-                        fontSize: 11,
-                        fontWeight: 700,
-                        border: "1px solid rgba(34, 197, 94, 0.35)",
-                      }}
-                    >
-                      100% Cleared
-                    </span>
-                  ) : inProc > 0 && comp > 0 ? (
-                    <span
-                      style={{
-                        padding: "3px 8px",
-                        borderRadius: 12,
-                        background: "rgba(168, 85, 247, 0.14)",
-                        color: "#a855f7",
-                        fontSize: 11,
-                        fontWeight: 700,
-                        border: "1px solid rgba(168, 85, 247, 0.35)",
-                      }}
-                    >
-                      Partial ({comp}/{total})
-                    </span>
-                  ) : inProc > 0 ? (
-                    <span
-                      style={{
-                        padding: "3px 8px",
-                        borderRadius: 12,
-                        background: "rgba(56, 189, 248, 0.14)",
-                        color: "#38bdf8",
-                        fontSize: 11,
-                        fontWeight: 700,
-                        border: "1px solid rgba(56, 189, 248, 0.35)",
-                      }}
-                    >
-                      In Processing
-                    </span>
-                  ) : (
-                    <span
-                      style={{
-                        padding: "3px 8px",
-                        borderRadius: 12,
-                        background: "rgba(245, 158, 11, 0.14)",
-                        color: "#f59e0b",
-                        fontSize: 11,
-                        fontWeight: 700,
-                        border: "1px solid rgba(245, 158, 11, 0.35)",
-                      }}
-                    >
-                      Gathering Info
-                    </span>
-                  )}
-                </div>
-
-                {/* Actions */}
-                <div style={{ textAlign: "right" }}>
-                  <button
-                    onClick={() => onEditBill(b)}
+                </td>
+                <td style={{ textAlign: "center", verticalAlign: "middle", padding: "0 10px" }}>
+                  <span
                     style={{
-                      background: "rgba(255, 51, 75, 0.1)",
-                      border: "1px solid rgba(255, 51, 75, 0.3)",
-                      color: "#ff6479",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      minWidth: 42,
+                      height: 28,
+                      padding: "0 8px",
                       borderRadius: 6,
-                      padding: "4px 9px",
-                      fontSize: 11.5,
+                      background: "rgba(245, 158, 11, 0.2)",
+                      color: "#d97706",
+                      fontFamily: "'JetBrains Mono', monospace",
+                      fontWeight: 900,
+                      fontSize: 14,
+                    }}
+                  >
+                    {gatheringAll}
+                  </span>
+                </td>
+                <td style={{ textAlign: "center", verticalAlign: "middle", padding: "0 10px" }}>
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      minWidth: 42,
+                      height: 28,
+                      padding: "0 8px",
+                      borderRadius: 6,
+                      background: "rgba(56, 189, 248, 0.2)",
+                      color: "#0284c7",
+                      fontFamily: "'JetBrains Mono', monospace",
+                      fontWeight: 900,
+                      fontSize: 14,
+                    }}
+                  >
+                    {inProcessAll}
+                  </span>
+                </td>
+                <td style={{ textAlign: "center", verticalAlign: "middle", padding: "0 10px" }}>
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      minWidth: 42,
+                      height: 28,
+                      padding: "0 8px",
+                      borderRadius: 6,
+                      background: "rgba(34, 197, 94, 0.2)",
+                      color: "#16a34a",
+                      fontFamily: "'JetBrains Mono', monospace",
+                      fontWeight: 900,
+                      fontSize: 14,
+                    }}
+                  >
+                    {completedAll}
+                  </span>
+                </td>
+                <td style={{ textAlign: "center", verticalAlign: "middle", padding: "0 10px" }}>
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+                    <span style={{ fontSize: 13, fontWeight: 900, color: "#16a34a" }}>
+                      {overallPct}%
+                    </span>
+                    <div
+                      style={{
+                        width: 70,
+                        height: 4,
+                        background: isLight ? "#cbd5e1" : "rgba(255, 255, 255, 0.15)",
+                        borderRadius: 2,
+                        overflow: "hidden",
+                      }}
+                    >
+                      <div style={{ width: `${overallPct}%`, height: "100%", background: "#22c55e", borderRadius: 2 }} />
+                    </div>
+                  </div>
+                </td>
+                <td style={{ textAlign: "center", verticalAlign: "middle", padding: "0 10px" }}>
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      height: 24,
+                      padding: "0 10px",
+                      borderRadius: 12,
+                      background: "rgba(255, 51, 75, 0.12)",
+                      color: "#ff334b",
+                      fontSize: 11,
+                      fontWeight: 700,
+                      border: "1px solid rgba(255, 51, 75, 0.3)",
+                    }}
+                  >
+                    Live Synchronized
+                  </span>
+                </td>
+                <td style={{ textAlign: "center", verticalAlign: "middle", padding: "0 10px" }}>
+                  <button
+                    onClick={onExportCSV}
+                    style={{
+                      background: isLight ? "#f1f5f9" : "rgba(255, 255, 255, 0.08)",
+                      border: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.12)",
+                      color: isLight ? "#0f172a" : "#cbd5e1",
+                      borderRadius: 6,
+                      padding: "4px 8px",
+                      fontSize: 11,
                       fontWeight: 600,
                       cursor: "pointer",
                       display: "inline-flex",
                       alignItems: "center",
-                      gap: 5,
-                      transition: "all 0.15s ease",
+                      gap: 4,
                     }}
-                    title={`Edit bill count figures for ${b.district}`}
+                    title="Export complete table"
                   >
-                    <Pencil size={12} /> Edit
+                    <Download size={11} /> CSV
                   </button>
-                </div>
-              </div>
-            );
-          })
-        )}
-
-        {/* Dedicated TOTAL Summary Row matching exact CSV numbers */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "65px 1.8fr 110px 130px 110px 110px 140px 140px 100px",
-            padding: "14px 18px",
-            background: isLight ? "#f8fafc" : "rgba(255, 51, 75, 0.05)",
-            borderTop: isLight ? "2px solid #e2e8f0" : "2px solid rgba(255, 51, 75, 0.3)",
-            alignItems: "center",
-            fontSize: 13,
-            fontWeight: 800,
-          }}
-        >
-          <div style={{ textAlign: "center", color: "#ff334b" }}>
-            <BarChart2 size={16} style={{ margin: "0 auto" }} />
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 14, fontWeight: 900, color: isLight ? "#0f172a" : "#ffffff", letterSpacing: "0.5px" }}>
-              STATEWIDE TOTAL (34 ZPs)
-            </span>
-          </div>
-          <div style={{ textAlign: "center" }}>
-            <span
-              style={{
-                display: "inline-block",
-                padding: "4px 12px",
-                borderRadius: 6,
-                background: "#ff334b",
-                color: "#ffffff",
-                fontFamily: "'JetBrains Mono', monospace",
-                fontWeight: 900,
-                fontSize: 14,
-              }}
-            >
-              {totalAll}
-            </span>
-          </div>
-          <div style={{ textAlign: "center" }}>
-            <span
-              style={{
-                display: "inline-block",
-                padding: "3px 10px",
-                borderRadius: 6,
-                background: "rgba(245, 158, 11, 0.2)",
-                color: "#d97706",
-                fontFamily: "'JetBrains Mono', monospace",
-                fontWeight: 900,
-                fontSize: 14,
-              }}
-            >
-              {gatheringAll}
-            </span>
-          </div>
-          <div style={{ textAlign: "center" }}>
-            <span
-              style={{
-                display: "inline-block",
-                padding: "3px 10px",
-                borderRadius: 6,
-                background: "rgba(56, 189, 248, 0.2)",
-                color: "#0284c7",
-                fontFamily: "'JetBrains Mono', monospace",
-                fontWeight: 900,
-                fontSize: 14,
-              }}
-            >
-              {inProcessAll}
-            </span>
-          </div>
-          <div style={{ textAlign: "center" }}>
-            <span
-              style={{
-                display: "inline-block",
-                padding: "3px 10px",
-                borderRadius: 6,
-                background: "rgba(34, 197, 94, 0.2)",
-                color: "#16a34a",
-                fontFamily: "'JetBrains Mono', monospace",
-                fontWeight: 900,
-                fontSize: 14,
-              }}
-            >
-              {completedAll}
-            </span>
-          </div>
-          <div style={{ textAlign: "center" }}>
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
-              <span style={{ fontSize: 13, fontWeight: 900, color: "#16a34a" }}>
-                {overallPct}%
-              </span>
-              <div
-                style={{
-                  width: 70,
-                  height: 4,
-                  background: isLight ? "#cbd5e1" : "rgba(255, 255, 255, 0.15)",
-                  borderRadius: 2,
-                  overflow: "hidden",
-                }}
-              >
-                <div style={{ width: `${overallPct}%`, height: "100%", background: "#22c55e", borderRadius: 2 }} />
-              </div>
-            </div>
-          </div>
-          <div style={{ textAlign: "center" }}>
-            <span
-              style={{
-                padding: "3px 10px",
-                borderRadius: 12,
-                background: "rgba(255, 51, 75, 0.12)",
-                color: "#ff334b",
-                fontSize: 11,
-                fontWeight: 700,
-                border: "1px solid rgba(255, 51, 75, 0.3)",
-              }}
-            >
-              Live Synchronized
-            </span>
-          </div>
-          <div style={{ textAlign: "right" }}>
-            <button
-              onClick={onExportCSV}
-              style={{
-                background: isLight ? "#f1f5f9" : "rgba(255, 255, 255, 0.08)",
-                border: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.12)",
-                color: isLight ? "#0f172a" : "#cbd5e1",
-                borderRadius: 6,
-                padding: "4px 8px",
-                fontSize: 11,
-                fontWeight: 600,
-                cursor: "pointer",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 4,
-              }}
-              title="Export complete table"
-            >
-              <Download size={11} /> CSV
-            </button>
-          </div>
+                </td>
+              </tr>
+            </tfoot>
+          </table>
         </div>
       </div>
 
