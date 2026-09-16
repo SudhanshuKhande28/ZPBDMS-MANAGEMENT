@@ -12,7 +12,9 @@ import {
   Trash2,
   Pencil,
   ChevronDown,
-  Activity,
+  Landmark,
+  Sun,
+  Moon,
   CheckCircle2,
   Clock,
   ShieldAlert,
@@ -670,9 +672,9 @@ function SelectInput({ value, onChange, options, style }) {
           fontSize: 13,
           padding: "9px 30px 9px 12px",
           borderRadius: 8,
-          border: "1px solid rgba(255, 255, 255, 0.12)",
-          background: "rgba(15, 18, 28, 0.95)",
-          color: "#f8fafc",
+          border: "1px solid var(--border-card)",
+          background: "var(--bg-input)",
+          color: "var(--text-main)",
           cursor: "pointer",
           outline: "none",
           transition: "border 0.2s ease, box-shadow 0.2s ease",
@@ -682,12 +684,12 @@ function SelectInput({ value, onChange, options, style }) {
           e.target.style.boxShadow = "0 0 0 3px rgba(255, 51, 75, 0.15)";
         }}
         onBlur={(e) => {
-          e.target.style.borderColor = "rgba(255, 255, 255, 0.12)";
+          e.target.style.borderColor = "var(--border-card)";
           e.target.style.boxShadow = "none";
         }}
       >
         {options.map((o) => (
-          <option key={typeof o === "object" ? o.value : o} value={typeof o === "object" ? o.value : o} style={{ background: "#0e111a", color: "#f8fafc" }}>
+          <option key={typeof o === "object" ? o.value : o} value={typeof o === "object" ? o.value : o} style={{ background: "var(--bg-primary)", color: "var(--text-main)" }}>
             {typeof o === "object" ? o.label : o}
           </option>
         ))}
@@ -714,7 +716,7 @@ function FormField({ label, children }) {
         style={{
           fontSize: 12,
           fontWeight: 600,
-          color: "#cbd5e1",
+          color: "var(--text-secondary)",
           marginBottom: 6,
           letterSpacing: "0.2px",
           textTransform: "uppercase",
@@ -733,9 +735,9 @@ const darkInputStyle = {
   fontSize: 13.5,
   padding: "10px 14px",
   borderRadius: 8,
-  border: "1px solid rgba(255, 255, 255, 0.12)",
-  background: "rgba(12, 15, 24, 0.9)",
-  color: "#ffffff",
+  border: "1px solid var(--border-card)",
+  background: "var(--bg-input)",
+  color: "var(--text-main)",
   boxSizing: "border-box",
   outline: "none",
   transition: "all 0.2s ease",
@@ -759,16 +761,16 @@ function Modal({ title, icon: Icon, onClose, children }) {
       onClick={onClose}
     >
       <div
-        className="modal-enter"
+        className="modal-enter modal-card"
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "linear-gradient(180deg, #131724 0%, #0c0f18 100%)",
+          background: "var(--bg-glass, linear-gradient(180deg, #131724 0%, #0c0f18 100%))",
           width: 480,
           maxWidth: "100%",
           maxHeight: "92vh",
           overflowY: "auto",
           borderRadius: 14,
-          border: "1px solid rgba(255, 255, 255, 0.12)",
+          border: "1px solid var(--border-card)",
           borderTop: "2px solid #ff334b",
           boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 35px rgba(255, 51, 75, 0.15)",
         }}
@@ -779,7 +781,7 @@ function Modal({ title, icon: Icon, onClose, children }) {
             alignItems: "center",
             justifyContent: "space-between",
             padding: "18px 24px",
-            borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
+            borderBottom: "1px solid var(--border-subtle)",
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -805,7 +807,7 @@ function Modal({ title, icon: Icon, onClose, children }) {
                 fontFamily: "'Outfit', sans-serif",
                 fontSize: 18,
                 fontWeight: 700,
-                color: "#ffffff",
+                color: "var(--text-main)",
                 letterSpacing: "-0.3px",
               }}
             >
@@ -1212,7 +1214,7 @@ function DevResolveForm({ initial, onSave, onCancel }) {
 
 /* ---------------------------- Clean Management Login View ---------------------------- */
 
-function LoginScreen({ onLogin }) {
+function LoginScreen({ onLogin, theme = "dark", toggleTheme }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -1236,6 +1238,8 @@ function LoginScreen({ onLogin }) {
     }
   };
 
+  const isLight = theme === "light";
+
   return (
     <div
       style={{
@@ -1243,13 +1247,61 @@ function LoginScreen({ onLogin }) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "#07080c",
+        background: isLight ? "#f1f5f9" : "#07080c",
         padding: 20,
         position: "relative",
       }}
     >
       <div className="ambient-bg">
         <div className="cyber-grid" />
+      </div>
+
+      {/* Floating Theme Toggle (Top-Right Corner) */}
+      {toggleTheme && (
+        <button
+          onClick={toggleTheme}
+          style={{
+            position: "absolute",
+            top: 24,
+            right: 24,
+            zIndex: 20,
+            border: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.12)",
+            background: isLight ? "#ffffff" : "rgba(15, 18, 28, 0.85)",
+            color: isLight ? "#475569" : "#fbbf24",
+            cursor: "pointer",
+            padding: "8px 14px",
+            borderRadius: 20,
+            display: "flex",
+            alignItems: "center",
+            gap: 7,
+            fontSize: 12,
+            fontWeight: 600,
+            boxShadow: "0 4px 14px rgba(0, 0, 0, 0.08)",
+            transition: "all 0.15s ease",
+          }}
+          title={isLight ? "Switch to Dark Mode" : "Switch to Light Mode"}
+        >
+          {isLight ? <Moon size={15} color="#475569" /> : <Sun size={15} color="#fbbf24" />}
+          <span>{isLight ? "Light Theme" : "Dark Theme"}</span>
+        </button>
+      )}
+
+      {/* Floating Developer Watermark (Bottom-Right Corner) */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: 20,
+          right: 24,
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+          fontSize: 12,
+          color: isLight ? "#64748b" : "#94a3b8",
+          zIndex: 10,
+        }}
+      >
+        <Sparkles size={13} color="#ff334b" />
+        <span>Developed by <strong style={{ color: isLight ? "#0f172a" : "#ffffff" }}>Sudhanshu Khande</strong></span>
       </div>
 
       <div
@@ -1261,7 +1313,9 @@ function LoginScreen({ onLogin }) {
           position: "relative",
           zIndex: 10,
           borderTop: "2px solid #ff334b",
-          boxShadow: "0 25px 65px rgba(0, 0, 0, 0.85), 0 0 35px rgba(255, 51, 75, 0.15)",
+          boxShadow: isLight
+            ? "0 20px 50px rgba(0, 0, 0, 0.08), 0 0 25px rgba(255, 51, 75, 0.08)"
+            : "0 25px 65px rgba(0, 0, 0, 0.85), 0 0 35px rgba(255, 51, 75, 0.15)",
         }}
       >
         {/* Brand Header */}
@@ -1280,20 +1334,20 @@ function LoginScreen({ onLogin }) {
               margin: "0 auto 16px",
             }}
           >
-            <Activity size={28} />
+            <Landmark size={28} />
           </div>
           <div
             style={{
               fontFamily: "'Outfit', sans-serif",
               fontSize: 28,
               fontWeight: 800,
-              color: "#ffffff",
+              color: isLight ? "#0f172a" : "#ffffff",
               letterSpacing: "0.5px",
             }}
           >
             Management
           </div>
-          <p style={{ margin: "5px 0 0 0", fontSize: 13, color: "#94a3b8" }}>
+          <p style={{ margin: "5px 0 0 0", fontSize: 13, color: isLight ? "#475569" : "#94a3b8" }}>
             ZPBDMS Operations & Command System
           </p>
         </div>
@@ -1319,9 +1373,20 @@ function LoginScreen({ onLogin }) {
                   setUsername(e.target.value);
                   setError("");
                 }}
-                placeholder="Enter authorized username"
-                style={{ ...darkInputStyle, paddingLeft: 38 }}
-                autoFocus
+                placeholder="Enter username (e.g. sudhanshu, sankalp, rutuja)"
+                style={{
+                  width: "100%",
+                  boxSizing: "border-box",
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 13.5,
+                  padding: "11px 14px 11px 38px",
+                  borderRadius: 8,
+                  border: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.12)",
+                  background: isLight ? "#ffffff" : "rgba(11, 14, 23, 0.88)",
+                  color: isLight ? "#0f172a" : "#ffffff",
+                  outline: "none",
+                  transition: "all 0.2s ease",
+                }}
               />
             </div>
           </FormField>
@@ -1346,7 +1411,19 @@ function LoginScreen({ onLogin }) {
                   setError("");
                 }}
                 placeholder="Enter password"
-                style={{ ...darkInputStyle, paddingLeft: 38 }}
+                style={{
+                  width: "100%",
+                  boxSizing: "border-box",
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 13.5,
+                  padding: "11px 14px 11px 38px",
+                  borderRadius: 8,
+                  border: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.12)",
+                  background: isLight ? "#ffffff" : "rgba(11, 14, 23, 0.88)",
+                  color: isLight ? "#0f172a" : "#ffffff",
+                  outline: "none",
+                  transition: "all 0.2s ease",
+                }}
               />
             </div>
           </FormField>
@@ -1354,19 +1431,19 @@ function LoginScreen({ onLogin }) {
           {error && (
             <div
               style={{
+                marginTop: 10,
+                padding: "10px 12px",
+                borderRadius: 8,
+                background: "rgba(239, 68, 68, 0.15)",
+                border: "1px solid rgba(239, 68, 68, 0.35)",
                 color: "#ff6479",
-                fontSize: 12,
-                marginBottom: 16,
+                fontSize: 12.5,
                 display: "flex",
                 alignItems: "center",
-                gap: 6,
-                padding: "8px 12px",
-                background: "rgba(255, 51, 75, 0.1)",
-                border: "1px solid rgba(255, 51, 75, 0.25)",
-                borderRadius: 6,
+                gap: 8,
               }}
             >
-              <AlertTriangle size={14} /> {error}
+              <AlertTriangle size={15} /> {error}
             </div>
           )}
 
@@ -1375,53 +1452,18 @@ function LoginScreen({ onLogin }) {
             className="btn-red-gradient"
             style={{
               width: "100%",
-              padding: "12px 0",
-              fontSize: 14.5,
-              fontWeight: 700,
-              marginTop: 10,
-              letterSpacing: "0.4px",
-            }}
-          >
-            Access Management Portal →
-          </button>
-        </form>
-
-        {/* Developer Credit Footer Badge */}
-        <div
-          className="developer-badge"
-          style={{
-            marginTop: 26,
-            padding: "12px 14px",
-            textAlign: "center",
-          }}
-        >
-          <div
-            style={{
-              fontSize: 10,
-              color: "#94a3b8",
-              textTransform: "uppercase",
-              letterSpacing: "1.2px",
-              fontWeight: 700,
-            }}
-          >
-            System Architecture
-          </div>
-          <div
-            style={{
-              fontSize: 13,
-              fontWeight: 700,
-              color: "#ffffff",
-              marginTop: 3,
+              padding: "12px",
+              fontSize: 14,
+              marginTop: 18,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              gap: 6,
+              gap: 8,
             }}
           >
-            <Sparkles size={14} color="#ff334b" /> Developed by{" "}
-            <span style={{ color: "#ff334b", fontWeight: 800 }}>Sudhanshu Khande</span>
-          </div>
-        </div>
+            Access Portal <ArrowRight size={16} />
+          </button>
+        </form>
       </div>
     </div>
   );
@@ -1912,6 +1954,32 @@ export default function App() {
   const [qaSearch, setQaSearch] = useState("");
   const saveTimer = useRef(null);
 
+  const [theme, setTheme] = useState(() => {
+    try {
+      return localStorage.getItem("zpbdms_theme") || "dark";
+    } catch (e) {
+      return "dark";
+    }
+  });
+  const isLight = theme === "light";
+
+  const toggleTheme = () => {
+    setTheme((prev) => {
+      const next = prev === "dark" ? "light" : "dark";
+      try {
+        localStorage.setItem("zpbdms_theme", next);
+      } catch (e) {}
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    try {
+      localStorage.setItem("zpbdms_theme", theme);
+    } catch (e) {}
+  }, [theme]);
+
   useEffect(() => {
     let mounted = true;
     let hasAutoMigratedDistricts = false;
@@ -2020,7 +2088,7 @@ export default function App() {
   }, []);
 
   if (!currentUser) {
-    return <LoginScreen onLogin={handleLogin} />;
+    return <LoginScreen onLogin={handleLogin} theme={theme} toggleTheme={toggleTheme} />;
   }
 
   if (connected === "error") {
@@ -2031,7 +2099,7 @@ export default function App() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#07080c",
+          background: isLight ? "#f1f5f9" : "#07080c",
           padding: 24,
         }}
       >
@@ -2333,12 +2401,13 @@ export default function App() {
 
   return (
     <div
+      className={isLight ? "theme-light" : "theme-dark"}
       style={{
         position: "relative",
         minHeight: "100vh",
         display: "flex",
-        background: "#08090d",
-        color: "#f1f5f9",
+        background: isLight ? "#f1f5f9" : "#08090d",
+        color: isLight ? "#0f172a" : "#f1f5f9",
         overflowX: "hidden",
       }}
     >
@@ -2355,15 +2424,17 @@ export default function App() {
         style={{
           width: 250,
           flexShrink: 0,
-          background: "linear-gradient(180deg, rgba(13, 16, 26, 0.95) 0%, rgba(8, 10, 17, 0.98) 100%)",
+          background: isLight
+            ? "#ffffff"
+            : "linear-gradient(180deg, rgba(13, 16, 26, 0.95) 0%, rgba(8, 10, 17, 0.98) 100%)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
-          borderRight: "1px solid rgba(255, 255, 255, 0.08)",
+          borderRight: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
           padding: "24px 16px",
           display: "flex",
           flexDirection: "column",
           zIndex: 10,
-          boxShadow: "4px 0 24px rgba(0, 0, 0, 0.5)",
+          boxShadow: isLight ? "4px 0 24px rgba(0, 0, 0, 0.04)" : "4px 0 24px rgba(0, 0, 0, 0.5)",
         }}
       >
         {/* Brand Banner */}
@@ -2382,7 +2453,7 @@ export default function App() {
                 color: "#ffffff",
               }}
             >
-              <Activity size={20} />
+              <Landmark size={20} />
             </div>
             <div>
               <div
@@ -2390,7 +2461,7 @@ export default function App() {
                   fontFamily: "'Outfit', sans-serif",
                   fontWeight: 800,
                   fontSize: 20,
-                  color: "#ffffff",
+                  color: isLight ? "#0f172a" : "#ffffff",
                   letterSpacing: "0.5px",
                   lineHeight: 1.1,
                   display: "flex",
@@ -2413,7 +2484,7 @@ export default function App() {
                   v2.0
                 </span>
               </div>
-              <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 500, letterSpacing: "0.4px", marginTop: 2 }}>
+              <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", fontWeight: 500, letterSpacing: "0.4px", marginTop: 2 }}>
                 MANAGEMENT SYSTEM
               </div>
             </div>
@@ -2425,8 +2496,8 @@ export default function App() {
           style={{
             padding: "10px 12px",
             borderRadius: 10,
-            background: "rgba(255, 255, 255, 0.03)",
-            border: "1px solid rgba(255, 255, 255, 0.08)",
+            background: isLight ? "#f8fafc" : "rgba(255, 255, 255, 0.03)",
+            border: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
             marginBottom: 20,
             display: "flex",
             alignItems: "center",
@@ -2456,7 +2527,7 @@ export default function App() {
                 style={{
                   fontSize: 12.5,
                   fontWeight: 600,
-                  color: "#ffffff",
+                  color: isLight ? "#0f172a" : "#ffffff",
                   whiteSpace: "nowrap",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
@@ -2467,7 +2538,7 @@ export default function App() {
               <div
                 style={{
                   fontSize: 10.5,
-                  color: "#94a3b8",
+                  color: isLight ? "#64748b" : "#94a3b8",
                   whiteSpace: "nowrap",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
@@ -2702,7 +2773,7 @@ export default function App() {
                 fontFamily: "'Outfit', sans-serif",
                 fontSize: 26,
                 fontWeight: 800,
-                color: "#ffffff",
+                color: isLight ? "#0f172a" : "#ffffff",
                 letterSpacing: "-0.5px",
                 margin: 0,
                 display: "flex",
@@ -2712,7 +2783,7 @@ export default function App() {
             >
               {navItems.find((n) => n.key === tab)?.label}
             </h1>
-            <p style={{ margin: "4px 0 0 0", fontSize: 12.5, color: "#94a3b8" }}>
+            <p style={{ margin: "4px 0 0 0", fontSize: 12.5, color: isLight ? "#475569" : "#94a3b8" }}>
               {tab === "my_desk"
                 ? `Assigned directives and active defects for ${currentUser?.name || "User"}`
                 : tab === "test_hub"
@@ -2722,21 +2793,31 @@ export default function App() {
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-            {/* Developer Credit Top Badge */}
-            <div
-              className="developer-badge"
+            {/* Theme Switcher Toggle Button */}
+            <button
+              onClick={toggleTheme}
               style={{
+                border: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.08)",
+                background: isLight ? "#ffffff" : "rgba(255, 255, 255, 0.04)",
+                color: isLight ? "#d97706" : "#fbbf24",
+                cursor: "pointer",
+                padding: "6px 12px",
+                borderRadius: 20,
                 display: "inline-flex",
                 alignItems: "center",
-                gap: 6,
-                padding: "6px 12px",
-                fontSize: 11.5,
-                color: "#cbd5e1",
+                gap: 7,
+                fontSize: 12,
+                fontWeight: 600,
+                boxShadow: isLight ? "0 2px 8px rgba(0, 0, 0, 0.04)" : "none",
+                transition: "all 0.15s ease",
               }}
+              title={isLight ? "Switch to Dark Theme" : "Switch to Light Theme"}
             >
-              <Sparkles size={12} color="#ff334b" />
-              <span>Developed by <strong style={{ color: "#ffffff" }}>Sudhanshu Khande</strong></span>
-            </div>
+              {isLight ? <Moon size={14} color="#475569" /> : <Sun size={14} color="#fbbf24" />}
+              <span style={{ color: isLight ? "#475569" : "#cbd5e1" }}>
+                {isLight ? "Light Mode" : "Dark Mode"}
+              </span>
+            </button>
 
             {/* Live Firestore Sync State Indicator */}
             <div
@@ -2747,14 +2828,15 @@ export default function App() {
                 fontSize: 12,
                 padding: "6px 12px",
                 borderRadius: 20,
-                background: "rgba(255, 255, 255, 0.04)",
-                border: "1px solid rgba(255, 255, 255, 0.08)",
-                color: "#94a3b8",
+                background: isLight ? "#ffffff" : "rgba(255, 255, 255, 0.04)",
+                border: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
+                color: isLight ? "#475569" : "#94a3b8",
+                boxShadow: isLight ? "0 2px 8px rgba(0, 0, 0, 0.04)" : "none",
               }}
             >
               <Database size={13} color={saveState === "saving" ? "#f59e0b" : "#ff334b"} />
               {saveState === "saving" && <span style={{ color: "#fbbf24" }}>Syncing to Cloud…</span>}
-              {saveState === "saved" && <span style={{ color: "#4ade80" }}>Live Database Synced</span>}
+              {saveState === "saved" && <span style={{ color: "#16a34a" }}>Live Database Synced</span>}
               {saveState === "idle" && <span>Real-time Connected</span>}
             </div>
 
@@ -2763,9 +2845,13 @@ export default function App() {
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
                 style={{
-                  border: "1px solid rgba(255, 255, 255, 0.08)",
-                  background: unreadNotifications.length > 0 ? "rgba(255, 51, 75, 0.12)" : "rgba(255, 255, 255, 0.04)",
-                  color: unreadNotifications.length > 0 ? "#ff334b" : "#94a3b8",
+                  border: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.08)",
+                  background: unreadNotifications.length > 0
+                    ? "rgba(255, 51, 75, 0.12)"
+                    : isLight
+                    ? "#ffffff"
+                    : "rgba(255, 255, 255, 0.04)",
+                  color: unreadNotifications.length > 0 ? "#ff334b" : isLight ? "#475569" : "#94a3b8",
                   cursor: "pointer",
                   padding: "8px 10px",
                   borderRadius: 8,
@@ -2773,6 +2859,7 @@ export default function App() {
                   alignItems: "center",
                   gap: 6,
                   position: "relative",
+                  boxShadow: isLight ? "0 2px 8px rgba(0, 0, 0, 0.04)" : "none",
                   transition: "all 0.15s ease",
                 }}
               >
@@ -3044,6 +3131,27 @@ export default function App() {
             setSearchQuery={setQaSearch}
           />
         )}
+
+        {/* Corner Branding Footer */}
+        <footer
+          style={{
+            marginTop: 40,
+            paddingTop: 16,
+            borderTop: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.06)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            fontSize: 12,
+            color: isLight ? "#64748b" : "#94a3b8",
+            paddingBottom: 10,
+          }}
+        >
+          <div>Maharashtra Zilla Parishad BDMS · Operations & Governance</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <Sparkles size={13} color="#ff334b" />
+            Developed by <strong style={{ color: isLight ? "#0f172a" : "#ffffff" }}>Sudhanshu Khande</strong>
+          </div>
+        </footer>
       </main>
 
       {/* Modern High-Graphic Modals */}
