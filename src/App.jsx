@@ -46,6 +46,12 @@ import {
   Receipt,
   TrendingUp,
   BarChart2,
+  History,
+  UserPlus,
+  Users,
+  Eye,
+  EyeOff,
+  Shield,
 } from "lucide-react";
 
 /* ---------------------------------------------------------------
@@ -61,6 +67,7 @@ const TEAM_ROSTER = [
     role: "Main Admin / Business Analyst",
     password: "Admin@2026",
     avatar: "#ff334b",
+    email: "sudhanshu.khande@zpbdms.gov",
   },
   {
     id: "u2",
@@ -69,6 +76,7 @@ const TEAM_ROSTER = [
     role: "Lead Developer",
     password: "Dev@2026",
     avatar: "#38bdf8",
+    email: "sankalp.dev@zpbdms.gov",
   },
   {
     id: "u3",
@@ -77,6 +85,7 @@ const TEAM_ROSTER = [
     role: "Tester",
     password: "Qa@2026",
     avatar: "#a855f7",
+    email: "rutuja.qa@zpbdms.gov",
   },
   {
     id: "u4",
@@ -85,8 +94,44 @@ const TEAM_ROSTER = [
     role: "Manager",
     password: "Snehal@123",
     avatar: "#10b981",
+    email: "snehal.jagtap@zpbdms.gov",
   },
 ];
+
+const ROLES_LIST = [
+  "Business Analyst",
+  "Main Admin / Business Analyst",
+  "Lead Developer",
+  "Developer",
+  "Tester",
+  "Testing Lead",
+  "Manager",
+];
+
+function mergeUsersWithDefaults(existingUsers = []) {
+  const list = Array.isArray(existingUsers) ? [...existingUsers] : [];
+  const map = new Map();
+  list.forEach((u) => {
+    if (u && u.username) map.set(u.username.toLowerCase(), u);
+  });
+
+  TEAM_ROSTER.forEach((def) => {
+    const key = def.username.toLowerCase();
+    if (!map.has(key)) {
+      list.push({ ...def });
+      map.set(key, def);
+    } else {
+      const existing = map.get(key);
+      if (!existing.password) existing.password = def.password;
+      if (!existing.role) existing.role = def.role;
+      if (!existing.name) existing.name = def.name;
+      if (!existing.avatar) existing.avatar = def.avatar;
+      if (!existing.email && def.email) existing.email = def.email;
+    }
+  });
+
+  return list;
+}
 
 const MODULES = [
   "VPDA",
@@ -305,11 +350,13 @@ function seedTestPoints() {
       code: "TP-VPDA-01",
       module: "VPDA",
       scenario: "Verify digital cryptographic signature generation on Namuna 24 PDF",
+      assignedDate: todayISO(),
       expectedResult: "PDF generated with valid cryptographic PKCS#7 digital signature and official stamp",
       actualResult: "Signature generation timed out on large datasets (>50 pages)",
       status: "Failed",
       devStatus: "Resolved / Ready for Retest",
       devRemark: "Added chunked stream processing in build v2.1; response time reduced to 1.2s.",
+      finalRetestRemarks: "Pending Rutuja verification on staging server.",
       severity: "Critical",
       tester: "Rutuja",
       assignedDev: "Sankalp",
@@ -320,11 +367,13 @@ function seedTestPoints() {
       code: "TP-TR-02",
       module: "Treasury",
       scenario: "Validate Treasury bill remittance reconciliation with bank transaction IDs",
+      assignedDate: todayISO(),
       expectedResult: "Bank UTR number matches Treasury ledger with automated status updated to Settled",
       actualResult: "Ledger status updated correctly with zero discrepancy",
       status: "Passed",
-      devStatus: "Resolved / Ready for Retest",
+      devStatus: "Completed",
       devRemark: "Automated cron runner verified against staging bank gateway.",
+      finalRetestRemarks: "Verified UTR reconciliation end-to-end. Pass sign-off granted.",
       severity: "Major",
       tester: "Rutuja",
       assignedDev: "Sankalp",
@@ -335,11 +384,13 @@ function seedTestPoints() {
       code: "TP-CESS-03",
       module: "CESS",
       scenario: "Test calculation of 2% state infrastructure CESS surcharge on commercial assessment",
+      assignedDate: todayISO(),
       expectedResult: "System calculates accurate 2% rate rounded up to nearest whole rupee",
       actualResult: "Awaiting test data batch from Buldhana district office",
       status: "Untested",
       devStatus: "Pending Dev Fix",
-      devRemark: "",
+      devRemark: "Pending formula confirmation from Treasury officer.",
+      finalRetestRemarks: "",
       severity: "Major",
       tester: "Rutuja",
       assignedDev: "Sudhanshu Khande",
@@ -350,11 +401,13 @@ function seedTestPoints() {
       code: "TP-NAM-04",
       module: "Namuna Reports",
       scenario: "Export Namuna 1 to 33 ledger registers in encrypted Excel/CSV formats",
+      assignedDate: todayISO(),
       expectedResult: "Download triggers with UTF-8 Marathi/English bilingual encoding",
       actualResult: "Special Marathi Unicode characters render as question marks in Excel export",
       status: "Failed",
       devStatus: "Dev In Progress",
       devRemark: "Investigating UTF-8 BOM header injection for Excel compatibility.",
+      finalRetestRemarks: "Retest queued after PR merge.",
       severity: "Critical",
       tester: "Rutuja",
       assignedDev: "Sankalp",
@@ -371,6 +424,8 @@ function seedData() {
     testPoints: seedTestPoints(),
     districts: mergeDistrictsWithDefaults([]),
     districtBills: mergeDistrictBillsWithDefaults([]),
+    users: mergeUsersWithDefaults([]),
+    auditLogs: [],
   };
 }
 
@@ -917,9 +972,278 @@ function Modal({ title, icon: Icon, onClose, children }) {
   );
 }
 
+function ConfirmDeleteModal({ itemType, itemTitle, details, onConfirm, onCancel, isLight }) {
+  return (
+    <Modal title={`Confirm Deletion: ${itemType}`} icon={AlertTriangle} onClose={onCancel}>
+      <div style={{ padding: "4px 0" }}>
+        <div
+          style={{
+            padding: "16px",
+            borderRadius: 10,
+            background: "rgba(255, 51, 75, 0.08)",
+            border: "1px solid rgba(255, 51, 75, 0.3)",
+            marginBottom: 16,
+            display: "flex",
+            gap: 12,
+            alignItems: "flex-start",
+          }}
+        >
+          <div
+            style={{
+              width: 38,
+              height: 38,
+              borderRadius: 8,
+              background: "rgba(255, 51, 75, 0.2)",
+              color: "#ff334b",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            <AlertTriangle size={20} />
+          </div>
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: isLight ? "#0f172a" : "#ffffff" }}>
+              Are you sure you want to delete this {itemType}?
+            </div>
+            <div
+              style={{
+                fontSize: 13,
+                color: "#ff6479",
+                fontWeight: 600,
+                marginTop: 4,
+                wordBreak: "break-word",
+              }}
+            >
+              "{itemTitle}"
+            </div>
+          </div>
+        </div>
+
+        {details && (
+          <div
+            style={{
+              padding: "10px 14px",
+              borderRadius: 8,
+              background: isLight ? "#f8fafc" : "rgba(255, 255, 255, 0.03)",
+              border: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
+              fontSize: 12,
+              color: isLight ? "#475569" : "#94a3b8",
+              marginBottom: 16,
+            }}
+          >
+            <span style={{ fontWeight: 600, color: isLight ? "#0f172a" : "#ffffff" }}>Scope: </span>
+            {details}
+          </div>
+        )}
+
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            fontSize: 11.5,
+            color: isLight ? "#64748b" : "#94a3b8",
+            marginBottom: 22,
+          }}
+        >
+          <ShieldAlert size={15} color="#f59e0b" />
+          <span>This action will be logged in the permanent Admin Audit Trail.</span>
+        </div>
+
+        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+          <button
+            type="button"
+            className="btn-ghost-dark"
+            onClick={onCancel}
+            style={{ padding: "9px 18px", fontSize: 13 }}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="btn-red-gradient"
+            onClick={onConfirm}
+            style={{ padding: "9px 20px", fontSize: 13, display: "flex", alignItems: "center", gap: 6 }}
+          >
+            <Trash2 size={14} /> Confirm & Delete
+          </button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+function UserForm({ initial, onSave, onCancel, isLight }) {
+  const [name, setName] = useState(initial?.name || "");
+  const [username, setUsername] = useState(initial?.username || "");
+  const [role, setRole] = useState(initial?.role || "Developer");
+  const [password, setPassword] = useState(initial?.password || "");
+  const [email, setEmail] = useState(initial?.email || "");
+  const [avatar, setAvatar] = useState(initial?.avatar || "#38bdf8");
+  const [showPass, setShowPass] = useState(false);
+  const [error, setError] = useState("");
+
+  const presetColors = [
+    "#ff334b",
+    "#38bdf8",
+    "#a855f7",
+    "#10b981",
+    "#f59e0b",
+    "#ec4899",
+    "#06b6d4",
+    "#64748b",
+  ];
+
+  const handleSubmit = (e) => {
+    e?.preventDefault();
+    if (!name.trim() || !username.trim() || !password.trim()) {
+      setError("Please fill in Name, Username, and Password.");
+      return;
+    }
+    const cleanUser = username.trim().toLowerCase().replace(/\s+/g, "");
+    onSave({
+      id: initial?.id || `u_${uid()}`,
+      name: name.trim(),
+      username: cleanUser,
+      role,
+      password: password.trim(),
+      email: email.trim(),
+      avatar,
+      createdAt: initial?.createdAt || todayISO(),
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      {error && (
+        <div
+          style={{
+            padding: "8px 12px",
+            borderRadius: 6,
+            background: "rgba(239, 68, 68, 0.15)",
+            border: "1px solid rgba(239, 68, 68, 0.35)",
+            color: "#ff6479",
+            fontSize: 12,
+            marginBottom: 14,
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+          }}
+        >
+          <AlertTriangle size={14} /> {error}
+        </div>
+      )}
+
+      <FormField label="Full Personnel Name">
+        <input
+          style={darkInputStyle}
+          value={name}
+          onChange={(e) => { setName(e.target.value); setError(""); }}
+          placeholder="e.g. Anand Kulkarni"
+        />
+      </FormField>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <FormField label="Username (Login Handle)">
+          <input
+            style={darkInputStyle}
+            value={username}
+            onChange={(e) => { setUsername(e.target.value); setError(""); }}
+            placeholder="e.g. anand"
+          />
+        </FormField>
+        <FormField label="Role / Designation">
+          <SelectInput value={role} onChange={setRole} options={ROLES_LIST} />
+        </FormField>
+      </div>
+
+      <FormField label="Login Access Password">
+        <div style={{ position: "relative" }}>
+          <input
+            type={showPass ? "text" : "password"}
+            style={{ ...darkInputStyle, paddingRight: 40 }}
+            value={password}
+            onChange={(e) => { setPassword(e.target.value); setError(""); }}
+            placeholder="Enter secure password"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPass(!showPass)}
+            style={{
+              position: "absolute",
+              right: 10,
+              top: "50%",
+              transform: "translateY(-50%)",
+              background: "none",
+              border: "none",
+              color: "#94a3b8",
+              cursor: "pointer",
+              padding: 4,
+            }}
+          >
+            {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+          </button>
+        </div>
+      </FormField>
+
+      <FormField label="Official Email Address (Optional)">
+        <input
+          type="email"
+          style={darkInputStyle}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="e.g. anand.k@zpbdms.gov"
+        />
+      </FormField>
+
+      <FormField label="Profile Accent Color">
+        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginTop: 4 }}>
+          {presetColors.map((color) => (
+            <div
+              key={color}
+              onClick={() => setAvatar(color)}
+              style={{
+                width: 26,
+                height: 26,
+                borderRadius: "50%",
+                background: color,
+                cursor: "pointer",
+                border: avatar === color ? "3px solid #ffffff" : "2px solid transparent",
+                boxShadow: avatar === color ? `0 0 10px ${color}` : "none",
+                transition: "all 0.15s ease",
+              }}
+            />
+          ))}
+        </div>
+      </FormField>
+
+      <div style={{ display: "flex", gap: 10, marginTop: 22, justifyContent: "flex-end" }}>
+        <button
+          type="button"
+          className="btn-ghost-dark"
+          style={{ padding: "9px 18px", fontSize: 13 }}
+          onClick={onCancel}
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className="btn-red-gradient"
+          style={{ padding: "9px 20px", fontSize: 13 }}
+        >
+          {initial ? "Update Member" : "Register Member"}
+        </button>
+      </div>
+    </form>
+  );
+}
+
 /* ---------------------------- Forms with Fixed Assignees ---------------------------- */
 
-function IssueForm({ initial, districts, onSave, onCancel }) {
+function IssueForm({ initial, districts, users = TEAM_ROSTER, onSave, onCancel }) {
+  const userList = Array.isArray(users) && users.length > 0 ? users : TEAM_ROSTER;
   const [f, setF] = useState(
     initial || {
       title: "",
@@ -927,12 +1251,12 @@ function IssueForm({ initial, districts, onSave, onCancel }) {
       district: districts[0] || "",
       priority: "Medium",
       status: "Open",
-      assignee: TEAM_ROSTER[0].name,
+      assignee: userList[0]?.name || TEAM_ROSTER[0].name,
       notes: "",
     }
   );
 
-  const assigneeOptions = TEAM_ROSTER.map((u) => ({
+  const assigneeOptions = userList.map((u) => ({
     value: u.name,
     label: `${u.name} (${u.role})`,
   }));
@@ -950,41 +1274,60 @@ function IssueForm({ initial, districts, onSave, onCancel }) {
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         <FormField label="Module">
-          <SelectInput value={f.module} onChange={(v) => setF({ ...f, module: v })} options={MODULES} />
+          <SelectInput
+            value={f.module}
+            onChange={(m) => setF({ ...f, module: m })}
+            options={MODULES}
+          />
         </FormField>
-        <FormField label="District">
-          <SelectInput value={f.district} onChange={(v) => setF({ ...f, district: v })} options={districts} />
+
+        <FormField label="District Jurisdiction">
+          <SelectInput
+            value={f.district}
+            onChange={(d) => setF({ ...f, district: d })}
+            options={districts}
+          />
         </FormField>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-        <FormField label="Priority">
-          <SelectInput value={f.priority} onChange={(v) => setF({ ...f, priority: v })} options={PRIORITIES} />
+        <FormField label="Severity / Priority">
+          <SelectInput
+            value={f.priority}
+            onChange={(p) => setF({ ...f, priority: p })}
+            options={PRIORITIES}
+          />
         </FormField>
+
         <FormField label="Status">
-          <SelectInput value={f.status} onChange={(v) => setF({ ...f, status: v })} options={ISSUE_STATUSES} />
+          <SelectInput
+            value={f.status}
+            onChange={(s) => setF({ ...f, status: s })}
+            options={ISSUE_STATUSES}
+          />
         </FormField>
       </div>
 
-      <FormField label="Fixed Assigned Lead (Role Owner)">
+      <FormField label="Assigned Personnel">
         <SelectInput
           value={f.assignee}
-          onChange={(v) => setF({ ...f, assignee: v })}
+          onChange={(a) => setF({ ...f, assignee: a })}
           options={assigneeOptions}
         />
       </FormField>
 
-      <FormField label="Investigation Notes / Reproduction Steps">
+      <FormField label="Diagnostic Notes / Logs">
         <textarea
-          style={{ ...darkInputStyle, minHeight: 70, resize: "vertical" }}
+          style={{ ...darkInputStyle, minHeight: 80, resize: "vertical" }}
           value={f.notes}
           onChange={(e) => setF({ ...f, notes: e.target.value })}
-          placeholder="Add error codes, root cause, or reproduction steps..."
+          placeholder="Include error stack traces, screenshot URLs, or steps to reproduce..."
         />
       </FormField>
 
       <div style={{ display: "flex", gap: 10, marginTop: 22, justifyContent: "flex-end" }}>
         <button
+          type="button"
           className="btn-ghost-dark"
           style={{ padding: "9px 18px", fontSize: 13, fontWeight: 500 }}
           onClick={onCancel}
@@ -992,6 +1335,7 @@ function IssueForm({ initial, districts, onSave, onCancel }) {
           Cancel
         </button>
         <button
+          type="button"
           className="btn-red-gradient"
           style={{ padding: "9px 20px", fontSize: 13 }}
           onClick={() => f.title.trim() && onSave(f)}
@@ -1003,18 +1347,19 @@ function IssueForm({ initial, districts, onSave, onCancel }) {
   );
 }
 
-function TaskForm({ initial, onSave, onCancel }) {
+function TaskForm({ initial, users = TEAM_ROSTER, onSave, onCancel }) {
+  const userList = Array.isArray(users) && users.length > 0 ? users : TEAM_ROSTER;
   const [f, setF] = useState(
     initial || {
       title: "",
       module: MODULES[0],
-      assignee: TEAM_ROSTER[0].name,
+      assignee: userList[0]?.name || TEAM_ROSTER[0].name,
       dueDate: "",
       status: "To Do",
     }
   );
 
-  const assigneeOptions = TEAM_ROSTER.map((u) => ({
+  const assigneeOptions = userList.map((u) => ({
     value: u.name,
     label: `${u.name} (${u.role})`,
   }));
@@ -1269,90 +1614,129 @@ function DistrictBillForm({ initial, onSave, onCancel, isLight }) {
   );
 }
 
-function TestPointForm({ initial, onSave, onCancel }) {
-  const [f, setF] = useState(
-    initial || {
-      code: `TP-${MODULES[0]}-${Math.floor(10 + Math.random() * 90)}`,
-      module: MODULES[0],
-      scenario: "",
-      expectedResult: "",
-      actualResult: "",
-      status: "Untested",
-      devStatus: "Pending Dev Fix",
-      devRemark: "",
-      severity: "Major",
-      tester: "Rutuja",
-      assignedDev: "Sankalp",
-    }
-  );
-
-  const teamOptions = TEAM_ROSTER.map((u) => ({
+function TestPointForm({ initial, users = TEAM_ROSTER, onSave, onCancel }) {
+  const userList = Array.isArray(users) && users.length > 0 ? users : TEAM_ROSTER;
+  const devOptions = userList.map((u) => ({
     value: u.name,
     label: `${u.name} (${u.role})`,
   }));
 
+  const [f, setF] = useState(
+    initial || {
+      code: `TP-${Math.floor(10 + Math.random() * 90)}`,
+      module: MODULES[0],
+      scenario: "",
+      assignedDate: todayISO(),
+      assignedDev: devOptions[1]?.value || devOptions[0]?.value || "Sankalp",
+      devStatus: "Pending Dev Fix",
+      tester: devOptions[2]?.value || devOptions[0]?.value || "Rutuja",
+      status: "Untested",
+      actualResult: "",
+      devRemark: "",
+      finalRetestRemarks: "",
+      severity: "Major",
+    }
+  );
+
   return (
     <div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-        <FormField label="Test Point Code">
-          <input
-            style={darkInputStyle}
-            value={f.code}
-            onChange={(e) => setF({ ...f, code: e.target.value })}
-            placeholder="e.g. TP-VPDA-05"
-          />
-        </FormField>
-        <FormField label="Module">
-          <SelectInput value={f.module} onChange={(v) => setF({ ...f, module: v })} options={MODULES} />
-        </FormField>
-      </div>
-
-      <FormField label="Test Scenario / Verification Point">
-        <input
-          style={darkInputStyle}
+      <FormField label="1. Point / Directive Description (BA Specification)">
+        <textarea
+          style={{ ...darkInputStyle, minHeight: 65, resize: "vertical" }}
           value={f.scenario}
           onChange={(e) => setF({ ...f, scenario: e.target.value })}
-          placeholder="e.g. Test OTP validation during cash remittance disbursement"
+          placeholder="Enter the core business requirement, verification directive, or point..."
         />
       </FormField>
 
-      <FormField label="Expected Result">
-        <textarea
-          style={{ ...darkInputStyle, minHeight: 60, resize: "vertical" }}
-          value={f.expectedResult}
-          onChange={(e) => setF({ ...f, expectedResult: e.target.value })}
-          placeholder="What the system should do under normal conditions..."
-        />
-      </FormField>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <FormField label="2. Date Assigned (Auto-calculated)">
+          <input
+            type="date"
+            style={darkInputStyle}
+            value={f.assignedDate || todayISO()}
+            onChange={(e) => setF({ ...f, assignedDate: e.target.value })}
+          />
+        </FormField>
+        <FormField label="Code & Module">
+          <div style={{ display: "flex", gap: 8 }}>
+            <input
+              style={{ ...darkInputStyle, width: "45%" }}
+              value={f.code}
+              onChange={(e) => setF({ ...f, code: e.target.value })}
+              placeholder="Code"
+            />
+            <SelectInput
+              value={f.module}
+              onChange={(v) => setF({ ...f, module: v })}
+              options={MODULES}
+            />
+          </div>
+        </FormField>
+      </div>
 
-      <FormField label="Actual Result / Defect Observations">
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <FormField label="3. Assigned Developer (BA Initial Assignment)">
+          <SelectInput
+            value={f.assignedDev}
+            onChange={(v) => setF({ ...f, assignedDev: v })}
+            options={devOptions}
+          />
+        </FormField>
+        <FormField label="4. Dev Completion Status">
+          <SelectInput
+            value={f.devStatus}
+            onChange={(v) => setF({ ...f, devStatus: v })}
+            options={DEV_STATUSES}
+          />
+        </FormField>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <FormField label="5. Assigned Tester (Testing Lead Assignment)">
+          <SelectInput
+            value={f.tester}
+            onChange={(v) => setF({ ...f, tester: v })}
+            options={devOptions}
+          />
+        </FormField>
+        <FormField label="6. Tester Verification Status">
+          <SelectInput
+            value={f.status}
+            onChange={(v) => setF({ ...f, status: v })}
+            options={TEST_STATUSES}
+          />
+        </FormField>
+      </div>
+
+      <FormField label="Tester Status / Verification Remarks">
         <textarea
-          style={{ ...darkInputStyle, minHeight: 60, resize: "vertical" }}
+          style={{ ...darkInputStyle, minHeight: 48, resize: "vertical" }}
           value={f.actualResult}
           onChange={(e) => setF({ ...f, actualResult: e.target.value })}
-          placeholder="What actually occurred during the test run..."
+          placeholder="Tester observations, bug specifics, or verification observations..."
         />
       </FormField>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-        <FormField label="Test Status">
-          <SelectInput value={f.status} onChange={(v) => setF({ ...f, status: v })} options={TEST_STATUSES} />
-        </FormField>
-        <FormField label="Severity">
-          <SelectInput value={f.severity} onChange={(v) => setF({ ...f, severity: v })} options={SEVERITIES} />
-        </FormField>
-      </div>
+      <FormField label="7. Developer Reassigned Remarks (Fix / Rework Notes)">
+        <textarea
+          style={{ ...darkInputStyle, minHeight: 48, resize: "vertical" }}
+          value={f.devRemark}
+          onChange={(e) => setF({ ...f, devRemark: e.target.value })}
+          placeholder="Developer notes if issue occurred and needs to be retested..."
+        />
+      </FormField>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-        <FormField label="Tester Lead">
-          <SelectInput value={f.tester} onChange={(v) => setF({ ...f, tester: v })} options={teamOptions} />
-        </FormField>
-        <FormField label="Assigned Developer">
-          <SelectInput value={f.assignedDev} onChange={(v) => setF({ ...f, assignedDev: v })} options={teamOptions} />
-        </FormField>
-      </div>
+      <FormField label="8. Final Retest Remarks">
+        <textarea
+          style={{ ...darkInputStyle, minHeight: 48, resize: "vertical" }}
+          value={f.finalRetestRemarks || ""}
+          onChange={(e) => setF({ ...f, finalRetestRemarks: e.target.value })}
+          placeholder="Final QA retest sign-off remarks..."
+        />
+      </FormField>
 
-      <div style={{ display: "flex", gap: 10, marginTop: 22, justifyContent: "flex-end" }}>
+      <div style={{ display: "flex", gap: 10, marginTop: 18, justifyContent: "flex-end" }}>
         <button
           className="btn-ghost-dark"
           style={{ padding: "9px 18px", fontSize: 13, fontWeight: 500 }}
@@ -1365,19 +1749,20 @@ function TestPointForm({ initial, onSave, onCancel }) {
           style={{ padding: "9px 20px", fontSize: 13 }}
           onClick={() => f.scenario.trim() && onSave(f)}
         >
-          Save Test Point
+          Save Matrix Point
         </button>
       </div>
     </div>
   );
 }
 
-function DevResolveForm({ initial, onSave, onCancel }) {
+function DevResolveForm({ initial, users = TEAM_ROSTER, onSave, onCancel }) {
   const [devStatus, setDevStatus] = useState(initial?.devStatus || "Resolved / Ready for Retest");
   const [devRemark, setDevRemark] = useState(initial?.devRemark || "");
-  const [assignedDev, setAssignedDev] = useState(initial?.assignedDev || TEAM_ROSTER[1].name);
+  const userList = Array.isArray(users) && users.length > 0 ? users : TEAM_ROSTER;
+  const [assignedDev, setAssignedDev] = useState(initial?.assignedDev || userList[1]?.name || userList[0]?.name);
 
-  const teamOptions = TEAM_ROSTER.map((u) => ({
+  const teamOptions = userList.map((u) => ({
     value: u.name,
     label: `${u.name} (${u.role})`,
   }));
@@ -1446,10 +1831,19 @@ function DevResolveForm({ initial, onSave, onCancel }) {
 
 /* ---------------------------- Clean Management Login View ---------------------------- */
 
-function LoginScreen({ onLogin, theme = "dark", toggleTheme }) {
+function LoginScreen({ onLogin, theme = "dark", toggleTheme, users }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+
+  const activeUsers = (() => {
+    if (Array.isArray(users) && users.length > 0) return users;
+    try {
+      const cached = JSON.parse(localStorage.getItem("zpbdms_users") || "[]");
+      if (Array.isArray(cached) && cached.length > 0) return mergeUsersWithDefaults(cached);
+    } catch (e) {}
+    return TEAM_ROSTER;
+  })();
 
   const handleLoginSubmit = (e) => {
     e?.preventDefault();
@@ -1457,10 +1851,10 @@ function LoginScreen({ onLogin, theme = "dark", toggleTheme }) {
     const cleanPass = password.trim();
 
     // Match either by username, full name, dot-notation, compact, or role (case-insensitive)
-    const foundUser = TEAM_ROSTER.find((u) => {
-      const uName = u.name.toLowerCase();
-      const uUser = u.username.toLowerCase();
-      const uRole = u.role.toLowerCase();
+    const foundUser = activeUsers.find((u) => {
+      const uName = (u.name || "").toLowerCase();
+      const uUser = (u.username || "").toLowerCase();
+      const uRole = (u.role || "").toLowerCase();
       const uNormalized = uName.replace(/\s+/g, ".");
       const uCompact = uName.replace(/\s+/g, "");
       const matchIdentity =
@@ -2170,17 +2564,25 @@ export default function App() {
       if (!saved) return null;
       const parsed = JSON.parse(saved);
       // Validate that saved session belongs to a valid team member
-      const match = TEAM_ROSTER.find(
+      const cachedUsers = (() => {
+        try {
+          const list = JSON.parse(localStorage.getItem("zpbdms_users") || "[]");
+          if (Array.isArray(list) && list.length > 0) return mergeUsersWithDefaults(list);
+        } catch (e) {}
+        return TEAM_ROSTER;
+      })();
+      const match = cachedUsers.find(
         (u) =>
-          (parsed.username && u.username.toLowerCase() === parsed.username.toLowerCase()) ||
-          (parsed.name && u.name.toLowerCase() === parsed.name.toLowerCase())
+          (parsed.username && u.username?.toLowerCase() === parsed.username?.toLowerCase()) ||
+          (parsed.name && u.name?.toLowerCase() === parsed.name?.toLowerCase())
       );
-      return match || null;
+      return match || (parsed?.username ? parsed : null);
     } catch (e) {
       return null;
     }
   });
 
+  const [confirmDelete, setConfirmDelete] = useState(null);
   const [showLanding, setShowLanding] = useState(false);
   const [data, setData] = useState(null);
   const [connected, setConnected] = useState(false);
@@ -2227,6 +2629,7 @@ export default function App() {
     let mounted = true;
     let hasAutoMigratedDistricts = false;
     let hasAutoMigratedBills = false;
+    let hasAutoMigratedUsers = false;
     const unsub = onSnapshot(
       DOC_REF(),
       (snap) => {
@@ -2259,6 +2662,20 @@ export default function App() {
             );
           }
 
+          // Auto-migrate Users if not yet stored or incomplete
+          const existingUsers = Array.isArray(fetched.users) ? fetched.users : [];
+          const fullUsers = mergeUsersWithDefaults(existingUsers);
+          if (!hasAutoMigratedUsers && (!fetched.users || existingUsers.length < fullUsers.length)) {
+            hasAutoMigratedUsers = true;
+            setDoc(DOC_REF(), { users: fullUsers }, { merge: true }).catch((err) =>
+              console.warn("Auto-sync users to Firestore error:", err)
+            );
+          }
+
+          try {
+            localStorage.setItem("zpbdms_users", JSON.stringify(fullUsers));
+          } catch (e) {}
+
           const rawIssues = Array.isArray(fetched.issues) ? fetched.issues : [];
           const normalizedIssues = rawIssues.map((i) =>
             i && i.district && i.district.toLowerCase() === "ahmednagar"
@@ -2271,6 +2688,8 @@ export default function App() {
             tasks: Array.isArray(fetched.tasks) ? fetched.tasks : [],
             districts: fullDistricts,
             districtBills: fullDistrictBills,
+            users: fullUsers,
+            auditLogs: Array.isArray(fetched.auditLogs) ? fetched.auditLogs : [],
             notifications: Array.isArray(fetched.notifications) ? fetched.notifications : [],
             testPoints:
               Array.isArray(fetched.testPoints) && fetched.testPoints.length > 0
@@ -2343,7 +2762,7 @@ export default function App() {
   }, []);
 
   if (!currentUser) {
-    return <LoginScreen onLogin={handleLogin} theme={theme} toggleTheme={toggleTheme} />;
+    return <LoginScreen onLogin={handleLogin} theme={theme} toggleTheme={toggleTheme} users={data?.users} />;
   }
 
   if (connected === "error") {
@@ -2513,15 +2932,184 @@ export default function App() {
     setModal(null);
   };
 
+  const isSudhanshu =
+    currentUser?.username?.toLowerCase() === "sudhanshu" ||
+    currentUser?.name?.toLowerCase().includes("sudhanshu");
+
+  const logActivity = (action, entityType, entityTitle, details, baseData = null) => {
+    const activeData = baseData || data;
+    const newLog = {
+      id: uid(),
+      timestamp: new Date().toISOString(),
+      displayTime: formatTimeNow(),
+      actorName: currentUser?.name || "System",
+      actorRole: currentUser?.role || "Admin",
+      action,
+      entityType,
+      entityTitle: entityTitle || "Entity",
+      details: details || "",
+    };
+    const updatedLogs = [newLog, ...(activeData?.auditLogs || [])].slice(0, 200);
+    return updatedLogs;
+  };
+
   const saveTestPoint = (item) => {
-    persist({ ...data, testPoints: addOrUpdate(data?.testPoints || [], item, modal?.editing?.id) });
+    const isEdit = !!modal?.editing?.id;
+    const updatedTestPoints = addOrUpdate(data?.testPoints || [], item, modal?.editing?.id);
+    const nextLogs = logActivity(
+      isEdit ? "UPDATE" : "CREATE",
+      "Dev-Test Matrix Point",
+      item.code || item.scenario,
+      `Assigned Dev: ${item.assignedDev || "None"} · Dev Status: ${item.devStatus || "Pending"} · Tester: ${item.tester || "None"} · Status: ${item.status || "Untested"}`
+    );
+    persist({ ...data, testPoints: updatedTestPoints, auditLogs: nextLogs });
     setModal(null);
   };
 
-  const removeIssue = (id) => persist({ ...data, issues: (data?.issues || []).filter((x) => x.id !== id) });
-  const removeTask = (id) => persist({ ...data, tasks: (data?.tasks || []).filter((x) => x.id !== id) });
-  const removeDistrict = (id) => persist({ ...data, districts: (data?.districts || []).filter((x) => x.id !== id) });
-  const removeTestPoint = (id) => persist({ ...data, testPoints: (data?.testPoints || []).filter((t) => t.id !== id) });
+  const promptDeleteIssue = (id) => {
+    const item = (data?.issues || []).find((x) => x.id === id);
+    setConfirmDelete({
+      itemType: "Issue Record",
+      itemTitle: item?.title || "Issue",
+      details: `Module: ${item?.module || "N/A"} · District: ${item?.district || "N/A"} · Assignee: ${item?.assignee || "None"}`,
+      onConfirm: () => {
+        const nextIssues = (data?.issues || []).filter((x) => x.id !== id);
+        const nextLogs = logActivity(
+          "DELETE",
+          "Issue",
+          item?.title || id,
+          `Deleted issue [${item?.priority || "Normal"}]. Snapshot: ${JSON.stringify(item || {})}`
+        );
+        persist({ ...data, issues: nextIssues, auditLogs: nextLogs });
+        setConfirmDelete(null);
+      },
+    });
+  };
+
+  const promptDeleteTask = (id) => {
+    const item = (data?.tasks || []).find((x) => x.id === id);
+    setConfirmDelete({
+      itemType: "Task Directive",
+      itemTitle: item?.title || "Task",
+      details: `Module: ${item?.module || "N/A"} · Assignee: ${item?.assignee || "None"} · Status: ${item?.status || "To Do"}`,
+      onConfirm: () => {
+        const nextTasks = (data?.tasks || []).filter((x) => x.id !== id);
+        const nextLogs = logActivity(
+          "DELETE",
+          "Task",
+          item?.title || id,
+          `Deleted task directive. Snapshot: ${JSON.stringify(item || {})}`
+        );
+        persist({ ...data, tasks: nextTasks, auditLogs: nextLogs });
+        setConfirmDelete(null);
+      },
+    });
+  };
+
+  const promptDeleteDistrict = (id) => {
+    const item = (data?.districts || []).find((x) => x.id === id);
+    setConfirmDelete({
+      itemType: "District Jurisdiction",
+      itemTitle: item?.name || "District",
+      details: `Stage: ${item?.stage || "Planning"} · Bills Done: ${item?.billsDone || 0}`,
+      onConfirm: () => {
+        const nextDistricts = (data?.districts || []).filter((x) => x.id !== id);
+        const nextLogs = logActivity(
+          "DELETE",
+          "District",
+          item?.name || id,
+          `Deleted district deployment. Snapshot: ${JSON.stringify(item || {})}`
+        );
+        persist({ ...data, districts: nextDistricts, auditLogs: nextLogs });
+        setConfirmDelete(null);
+      },
+    });
+  };
+
+  const promptDeleteTestPoint = (tp) => {
+    setConfirmDelete({
+      itemType: "Dev-Test Matrix Point",
+      itemTitle: `[${tp.code || "Point"}] ${tp.scenario || ""}`,
+      details: `Point: ${tp.scenario || "N/A"}\nAssigned Dev: ${tp.assignedDev || "Unassigned"}\nStatus: ${tp.status || "Untested"}\nTester: ${tp.tester || "Unassigned"}`,
+      onConfirm: () => {
+        const nextPoints = (data?.testPoints || []).filter((t) => t.id !== tp.id);
+        const nextLogs = logActivity(
+          "DELETE",
+          "Dev-Test Matrix Point",
+          tp.code || tp.scenario,
+          `Deleted matrix point. Full Data Snapshot: ${JSON.stringify(tp)}`
+        );
+        persist({ ...data, testPoints: nextPoints, auditLogs: nextLogs });
+        setConfirmDelete(null);
+      },
+    });
+  };
+
+  const promptDeleteUser = (u) => {
+    if (u.username?.toLowerCase() === "sudhanshu" || u.name?.toLowerCase().includes("sudhanshu")) {
+      alert("System Architect 'Sudhanshu' is the primary administrator and cannot be deleted.");
+      return;
+    }
+    setConfirmDelete({
+      itemType: "Member Account",
+      itemTitle: `${u.name} (@${u.username})`,
+      details: `Role: ${u.role} · Email: ${u.email || "None"}`,
+      onConfirm: () => {
+        const nextUsers = (data?.users || []).filter((x) => x.id !== u.id && x.username !== u.username);
+        const nextLogs = logActivity(
+          "DELETE",
+          "User Account",
+          `${u.name} (@${u.username})`,
+          `Removed team member account with role: ${u.role}`
+        );
+        try {
+          localStorage.setItem("zpbdms_users", JSON.stringify(nextUsers));
+        } catch (e) {}
+        persist({ ...data, users: nextUsers, auditLogs: nextLogs });
+        setConfirmDelete(null);
+      },
+    });
+  };
+
+  const saveUser = (userItem) => {
+    const currentUsers = data?.users || mergeUsersWithDefaults([]);
+    const isEdit = !!modal?.editing?.id;
+    let updatedUsers;
+    if (isEdit) {
+      updatedUsers = currentUsers.map((u) => (u.id === modal.editing.id ? { ...u, ...userItem } : u));
+    } else {
+      const newUser = {
+        ...userItem,
+        id: userItem.id || `u_${uid()}`,
+        createdAt: todayISO(),
+      };
+      updatedUsers = [...currentUsers, newUser];
+    }
+    try {
+      localStorage.setItem("zpbdms_users", JSON.stringify(updatedUsers));
+    } catch (e) {}
+    const nextLogs = logActivity(
+      isEdit ? "UPDATE" : "CREATE",
+      "User Account",
+      `${userItem.name} (${userItem.role})`,
+      `Username: @${userItem.username} · Role: ${userItem.role}`
+    );
+    persist({ ...data, users: updatedUsers, auditLogs: nextLogs });
+    setModal(null);
+  };
+
+  const removeIssue = (id) => promptDeleteIssue(id);
+  const removeTask = (id) => promptDeleteTask(id);
+  const removeDistrict = (id) => promptDeleteDistrict(id);
+  const removeTestPoint = (tpOrId) => {
+    if (typeof tpOrId === "object" && tpOrId !== null) {
+      promptDeleteTestPoint(tpOrId);
+    } else {
+      const target = (data?.testPoints || []).find((t) => t.id === tpOrId);
+      if (target) promptDeleteTestPoint(target);
+      else persist({ ...data, testPoints: (data?.testPoints || []).filter((t) => t.id !== tpOrId) });
+    }
+  };
 
   const cycleIssueStatus = (item) => {
     const next = ISSUE_STATUSES[(ISSUE_STATUSES.indexOf(item.status) + 1) % ISSUE_STATUSES.length];
@@ -2534,9 +3122,11 @@ export default function App() {
 
   const cycleTestPointStatus = (tp) => {
     const next = TEST_STATUSES[(TEST_STATUSES.indexOf(tp.status) + 1) % TEST_STATUSES.length];
+    const nextLogs = logActivity("UPDATE", "Dev-Test Matrix Point", tp.code || tp.scenario, `Cycled test status to ${next}`);
     persist({
       ...data,
       testPoints: (data?.testPoints || []).map((t) => (t.id === tp.id ? { ...t, status: next, updatedAt: todayISO() } : t)),
+      auditLogs: nextLogs,
     });
   };
 
@@ -2556,7 +3146,13 @@ export default function App() {
       ),
       ...(data.notifications || []),
     ];
-    persist({ ...data, testPoints: updatedPoints, notifications: newNotifications });
+    const nextLogs = logActivity(
+      "UPDATE",
+      "Dev-Test Matrix Point",
+      target?.code || "Test Point",
+      `Status updated to: ${resolution.devStatus || "Updated"}. Remarks: ${resolution.devRemark || ""}`
+    );
+    persist({ ...data, testPoints: updatedPoints, notifications: newNotifications, auditLogs: nextLogs });
     setModal(null);
   };
 
@@ -2699,13 +3295,20 @@ export default function App() {
 
   const navItems = [
     { key: "my_desk", label: "My Desk & Tasks", icon: UserCheck, count: myOpenIssues + myPendingTasks, highlight: true },
-    { key: "test_hub", label: "QA Test Matrix", icon: FileSpreadsheet, count: failedTestPointsCount, isAlert: failedTestPointsCount > 0 },
+    { key: "test_hub", label: "Dev-Test Execution Matrix", icon: FileSpreadsheet, count: failedTestPointsCount, isAlert: failedTestPointsCount > 0 },
     { key: "bill_tracker", label: "Bill Tracker Matrix", icon: Receipt, count: totalBillsCount },
     { key: "dashboard", label: "Operations Deck", icon: LayoutGrid },
     { key: "issues", label: "Issues Matrix", icon: AlertTriangle, count: openIssues, isAlert: criticalOpen > 0 },
     { key: "tasks", label: "Task Directives", icon: ListChecks, count: pendingTasks },
     { key: "districts", label: "District Deployments", icon: MapPin, count: (data?.districts || []).length },
   ];
+
+  if (isSudhanshu) {
+    navItems.push(
+      { key: "master_module", label: "Master Control", icon: Users, count: (data?.users || []).length },
+      { key: "audit_logs", label: "Activity Logs", icon: History, count: (data?.auditLogs || []).length }
+    );
+  }
 
   return (
     <div
@@ -3095,7 +3698,11 @@ export default function App() {
               {tab === "my_desk"
                 ? `Assigned directives and active defects for ${currentUser?.name || "User"}`
                 : tab === "test_hub"
-                ? "Unified QA Test Matrix, Google Sheet sync, and developer defect resolution log"
+                ? "Unified Dev-Test Execution Matrix, lead assignment, developer completion status, and retest log"
+                : tab === "master_module"
+                ? "Manage personnel access, register developers, testers, BAs, and managers (Master Admin Only)"
+                : tab === "audit_logs"
+                ? "Comprehensive tamper-proof audit trail of all matrix edits, deletions, and system actions"
                 : tab === "bill_tracker"
                 ? "Live district-wise bill progress across all 34 fixed Maharashtra ZP jurisdictions (As of 01-Sep-2026 EOD)"
                 : "District rollouts, live defect tracking, and sprint task register"}
@@ -3316,7 +3923,17 @@ export default function App() {
             )}
 
             {/* View Actions */}
-            {tab === "bill_tracker" ? (
+            {tab === "master_module" ? (
+              <button
+                className="btn-red-gradient"
+                onClick={() => setModal({ type: "user" })}
+                style={{ padding: "8px 16px" }}
+              >
+                <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
+                  <UserPlus size={15} /> Add Team Member
+                </span>
+              </button>
+            ) : tab === "audit_logs" ? null : tab === "bill_tracker" ? (
               <button
                 className="btn-ghost-dark"
                 onClick={() => exportBillsCSV(allDistrictBills)}
@@ -3335,14 +3952,14 @@ export default function App() {
                   style={{ padding: "8px 16px" }}
                 >
                   <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
-                    <Plus size={15} /> Add Test Point
+                    <Plus size={15} /> Add Directive / Point
                   </span>
                 </button>
                 <button
                   className="btn-ghost-dark"
                   onClick={() => exportTestPointsCSV(allTestPoints)}
                   style={{ padding: "8px 16px" }}
-                  title="Export QA Matrix to CSV spreadsheet"
+                  title="Export Dev-Test Execution Matrix to CSV spreadsheet"
                 >
                   <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
                     <Download size={14} /> Export CSV
@@ -3451,6 +4068,7 @@ export default function App() {
           <TestHubView
             testPoints={filteredTestPoints}
             allTestPoints={allTestPoints}
+            users={data?.users || TEAM_ROSTER}
             onCycleStatus={cycleTestPointStatus}
             onOpenResolve={(tp) => setModal({ type: "dev_resolve", editing: tp })}
             onOpenEdit={(tp) => setModal({ type: "test_point", editing: tp })}
@@ -3466,6 +4084,25 @@ export default function App() {
             setSelectedDevStatus={setQaDevStatus}
             searchQuery={qaSearch}
             setSearchQuery={setQaSearch}
+            isLight={isLight}
+          />
+        )}
+
+        {tab === "master_module" && isSudhanshu && (
+          <MasterModuleView
+            users={data?.users || mergeUsersWithDefaults([])}
+            onOpenAddUser={() => setModal({ type: "user" })}
+            onOpenEditUser={(u) => setModal({ type: "user", editing: u })}
+            onDeleteUser={promptDeleteUser}
+            currentUser={currentUser}
+            isLight={isLight}
+          />
+        )}
+
+        {tab === "audit_logs" && isSudhanshu && (
+          <AuditLogsView
+            logs={data?.auditLogs || []}
+            isLight={isLight}
           />
         )}
 
@@ -3501,6 +4138,7 @@ export default function App() {
           <IssueForm
             initial={modal.editing}
             districts={districtNames}
+            users={data?.users || TEAM_ROSTER}
             onSave={saveIssue}
             onCancel={() => setModal(null)}
           />
@@ -3513,7 +4151,12 @@ export default function App() {
           icon={ListChecks}
           onClose={() => setModal(null)}
         >
-          <TaskForm initial={modal.editing} onSave={saveTask} onCancel={() => setModal(null)} />
+          <TaskForm
+            initial={modal.editing}
+            users={data?.users || TEAM_ROSTER}
+            onSave={saveTask}
+            onCancel={() => setModal(null)}
+          />
         </Modal>
       )}
 
@@ -3529,12 +4172,13 @@ export default function App() {
 
       {modal?.type === "test_point" && (
         <Modal
-          title={modal.editing ? "Edit QA Test Point" : "Add QA Test Point"}
+          title={modal.editing ? "Edit Matrix Point" : "Add Dev-Test Matrix Directive"}
           icon={FlaskConical}
           onClose={() => setModal(null)}
         >
           <TestPointForm
             initial={modal.editing}
+            users={data?.users || TEAM_ROSTER}
             onSave={saveTestPoint}
             onCancel={() => setModal(null)}
           />
@@ -3549,6 +4193,7 @@ export default function App() {
         >
           <DevResolveForm
             initial={modal.editing}
+            users={data?.users || TEAM_ROSTER}
             onSave={(resolution) => resolveTestPoint(modal.editing.id, resolution)}
             onCancel={() => setModal(null)}
           />
@@ -3571,6 +4216,32 @@ export default function App() {
             isLight={isLight}
           />
         </Modal>
+      )}
+
+      {modal?.type === "user" && (
+        <Modal
+          title={modal.editing ? "Edit Member Account" : "Register Team Member"}
+          icon={UserPlus}
+          onClose={() => setModal(null)}
+        >
+          <UserForm
+            initial={modal.editing}
+            onSave={saveUser}
+            onCancel={() => setModal(null)}
+            isLight={isLight}
+          />
+        </Modal>
+      )}
+
+      {confirmDelete && (
+        <ConfirmDeleteModal
+          itemType={confirmDelete.itemType}
+          itemTitle={confirmDelete.itemTitle}
+          details={confirmDelete.details}
+          onConfirm={confirmDelete.onConfirm}
+          onCancel={() => setConfirmDelete(null)}
+          isLight={isLight}
+        />
       )}
     </div>
   );
@@ -4353,15 +5024,15 @@ function exportTestPointsCSV(testPoints = []) {
   const headers = [
     "Code",
     "Module",
-    "Test Scenario",
-    "Expected Result",
-    "Actual Result / Bug",
-    "Test Status",
-    "Severity",
-    "Tester Lead",
+    "Point / Directive Description",
+    "Date Assigned",
     "Assigned Developer",
-    "Developer Status",
-    "Developer Remark",
+    "Dev Completion Status",
+    "Assigned Tester",
+    "Tester Status",
+    "Tester Remarks / Defect",
+    "Developer Reassigned Remarks",
+    "Final Retest Remarks",
     "Last Updated",
   ];
 
@@ -4375,14 +5046,14 @@ function exportTestPointsCSV(testPoints = []) {
     escapeCSV(tp.code),
     escapeCSV(tp.module),
     escapeCSV(tp.scenario),
-    escapeCSV(tp.expectedResult),
-    escapeCSV(tp.actualResult),
-    escapeCSV(tp.status),
-    escapeCSV(tp.severity),
-    escapeCSV(tp.tester),
-    escapeCSV(tp.assignedDev),
-    escapeCSV(tp.devStatus),
-    escapeCSV(tp.devRemark),
+    escapeCSV(tp.assignedDate || tp.createdAt || todayISO()),
+    escapeCSV(tp.assignedDev || ""),
+    escapeCSV(tp.devStatus || ""),
+    escapeCSV(tp.tester || ""),
+    escapeCSV(tp.status || ""),
+    escapeCSV(tp.actualResult || ""),
+    escapeCSV(tp.devRemark || ""),
+    escapeCSV(tp.finalRetestRemarks || ""),
     escapeCSV(tp.updatedAt || todayISO()),
   ]);
 
@@ -4391,7 +5062,7 @@ function exportTestPointsCSV(testPoints = []) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.setAttribute("href", url);
-  link.setAttribute("download", `ZPBDMS_QA_Test_Matrix_${todayISO()}.csv`);
+  link.setAttribute("download", `ZPBDMS_Dev_Test_Execution_Matrix_${todayISO()}.csv`);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -4416,6 +5087,7 @@ function TestHubView({
   setSelectedDevStatus,
   searchQuery,
   setSearchQuery,
+  isLight,
 }) {
   const total = allTestPoints.length;
   const passed = allTestPoints.filter((t) => t.status === "Passed").length;
@@ -4424,48 +5096,48 @@ function TestHubView({
   const retest = allTestPoints.filter((t) => t.status === "Retest").length;
   const untested = allTestPoints.filter((t) => t.status === "Untested").length;
   const devResolved = allTestPoints.filter(
-    (t) => t.devStatus === "Resolved / Ready for Retest"
+    (t) => t.devStatus === "Resolved / Ready for Retest" || t.devStatus === "Completed"
   ).length;
   const passRate = total > 0 ? Math.round((passed / total) * 100) : 0;
 
   return (
     <div>
-      {/* Top QA Operational KPI Cards */}
+      {/* Top Dev-Test Operational KPI Cards */}
       <div
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-          gap: 16,
-          marginBottom: 20,
+          gap: 14,
+          marginBottom: 18,
         }}
       >
-        <div className="glass-card" style={{ padding: "16px 18px", position: "relative" }}>
+        <div className="glass-card" style={{ padding: "14px 16px", position: "relative" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontSize: 11, color: "#94a3b8", textTransform: "uppercase", fontWeight: 700 }}>
-              Total Test Scenarios
+            <span style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", textTransform: "uppercase", fontWeight: 700 }}>
+              Total Directives
             </span>
-            <FileSpreadsheet size={15} color="#cbd5e1" />
+            <FileSpreadsheet size={15} color={isLight ? "#475569" : "#cbd5e1"} />
           </div>
-          <div style={{ fontSize: 26, fontWeight: 800, color: "#ffffff", marginTop: 8 }}>
+          <div style={{ fontSize: 24, fontWeight: 800, color: isLight ? "#0f172a" : "#ffffff", marginTop: 6 }}>
             {total}
           </div>
-          <div style={{ fontSize: 11.5, color: "#64748b", marginTop: 4 }}>
-            Spreadsheet matrix records
+          <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>
+            Execution matrix points
           </div>
         </div>
 
-        <div className="glass-card" style={{ padding: "16px 18px" }}>
+        <div className="glass-card" style={{ padding: "14px 16px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontSize: 11, color: "#4ade80", textTransform: "uppercase", fontWeight: 700 }}>
-              Passed / Verification
+            <span style={{ fontSize: 11, color: "#16a34a", textTransform: "uppercase", fontWeight: 700 }}>
+              Passed / Cleared
             </span>
             <CheckCircle size={15} color="#22c55e" />
           </div>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: 8 }}>
-            <div style={{ fontSize: 26, fontWeight: 800, color: "#4ade80" }}>{passed}</div>
-            <div style={{ fontSize: 12, color: "#94a3b8" }}>({passRate}% Pass Rate)</div>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginTop: 6 }}>
+            <div style={{ fontSize: 24, fontWeight: 800, color: "#22c55e" }}>{passed}</div>
+            <div style={{ fontSize: 11.5, color: isLight ? "#64748b" : "#94a3b8" }}>({passRate}% Pass Rate)</div>
           </div>
-          <div style={{ width: "100%", height: 4, background: "rgba(255, 255, 255, 0.08)", borderRadius: 2, marginTop: 8, overflow: "hidden" }}>
+          <div style={{ width: "100%", height: 4, background: isLight ? "#e2e8f0" : "rgba(255, 255, 255, 0.08)", borderRadius: 2, marginTop: 6, overflow: "hidden" }}>
             <div style={{ width: `${passRate}%`, height: "100%", background: "#22c55e", borderRadius: 2 }} />
           </div>
         </div>
@@ -4473,138 +5145,95 @@ function TestHubView({
         <div
           className="glass-card"
           style={{
-            padding: "16px 18px",
-            border: failed > 0 ? "1px solid rgba(255, 51, 75, 0.4)" : "1px solid rgba(255, 255, 255, 0.08)",
-            background: failed > 0 ? "rgba(255, 51, 75, 0.08)" : "rgba(18, 22, 34, 0.6)",
+            padding: "14px 16px",
+            border: failed > 0 ? "1px solid rgba(255, 51, 75, 0.4)" : undefined,
+            background: failed > 0 ? (isLight ? "rgba(255, 51, 75, 0.06)" : "rgba(255, 51, 75, 0.08)") : undefined,
           }}
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span style={{ fontSize: 11, color: "#ff6479", textTransform: "uppercase", fontWeight: 700 }}>
-              Defects / Failed
+              Defects / Retest
             </span>
             <AlertCircle size={15} color="#ff334b" />
           </div>
-          <div style={{ fontSize: 26, fontWeight: 800, color: failed > 0 ? "#ff334b" : "#ffffff", marginTop: 8 }}>
+          <div style={{ fontSize: 24, fontWeight: 800, color: failed > 0 ? "#ff334b" : (isLight ? "#0f172a" : "#ffffff"), marginTop: 6 }}>
             {failed}
           </div>
-          <div style={{ fontSize: 11.5, color: failed > 0 ? "#ff8093" : "#64748b", marginTop: 4 }}>
+          <div style={{ fontSize: 11, color: failed > 0 ? "#ff6479" : (isLight ? "#64748b" : "#94a3b8"), marginTop: 2 }}>
             {failed > 0 ? "Action required: Developer fix needed" : "All tested scenarios passing"}
           </div>
         </div>
 
-        <div className="glass-card" style={{ padding: "16px 18px" }}>
+        <div className="glass-card" style={{ padding: "14px 16px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontSize: 11, color: "#c084fc", textTransform: "uppercase", fontWeight: 700 }}>
-              Developer Resolved
+            <span style={{ fontSize: 11, color: "#9333ea", textTransform: "uppercase", fontWeight: 700 }}>
+              Dev Resolved / Fixed
             </span>
             <Code2 size={15} color="#a855f7" />
           </div>
-          <div style={{ fontSize: 26, fontWeight: 800, color: "#c084fc", marginTop: 8 }}>
+          <div style={{ fontSize: 24, fontWeight: 800, color: "#a855f7", marginTop: 6 }}>
             {devResolved}
           </div>
-          <div style={{ fontSize: 11.5, color: "#94a3b8", marginTop: 4 }}>
-            Ready for Tester Rutuja retest
+          <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>
+            Ready for QA tester verification
           </div>
         </div>
 
-        <div className="glass-card" style={{ padding: "16px 18px" }}>
+        <div className="glass-card" style={{ padding: "14px 16px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontSize: 11, color: "#fbbf24", textTransform: "uppercase", fontWeight: 700 }}>
-              Pending / In Queue
+            <span style={{ fontSize: 11, color: "#d97706", textTransform: "uppercase", fontWeight: 700 }}>
+              Pending In Queue
             </span>
             <Clock size={15} color="#f59e0b" />
           </div>
-          <div style={{ fontSize: 26, fontWeight: 800, color: "#fbbf24", marginTop: 8 }}>
+          <div style={{ fontSize: 24, fontWeight: 800, color: "#f59e0b", marginTop: 6 }}>
             {untested + blocked + retest}
           </div>
-          <div style={{ fontSize: 11.5, color: "#94a3b8", marginTop: 4 }}>
-            {untested} Untested · {blocked} Blocked · {retest} Retest
+          <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>
+            Awaiting execution or retest
           </div>
         </div>
       </div>
 
-      {/* Spreadsheet Control Toolbar & Filter Deck */}
+      {/* Toolbar */}
       <div
         className="glass-card"
         style={{
-          padding: "14px 18px",
-          marginBottom: 16,
+          padding: "12px 16px",
+          marginBottom: 14,
           display: "flex",
-          alignItems: "center",
           justifyContent: "space-between",
+          alignItems: "center",
           flexWrap: "wrap",
-          gap: 12,
+          gap: 10,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", flex: 1 }}>
-          {/* Module Filter */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 260 }}>
           <div style={{ minWidth: 140 }}>
-            <select
+            <SelectInput
               value={selectedModule}
-              onChange={(e) => setSelectedModule(e.target.value)}
-              style={{
-                ...darkInputStyle,
-                padding: "7px 12px",
-                fontSize: 12,
-                cursor: "pointer",
-                background: "rgba(18, 22, 34, 0.8)",
-              }}
-            >
-              <option value="All Modules">All Modules</option>
-              {MODULES.map((m) => (
-                <option key={m} value={m}>
-                  {m}
-                </option>
-              ))}
-            </select>
+              onChange={setSelectedModule}
+              options={["All Modules", ...MODULES]}
+            />
           </div>
 
-          {/* Test Status Filter */}
           <div style={{ minWidth: 140 }}>
-            <select
+            <SelectInput
               value={selectedTestStatus}
-              onChange={(e) => setSelectedTestStatus(e.target.value)}
-              style={{
-                ...darkInputStyle,
-                padding: "7px 12px",
-                fontSize: 12,
-                cursor: "pointer",
-                background: "rgba(18, 22, 34, 0.8)",
-              }}
-            >
-              <option value="All Test Statuses">All Test Statuses</option>
-              {TEST_STATUSES.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
+              onChange={setSelectedTestStatus}
+              options={["All Test Statuses", ...TEST_STATUSES]}
+            />
           </div>
 
-          {/* Dev Status Filter */}
-          <div style={{ minWidth: 160 }}>
-            <select
+          <div style={{ minWidth: 150 }}>
+            <SelectInput
               value={selectedDevStatus}
-              onChange={(e) => setSelectedDevStatus(e.target.value)}
-              style={{
-                ...darkInputStyle,
-                padding: "7px 12px",
-                fontSize: 12,
-                cursor: "pointer",
-                background: "rgba(18, 22, 34, 0.8)",
-              }}
-            >
-              <option value="All Dev Statuses">All Dev Statuses</option>
-              {DEV_STATUSES.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
+              onChange={setSelectedDevStatus}
+              options={["All Dev Statuses", ...DEV_STATUSES]}
+            />
           </div>
 
-          {/* Keyword Search */}
-          <div style={{ position: "relative", flex: 1, minWidth: 220, maxWidth: 360 }}>
+          <div style={{ position: "relative", flex: 1, minWidth: 160 }}>
             <Search
               size={13}
               style={{
@@ -4612,18 +5241,18 @@ function TestHubView({
                 left: 10,
                 top: "50%",
                 transform: "translateY(-50%)",
-                color: "#64748b",
+                color: "#94a3b8",
               }}
             />
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search points, scenario, remarks, devs..."
+              placeholder="Search points, dev, remarks..."
               style={{
                 ...darkInputStyle,
-                padding: "7px 10px 7px 30px",
+                padding: "6px 10px 6px 30px",
                 fontSize: 12,
-                background: "rgba(18, 22, 34, 0.8)",
+                background: isLight ? "#ffffff" : "rgba(18, 22, 34, 0.8)",
                 width: "100%",
               }}
             />
@@ -4648,277 +5277,972 @@ function TestHubView({
           </div>
         </div>
 
-        {/* Toolbar Right Info & Quick Action */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: 12, color: "#94a3b8" }}>
-            Showing <strong>{testPoints.length}</strong> of {total} test points
-          </span>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <button
+            className="btn-ghost-dark"
+            onClick={onExportCSV}
+            style={{ padding: "6px 12px", fontSize: 12 }}
+            title="Export Dev-Test Execution Matrix to CSV"
+          >
+            <Download size={13} style={{ marginRight: 4 }} /> Export CSV
+          </button>
           <button
             className="btn-red-gradient"
             onClick={onOpenAdd}
             style={{ padding: "6px 14px", fontSize: 12 }}
           >
-            <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
-              <Plus size={14} /> New Point
-            </span>
+            <Plus size={14} style={{ marginRight: 4 }} /> Add Point
           </button>
         </div>
       </div>
 
-      {/* High-Density Spreadsheet Matrix Grid */}
-      <div className="glass-card" style={{ overflowX: "auto", overflowY: "hidden" }}>
-        {/* Table Column Headers */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "110px 100px minmax(260px, 2.2fr) 130px 100px 110px minmax(260px, 2.2fr) 110px",
-            padding: "12px 16px",
-            background: "rgba(255, 255, 255, 0.03)",
-            borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
-            fontSize: 11,
-            fontWeight: 700,
-            color: "#94a3b8",
-            textTransform: "uppercase",
-            letterSpacing: "0.6px",
-            alignItems: "center",
-            minWidth: 1180,
-          }}
-        >
-          <span># & Code</span>
-          <span>Module</span>
-          <span>Test Scenario & Evidence</span>
-          <span>Test Status</span>
-          <span>Severity</span>
-          <span>Tester Lead</span>
-          <span>Developer Resolution & Remark</span>
-          <span style={{ textAlign: "right" }}>Actions</span>
-        </div>
-
-        {/* Table Body Rows */}
-        {testPoints.length === 0 ? (
-          <div style={{ padding: "50px 20px", textAlign: "center" }}>
-            <FileSpreadsheet size={36} color="#64748b" style={{ margin: "0 auto 12px", display: "block" }} />
-            <div style={{ color: "#ffffff", fontSize: 14, fontWeight: 600 }}>No QA test points found</div>
-            <p style={{ color: "#64748b", fontSize: 12.5, margin: "6px 0 16px" }}>
-              No test scenarios match the current filters or search term.
-            </p>
-            <button
-              className="btn-red-gradient"
-              onClick={onOpenAdd}
-              style={{ padding: "8px 16px", fontSize: 12.5 }}
-            >
-              <Plus size={13} style={{ marginRight: 6 }} /> Create New Test Point
-            </button>
-          </div>
-        ) : (
-          testPoints.map((tp, idx) => (
-            <div
-              key={tp.id}
-              className="custom-table-row"
+      {/* Dev-Test Execution Matrix Table - SINGLE SCREEN WITHOUT HORIZONTAL SCROLLER */}
+      <div
+        className="glass-card"
+        style={{
+          width: "100%",
+          overflow: "hidden",
+          border: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.08)",
+        }}
+      >
+        <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
+          <colgroup>
+            <col style={{ width: 55 }} />
+            <col style={{ width: "21%" }} />
+            <col style={{ width: 85 }} />
+            <col style={{ width: "11%" }} />
+            <col style={{ width: "11%" }} />
+            <col style={{ width: "10%" }} />
+            <col style={{ width: "14%" }} />
+            <col style={{ width: "12%" }} />
+            <col style={{ width: "10.5%" }} />
+            <col style={{ width: 65 }} />
+          </colgroup>
+          <thead>
+            <tr
               style={{
-                display: "grid",
-                gridTemplateColumns: "110px 100px minmax(260px, 2.2fr) 130px 100px 110px minmax(260px, 2.2fr) 110px",
-                padding: "14px 16px",
-                borderBottom: idx === testPoints.length - 1 ? "none" : "1px solid rgba(255, 255, 255, 0.05)",
-                alignItems: "center",
-                minWidth: 1180,
+                background: isLight ? "#e2e8f0" : "rgba(255, 255, 255, 0.04)",
+                borderBottom: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.08)",
+                fontSize: 10.5,
+                fontWeight: 700,
+                color: isLight ? "#475569" : "#94a3b8",
+                textTransform: "uppercase",
+                letterSpacing: "0.5px",
               }}
             >
-              {/* Code */}
-              <div>
-                <div
-                  style={{
-                    fontFamily: "'JetBrains Mono', monospace",
-                    fontSize: 12,
-                    fontWeight: 700,
-                    color: "#ffffff",
-                    letterSpacing: "0.2px",
-                  }}
-                >
-                  {tp.code || `TP-${idx + 1}`}
-                </div>
-                <div style={{ fontSize: 10.5, color: "#64748b", marginTop: 2 }}>
-                  Row #{idx + 1}
-                </div>
-              </div>
-
-              {/* Module */}
-              <div>
-                <ModuleTag name={tp.module} />
-              </div>
-
-              {/* Test Scenario & Specification */}
-              <div style={{ paddingRight: 14 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: "#ffffff", lineHeight: 1.4 }}>
-                  {tp.scenario}
-                </div>
-
-                {tp.expectedResult && (
-                  <div
-                    style={{
-                      fontSize: 11.5,
-                      color: "#94a3b8",
-                      marginTop: 4,
-                      lineHeight: 1.35,
-                      display: "flex",
-                      gap: 4,
-                    }}
-                  >
-                    <span style={{ color: "#4ade80", fontWeight: 600, flexShrink: 0 }}>Expected:</span>
-                    <span>{tp.expectedResult}</span>
+              <th style={{ padding: "10px 4px", textAlign: "center" }}>#</th>
+              <th style={{ padding: "10px 8px", textAlign: "left" }}>Point / Directive</th>
+              <th style={{ padding: "10px 4px", textAlign: "center" }}>Assigned</th>
+              <th style={{ padding: "10px 6px", textAlign: "left" }}>Assigned Dev</th>
+              <th style={{ padding: "10px 6px", textAlign: "center" }}>Dev Status</th>
+              <th style={{ padding: "10px 6px", textAlign: "left" }}>Assigned Tester</th>
+              <th style={{ padding: "10px 6px", textAlign: "left" }}>Tester Remarks</th>
+              <th style={{ padding: "10px 6px", textAlign: "left" }}>Dev Reassigned</th>
+              <th style={{ padding: "10px 6px", textAlign: "left" }}>Final Retest</th>
+              <th style={{ padding: "10px 4px", textAlign: "center" }}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {testPoints.length === 0 ? (
+              <tr>
+                <td colSpan={10} style={{ padding: "40px 20px", textAlign: "center" }}>
+                  <FileSpreadsheet size={32} color="#64748b" style={{ margin: "0 auto 10px", display: "block" }} />
+                  <div style={{ color: isLight ? "#0f172a" : "#ffffff", fontSize: 13.5, fontWeight: 600 }}>
+                    No execution points match current filter
                   </div>
-                )}
-
-                {tp.actualResult && (
-                  <div
-                    style={{
-                      fontSize: 11.5,
-                      color: tp.status === "Failed" ? "#ff8093" : "#cbd5e1",
-                      marginTop: 4,
-                      lineHeight: 1.35,
-                      display: "flex",
-                      gap: 4,
-                      background: tp.status === "Failed" ? "rgba(255, 51, 75, 0.08)" : "rgba(255, 255, 255, 0.02)",
-                      padding: "4px 8px",
-                      borderRadius: 4,
-                      border: tp.status === "Failed" ? "1px solid rgba(255, 51, 75, 0.25)" : "1px solid rgba(255, 255, 255, 0.06)",
-                    }}
-                  >
-                    <span style={{ color: tp.status === "Failed" ? "#ff334b" : "#94a3b8", fontWeight: 700, flexShrink: 0 }}>
-                      {tp.status === "Failed" ? "Defect:" : "Actual:"}
-                    </span>
-                    <span>{tp.actualResult}</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Test Status (Click to advance) */}
-              <div
-                onClick={() => onCycleStatus(tp)}
-                title="Click to advance: Untested → Passed → Failed → Blocked → Retest"
-              >
-                <TestStatusChip value={tp.status} interactive />
-              </div>
-
-              {/* Severity */}
-              <div>
-                <SeverityBadge value={tp.severity || "Major"} />
-              </div>
-
-              {/* Tester Lead */}
-              <div>
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <div
-                    style={{
-                      width: 22,
-                      height: 22,
-                      borderRadius: "50%",
-                      background: "rgba(255, 51, 75, 0.15)",
-                      border: "1px solid rgba(255, 51, 75, 0.35)",
-                      color: "#ff334b",
-                      fontSize: 10,
-                      fontWeight: 700,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    {(tp.tester || "R").charAt(0)}
-                  </div>
-                  <span style={{ fontSize: 12, fontWeight: 500, color: "#ffffff" }}>
-                    {tp.tester || "Rutuja"}
-                  </span>
-                </div>
-              </div>
-
-              {/* Developer Resolution & Remarks */}
-              <div style={{ paddingRight: 14 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-                  <DevStatusChip value={tp.devStatus} onClick={() => onOpenResolve(tp)} />
-                  <span style={{ fontSize: 11, color: "#94a3b8" }}>
-                    {tp.assignedDev ? `(${tp.assignedDev})` : ""}
-                  </span>
-                </div>
-
-                {tp.devRemark ? (
-                  <div
-                    style={{
-                      fontSize: 11.5,
-                      color: "#e2e8f0",
-                      background: "rgba(255, 255, 255, 0.03)",
-                      borderLeft: "2px solid #ff334b",
-                      padding: "4px 8px",
-                      borderRadius: "0 4px 4px 0",
-                      marginTop: 6,
-                      lineHeight: 1.35,
-                    }}
-                  >
-                    <span style={{ color: "#ff6479", fontWeight: 700 }}>Dev Fix Note: </span>
-                    {tp.devRemark}
-                  </div>
-                ) : (
-                  <div style={{ fontSize: 11, color: "#64748b", marginTop: 4, fontStyle: "italic" }}>
-                    No developer remarks recorded yet.
-                  </div>
-                )}
-
-                <button
-                  onClick={() => onOpenResolve(tp)}
-                  style={{
-                    marginTop: 6,
-                    background: "rgba(255, 51, 75, 0.1)",
-                    border: "1px solid rgba(255, 51, 75, 0.3)",
-                    color: "#ff6479",
-                    borderRadius: 4,
-                    padding: "3px 8px",
-                    fontSize: 10.5,
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 4,
-                    transition: "all 0.15s ease",
-                  }}
-                  title="Update developer resolution status and fix remark"
-                >
-                  <Code2 size={11} /> {tp.devRemark ? "Edit Resolution / Remark" : "+ Add Fix Remark / Resolve"}
-                </button>
-              </div>
-
-              {/* Actions */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
-                {tp.status === "Failed" && (
                   <button
-                    onClick={() => onDispatchIssue(tp)}
                     className="btn-red-gradient"
-                    style={{
-                      padding: "4px 8px",
-                      fontSize: 10.5,
-                      borderRadius: 4,
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 4,
-                      whiteSpace: "nowrap",
-                    }}
-                    title="Dispatch bug directly to central Issues Matrix"
+                    onClick={onOpenAdd}
+                    style={{ padding: "6px 14px", fontSize: 12, marginTop: 12 }}
                   >
-                    <ExternalLink size={10} /> Dispatch Bug
+                    <Plus size={13} style={{ marginRight: 4 }} /> Add New Execution Point
                   </button>
-                )}
+                </td>
+              </tr>
+            ) : (
+              testPoints.map((tp, idx) => (
+                <tr
+                  key={tp.id}
+                  className="custom-table-row"
+                  style={{
+                    borderBottom: idx === testPoints.length - 1 ? "none" : isLight ? "1px solid #f1f5f9" : "1px solid rgba(255, 255, 255, 0.05)",
+                    background: idx % 2 === 1 ? (isLight ? "rgba(241, 245, 249, 0.5)" : "rgba(255, 255, 255, 0.01)") : "transparent",
+                  }}
+                >
+                  {/* 1. Sr. / Code */}
+                  <td style={{ padding: "8px 4px", textAlign: "center", verticalAlign: "middle" }}>
+                    <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, fontWeight: 700, color: isLight ? "#0f172a" : "#ffffff" }}>
+                      {tp.code || `TP-${idx + 1}`}
+                    </div>
+                    <div style={{ fontSize: 9.5, color: isLight ? "#64748b" : "#94a3b8" }}>
+                      #{idx + 1}
+                    </div>
+                  </td>
 
-                <div style={{ display: "flex", gap: 4 }}>
-                  <IconButton onClick={() => onOpenEdit(tp)} title="Edit Test Point">
-                    <Pencil size={13} />
-                  </IconButton>
-                  <IconButton onClick={() => onDelete(tp.id)} title="Delete Test Point" variant="danger">
-                    <Trash2 size={13} />
-                  </IconButton>
-                </div>
-              </div>
-            </div>
-          ))
+                  {/* 2. Point / Directive */}
+                  <td style={{ padding: "8px 8px", verticalAlign: "middle" }}>
+                    <div
+                      title={tp.scenario}
+                      style={{
+                        fontSize: 11.5,
+                        fontWeight: 600,
+                        color: isLight ? "#0f172a" : "#ffffff",
+                        lineHeight: 1.35,
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                      }}
+                    >
+                      {tp.scenario}
+                    </div>
+                    {tp.module && (
+                      <div style={{ marginTop: 2 }}>
+                        <span
+                          style={{
+                            fontSize: 9.5,
+                            padding: "1px 5px",
+                            borderRadius: 3,
+                            background: isLight ? "#e2e8f0" : "rgba(255, 255, 255, 0.08)",
+                            color: isLight ? "#475569" : "#94a3b8",
+                            fontWeight: 600,
+                          }}
+                        >
+                          {tp.module}
+                        </span>
+                      </div>
+                    )}
+                  </td>
+
+                  {/* 3. Date Assigned */}
+                  <td style={{ padding: "8px 4px", textAlign: "center", verticalAlign: "middle" }}>
+                    <span
+                      style={{
+                        fontSize: 10.5,
+                        fontFamily: "'JetBrains Mono', monospace",
+                        color: isLight ? "#475569" : "#94a3b8",
+                        fontWeight: 600,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {tp.assignedDate || tp.createdAt || todayISO()}
+                    </span>
+                  </td>
+
+                  {/* 4. Assigned Developer */}
+                  <td style={{ padding: "8px 6px", verticalAlign: "middle" }}>
+                    <div
+                      title={`Developer: ${tp.assignedDev || "Unassigned"}`}
+                      style={{ display: "flex", alignItems: "center", gap: 5, overflow: "hidden" }}
+                    >
+                      <div
+                        style={{
+                          width: 19,
+                          height: 19,
+                          borderRadius: "50%",
+                          background: "rgba(56, 189, 248, 0.18)",
+                          border: "1px solid rgba(56, 189, 248, 0.4)",
+                          color: "#38bdf8",
+                          fontSize: 9,
+                          fontWeight: 700,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                        }}
+                      >
+                        {(tp.assignedDev || "D").charAt(0)}
+                      </div>
+                      <span
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 600,
+                          color: isLight ? "#1e293b" : "#f1f5f9",
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        {tp.assignedDev || "Unassigned"}
+                      </span>
+                    </div>
+                  </td>
+
+                  {/* 5. Dev Completion Status */}
+                  <td style={{ padding: "8px 4px", textAlign: "center", verticalAlign: "middle" }}>
+                    <DevStatusChip value={tp.devStatus} onClick={() => onOpenResolve(tp)} compact />
+                  </td>
+
+                  {/* 6. Assigned Tester */}
+                  <td style={{ padding: "8px 6px", verticalAlign: "middle" }}>
+                    <div
+                      title={`Tester: ${tp.tester || "Unassigned"}`}
+                      style={{ display: "flex", alignItems: "center", gap: 5, overflow: "hidden" }}
+                    >
+                      <div
+                        style={{
+                          width: 19,
+                          height: 19,
+                          borderRadius: "50%",
+                          background: "rgba(168, 85, 247, 0.18)",
+                          border: "1px solid rgba(168, 85, 247, 0.4)",
+                          color: "#c084fc",
+                          fontSize: 9,
+                          fontWeight: 700,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                        }}
+                      >
+                        {(tp.tester || "T").charAt(0)}
+                      </div>
+                      <span
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 600,
+                          color: isLight ? "#1e293b" : "#f1f5f9",
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        {tp.tester || "Rutuja"}
+                      </span>
+                    </div>
+                  </td>
+
+                  {/* 7. Tester Status / Remarks */}
+                  <td style={{ padding: "8px 6px", verticalAlign: "middle" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 2 }}>
+                      <TestStatusChip value={tp.status} interactive onClick={() => onCycleStatus(tp)} compact />
+                    </div>
+                    {tp.actualResult ? (
+                      <div
+                        title={tp.actualResult}
+                        style={{
+                          fontSize: 10.5,
+                          color: tp.status === "Failed" ? "#ff6479" : (isLight ? "#475569" : "#cbd5e1"),
+                          lineHeight: 1.3,
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                        }}
+                      >
+                        {tp.actualResult}
+                      </div>
+                    ) : (
+                      <span style={{ fontSize: 10, color: isLight ? "#94a3b8" : "#64748b", fontStyle: "italic" }}>
+                        No remarks
+                      </span>
+                    )}
+                  </td>
+
+                  {/* 8. Developer Reassigned Remarks */}
+                  <td style={{ padding: "8px 6px", verticalAlign: "middle" }}>
+                    {tp.devRemark ? (
+                      <div
+                        title={tp.devRemark}
+                        style={{
+                          fontSize: 10.5,
+                          color: isLight ? "#334155" : "#e2e8f0",
+                          borderLeft: "2px solid #ff334b",
+                          paddingLeft: 4,
+                          lineHeight: 1.3,
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                        }}
+                      >
+                        {tp.devRemark}
+                      </div>
+                    ) : (
+                      <span style={{ fontSize: 10, color: isLight ? "#94a3b8" : "#64748b", fontStyle: "italic" }}>
+                        None
+                      </span>
+                    )}
+                  </td>
+
+                  {/* 9. Final Retest Remarks */}
+                  <td style={{ padding: "8px 6px", verticalAlign: "middle" }}>
+                    {tp.finalRetestRemarks ? (
+                      <div
+                        title={tp.finalRetestRemarks}
+                        style={{
+                          fontSize: 10.5,
+                          color: isLight ? "#15803d" : "#4ade80",
+                          borderLeft: "2px solid #22c55e",
+                          paddingLeft: 4,
+                          lineHeight: 1.3,
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                        }}
+                      >
+                        {tp.finalRetestRemarks}
+                      </div>
+                    ) : (
+                      <span style={{ fontSize: 10, color: isLight ? "#94a3b8" : "#64748b", fontStyle: "italic" }}>
+                        Pending sign-off
+                      </span>
+                    )}
+                  </td>
+
+                  {/* 10. Actions */}
+                  <td style={{ padding: "8px 4px", textAlign: "center", verticalAlign: "middle" }}>
+                    <div style={{ display: "inline-flex", gap: 3, alignItems: "center" }}>
+                      <IconButton onClick={() => onOpenEdit(tp)} title="Edit Matrix Point" style={{ padding: 3 }}>
+                        <Pencil size={12} />
+                      </IconButton>
+                      <IconButton onClick={() => onDelete(tp)} title="Delete Matrix Point" variant="danger" style={{ padding: 3 }}>
+                        <Trash2 size={12} />
+                      </IconButton>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------------------- Master Control & User Management (Sudhanshu Only) ---------------------------- */
+
+function MasterModuleView({
+  users,
+  onOpenAddUser,
+  onOpenEditUser,
+  onDeleteUser,
+  currentUser,
+  isLight,
+}) {
+  const [search, setSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState("All Roles");
+  const [revealedPasswords, setRevealedPasswords] = useState({});
+
+  const toggleRevealPassword = (id) => {
+    setRevealedPasswords((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const allUsers = Array.isArray(users) ? users : [];
+  const totalUsers = allUsers.length;
+  const devCount = allUsers.filter((u) => u.role?.toLowerCase().includes("dev")).length;
+  const testerCount = allUsers.filter((u) => u.role?.toLowerCase().includes("test")).length;
+  const baCount = allUsers.filter((u) => u.role?.toLowerCase().includes("analyst") || u.role?.toLowerCase().includes("ba")).length;
+  const mgrCount = allUsers.filter((u) => u.role?.toLowerCase().includes("manager")).length;
+
+  const filtered = allUsers.filter((u) => {
+    if (roleFilter !== "All Roles" && u.role !== roleFilter) return false;
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      return (
+        (u.name && u.name.toLowerCase().includes(q)) ||
+        (u.username && u.username.toLowerCase().includes(q)) ||
+        (u.role && u.role.toLowerCase().includes(q)) ||
+        (u.email && u.email.toLowerCase().includes(q))
+      );
+    }
+    return true;
+  });
+
+  return (
+    <div>
+      {/* Top Master KPI Stats */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+          gap: 14,
+          marginBottom: 18,
+        }}
+      >
+        <div className="glass-card" style={{ padding: "14px 16px", borderTop: "2px solid #ff334b" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", textTransform: "uppercase", fontWeight: 700 }}>
+              Total Personnel
+            </span>
+            <Users size={16} color="#ff334b" />
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 800, color: isLight ? "#0f172a" : "#ffffff", marginTop: 6 }}>
+            {totalUsers}
+          </div>
+          <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>
+            Registered team members
+          </div>
+        </div>
+
+        <div className="glass-card" style={{ padding: "14px 16px", borderTop: "2px solid #38bdf8" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 11, color: "#0284c7", textTransform: "uppercase", fontWeight: 700 }}>
+              Developers
+            </span>
+            <Code2 size={16} color="#38bdf8" />
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 800, color: "#38bdf8", marginTop: 6 }}>
+            {devCount}
+          </div>
+          <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>
+            Development Leads
+          </div>
+        </div>
+
+        <div className="glass-card" style={{ padding: "14px 16px", borderTop: "2px solid #a855f7" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 11, color: "#9333ea", textTransform: "uppercase", fontWeight: 700 }}>
+              QA Testers
+            </span>
+            <CheckCircle size={16} color="#a855f7" />
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 800, color: "#a855f7", marginTop: 6 }}>
+            {testerCount}
+          </div>
+          <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>
+            Verification Leads
+          </div>
+        </div>
+
+        <div className="glass-card" style={{ padding: "14px 16px", borderTop: "2px solid #ff6479" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 11, color: "#ff6479", textTransform: "uppercase", fontWeight: 700 }}>
+              Business Analysts
+            </span>
+            <ShieldCheck size={16} color="#ff6479" />
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 800, color: "#ff6479", marginTop: 6 }}>
+            {baCount}
+          </div>
+          <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>
+            System Architects & BA
+          </div>
+        </div>
+
+        <div className="glass-card" style={{ padding: "14px 16px", borderTop: "2px solid #10b981" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 11, color: "#059669", textTransform: "uppercase", fontWeight: 700 }}>
+              Managers
+            </span>
+            <UserCheck size={16} color="#10b981" />
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 800, color: "#10b981", marginTop: 6 }}>
+            {mgrCount}
+          </div>
+          <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>
+            Operational Supervisors
+          </div>
+        </div>
+      </div>
+
+      {/* Toolbar */}
+      <div
+        className="glass-card"
+        style={{
+          padding: "12px 16px",
+          marginBottom: 14,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: 10,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 260 }}>
+          <div style={{ position: "relative", width: 260, maxWidth: "100%" }}>
+            <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#94a3b8" }} />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by name, username, role..."
+              style={{
+                ...darkInputStyle,
+                padding: "6px 10px 6px 30px",
+                fontSize: 12,
+                background: isLight ? "#ffffff" : "rgba(18, 22, 34, 0.8)",
+                width: "100%",
+              }}
+            />
+          </div>
+
+          <div style={{ minWidth: 150 }}>
+            <SelectInput
+              value={roleFilter}
+              onChange={setRoleFilter}
+              options={["All Roles", ...ROLES_LIST]}
+            />
+          </div>
+        </div>
+
+        <button
+          className="btn-red-gradient"
+          onClick={onOpenAddUser}
+          style={{ padding: "7px 16px", fontSize: 12.5, display: "flex", alignItems: "center", gap: 6 }}
+        >
+          <UserPlus size={14} /> Register New Member
+        </button>
+      </div>
+
+      {/* Master Users Roster Table */}
+      <div
+        className="glass-card"
+        style={{
+          width: "100%",
+          overflow: "hidden",
+          border: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.08)",
+        }}
+      >
+        <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
+          <colgroup>
+            <col style={{ width: 55 }} />
+            <col style={{ width: "24%" }} />
+            <col style={{ width: "16%" }} />
+            <col style={{ width: "20%" }} />
+            <col style={{ width: "22%" }} />
+            <col style={{ width: 90 }} />
+          </colgroup>
+          <thead>
+            <tr
+              style={{
+                background: isLight ? "#e2e8f0" : "rgba(255, 255, 255, 0.04)",
+                borderBottom: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.08)",
+                fontSize: 10.5,
+                fontWeight: 700,
+                color: isLight ? "#475569" : "#94a3b8",
+                textTransform: "uppercase",
+                letterSpacing: "0.5px",
+              }}
+            >
+              <th style={{ padding: "10px 4px", textAlign: "center" }}>Sr.</th>
+              <th style={{ padding: "10px 10px", textAlign: "left" }}>Team Member</th>
+              <th style={{ padding: "10px 8px", textAlign: "left" }}>Username</th>
+              <th style={{ padding: "10px 8px", textAlign: "left" }}>Role / Designation</th>
+              <th style={{ padding: "10px 8px", textAlign: "left" }}>Login Password</th>
+              <th style={{ padding: "10px 4px", textAlign: "center" }}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((u, idx) => {
+              const isSelf = u.username?.toLowerCase() === "sudhanshu";
+              const isRevealed = !!revealedPasswords[u.id || u.username];
+              return (
+                <tr
+                  key={u.id || u.username}
+                  className="custom-table-row"
+                  style={{
+                    borderBottom: idx === filtered.length - 1 ? "none" : isLight ? "1px solid #f1f5f9" : "1px solid rgba(255, 255, 255, 0.05)",
+                    background: idx % 2 === 1 ? (isLight ? "rgba(241, 245, 249, 0.5)" : "rgba(255, 255, 255, 0.01)") : "transparent",
+                  }}
+                >
+                  <td style={{ padding: "8px 4px", textAlign: "center", fontSize: 11, color: isLight ? "#64748b" : "#94a3b8" }}>
+                    {idx + 1}
+                  </td>
+                  <td style={{ padding: "8px 10px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <div
+                        style={{
+                          width: 28,
+                          height: 28,
+                          borderRadius: "50%",
+                          background: u.avatar || "#ff334b",
+                          color: "#ffffff",
+                          fontWeight: 700,
+                          fontSize: 12,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                          boxShadow: `0 0 8px ${u.avatar || "#ff334b"}55`,
+                        }}
+                      >
+                        {(u.name || "U").charAt(0)}
+                      </div>
+                      <div style={{ overflow: "hidden" }}>
+                        <div style={{ fontSize: 12.5, fontWeight: 700, color: isLight ? "#0f172a" : "#ffffff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                          {u.name}
+                          {isSelf && (
+                            <span style={{ marginLeft: 5, fontSize: 9.5, padding: "1px 5px", borderRadius: 3, background: "rgba(255, 51, 75, 0.15)", color: "#ff6479", fontWeight: 700 }}>
+                              YOU
+                            </span>
+                          )}
+                        </div>
+                        {u.email && (
+                          <div style={{ fontSize: 10.5, color: isLight ? "#64748b" : "#94a3b8", marginTop: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                            {u.email}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </td>
+                  <td style={{ padding: "8px 8px", fontFamily: "'JetBrains Mono', monospace", fontSize: 11.5, color: isLight ? "#0f172a" : "#38bdf8", fontWeight: 600 }}>
+                    @{u.username}
+                  </td>
+                  <td style={{ padding: "8px 8px" }}>
+                    <span
+                      style={{
+                        display: "inline-block",
+                        padding: "2px 7px",
+                        borderRadius: 4,
+                        fontSize: 10.5,
+                        fontWeight: 600,
+                        background: u.role?.includes("Developer")
+                          ? "rgba(56, 189, 248, 0.15)"
+                          : u.role?.includes("Tester")
+                          ? "rgba(168, 85, 247, 0.15)"
+                          : u.role?.includes("Manager")
+                          ? "rgba(16, 185, 129, 0.15)"
+                          : "rgba(255, 51, 75, 0.15)",
+                        color: u.role?.includes("Developer")
+                          ? "#38bdf8"
+                          : u.role?.includes("Tester")
+                          ? "#c084fc"
+                          : u.role?.includes("Manager")
+                          ? "#34d399"
+                          : "#ff6479",
+                        border: `1px solid ${u.avatar || "#ff334b"}44`,
+                      }}
+                    >
+                      {u.role}
+                    </span>
+                  </td>
+                  <td style={{ padding: "8px 8px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                      <span
+                        style={{
+                          fontFamily: "'JetBrains Mono', monospace",
+                          fontSize: 11.5,
+                          color: isLight ? "#334155" : "#cbd5e1",
+                          letterSpacing: isRevealed ? "0.2px" : "2px",
+                        }}
+                      >
+                        {isRevealed ? u.password : "••••••••"}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => toggleRevealPassword(u.id || u.username)}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          color: isLight ? "#64748b" : "#94a3b8",
+                          cursor: "pointer",
+                          padding: 2,
+                        }}
+                        title={isRevealed ? "Hide Password" : "Show Password"}
+                      >
+                        {isRevealed ? <EyeOff size={13} /> : <Eye size={13} />}
+                      </button>
+                    </div>
+                  </td>
+                  <td style={{ padding: "8px 4px", textAlign: "center" }}>
+                    <div style={{ display: "inline-flex", gap: 3 }}>
+                      <IconButton onClick={() => onOpenEditUser(u)} title="Edit Member Account" style={{ padding: 3 }}>
+                        <Pencil size={12} />
+                      </IconButton>
+                      {!isSelf && (
+                        <IconButton onClick={() => onDeleteUser(u)} title="Delete Member Account" variant="danger" style={{ padding: 3 }}>
+                          <Trash2 size={12} />
+                        </IconButton>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------------------- Admin Audit & Activity Logs (Sudhanshu Only) ---------------------------- */
+
+function AuditLogsView({ logs = [], isLight }) {
+  const [filterAction, setFilterAction] = useState("ALL");
+  const [search, setSearch] = useState("");
+  const [selectedSnapshot, setSelectedSnapshot] = useState(null);
+
+  const filteredLogs = (logs || []).filter((l) => {
+    if (filterAction !== "ALL" && !l.action?.includes(filterAction)) return false;
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      return (
+        (l.actor?.name && l.actor.name.toLowerCase().includes(q)) ||
+        (l.entityTitle && l.entityTitle.toLowerCase().includes(q)) ||
+        (l.action && l.action.toLowerCase().includes(q)) ||
+        (l.entityType && l.entityType.toLowerCase().includes(q))
+      );
+    }
+    return true;
+  });
+
+  return (
+    <div>
+      {/* Top Banner */}
+      <div
+        className="glass-card"
+        style={{
+          padding: "14px 18px",
+          marginBottom: 16,
+          borderLeft: "3px solid #ff334b",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: 10,
+        }}
+      >
+        <div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: isLight ? "#0f172a" : "#ffffff", display: "flex", alignItems: "center", gap: 8 }}>
+            <History size={17} color="#ff334b" /> Permanent System Audit Trail (BA / Admin Only)
+          </div>
+          <div style={{ fontSize: 11.5, color: isLight ? "#64748b" : "#94a3b8", marginTop: 3 }}>
+            Recorded in real-time. If any tester or developer modifies or deliberately deletes any point, their identity, timestamp, and full deleted snapshot are preserved here.
+          </div>
+        </div>
+
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <span style={{ fontSize: 11.5, color: isLight ? "#64748b" : "#94a3b8" }}>
+            Total Audit Records: <strong style={{ color: "#ff334b" }}>{logs.length}</strong>
+          </span>
+        </div>
+      </div>
+
+      {/* Filter Bar */}
+      <div
+        className="glass-card"
+        style={{
+          padding: "10px 16px",
+          marginBottom: 14,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: 10,
+        }}
+      >
+        <div style={{ position: "relative", width: 300, maxWidth: "100%" }}>
+          <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#94a3b8" }} />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search audit trail by actor, item, action..."
+            style={{
+              ...darkInputStyle,
+              padding: "6px 10px 6px 30px",
+              fontSize: 12,
+              background: isLight ? "#ffffff" : "rgba(18, 22, 34, 0.8)",
+              width: "100%",
+            }}
+          />
+        </div>
+
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {[
+            { id: "ALL", label: "All Activity" },
+            { id: "DELETE", label: "Deletions Only" },
+            { id: "CREATE", label: "Creations" },
+            { id: "UPDATE", label: "Updates / Fixes" },
+            { id: "USER", label: "Personnel Roster" },
+          ].map((f) => (
+            <button
+              key={f.id}
+              onClick={() => setFilterAction(f.id)}
+              style={{
+                padding: "4px 10px",
+                borderRadius: 20,
+                fontSize: 11,
+                fontWeight: 600,
+                cursor: "pointer",
+                border: filterAction === f.id ? "1px solid #ff334b" : isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.1)",
+                background: filterAction === f.id ? "#ff334b" : isLight ? "#ffffff" : "rgba(255, 255, 255, 0.03)",
+                color: filterAction === f.id ? "#ffffff" : isLight ? "#475569" : "#94a3b8",
+                transition: "all 0.15s ease",
+              }}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Audit Log Stream */}
+      <div
+        className="glass-card"
+        style={{
+          width: "100%",
+          overflow: "hidden",
+          border: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.08)",
+        }}
+      >
+        {filteredLogs.length === 0 ? (
+          <div style={{ padding: "40px 20px", textAlign: "center" }}>
+            <History size={32} color="#64748b" style={{ margin: "0 auto 10px", display: "block" }} />
+            <div style={{ color: isLight ? "#0f172a" : "#ffffff", fontSize: 13.5, fontWeight: 600 }}>No audit logs recorded yet</div>
+            <p style={{ color: isLight ? "#64748b" : "#94a3b8", fontSize: 12, margin: "4px 0 0" }}>
+              All future deletions, edits, and personnel creations will automatically be logged here with immutable snapshots.
+            </p>
+          </div>
+        ) : (
+          <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
+            <colgroup>
+              <col style={{ width: 135 }} />
+              <col style={{ width: "18%" }} />
+              <col style={{ width: 140 }} />
+              <col style={{ width: "44%" }} />
+              <col style={{ width: 100 }} />
+            </colgroup>
+            <thead>
+              <tr
+                style={{
+                  background: isLight ? "#e2e8f0" : "rgba(255, 255, 255, 0.04)",
+                  borderBottom: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.08)",
+                  fontSize: 10.5,
+                  fontWeight: 700,
+                  color: isLight ? "#475569" : "#94a3b8",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.5px",
+                }}
+              >
+                <th style={{ padding: "10px 8px", textAlign: "left" }}>Timestamp</th>
+                <th style={{ padding: "10px 8px", textAlign: "left" }}>Actor (User & Role)</th>
+                <th style={{ padding: "10px 8px", textAlign: "left" }}>Action Type</th>
+                <th style={{ padding: "10px 8px", textAlign: "left" }}>Entity Details / Summary</th>
+                <th style={{ padding: "10px 8px", textAlign: "center" }}>Snapshot</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredLogs.map((log, idx) => {
+                const isDel = log.action?.includes("DELETE");
+                return (
+                  <tr
+                    key={log.id || idx}
+                    className="custom-table-row"
+                    style={{
+                      borderBottom: idx === filteredLogs.length - 1 ? "none" : isLight ? "1px solid #f1f5f9" : "1px solid rgba(255, 255, 255, 0.05)",
+                      background: isDel
+                        ? (isLight ? "rgba(239, 68, 68, 0.04)" : "rgba(255, 51, 75, 0.04)")
+                        : (idx % 2 === 1 ? (isLight ? "rgba(241, 245, 249, 0.5)" : "rgba(255, 255, 255, 0.01)") : "transparent"),
+                    }}
+                  >
+                    <td style={{ padding: "8px", fontSize: 10.5, color: isLight ? "#64748b" : "#94a3b8", fontFamily: "'JetBrains Mono', monospace" }}>
+                      {log.timestamp ? new Date(log.timestamp).toLocaleString("en-IN", { dateStyle: "short", timeStyle: "medium" }) : "N/A"}
+                    </td>
+                    <td style={{ padding: "8px" }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: isLight ? "#0f172a" : "#ffffff" }}>
+                        {log.actor?.name || "System"}
+                      </div>
+                      <div style={{ fontSize: 10.5, color: isLight ? "#64748b" : "#94a3b8" }}>
+                        {log.actor?.role || "Authorized User"} (@{log.actor?.username || "unknown"})
+                      </div>
+                    </td>
+                    <td style={{ padding: "8px" }}>
+                      <span
+                        style={{
+                          display: "inline-block",
+                          padding: "2px 6px",
+                          borderRadius: 3,
+                          fontSize: 10,
+                          fontWeight: 700,
+                          background: isDel
+                            ? "rgba(255, 51, 75, 0.15)"
+                            : log.action?.includes("CREATE")
+                            ? "rgba(34, 197, 94, 0.15)"
+                            : "rgba(56, 189, 248, 0.15)",
+                          color: isDel
+                            ? "#ff6479"
+                            : log.action?.includes("CREATE")
+                            ? "#4ade80"
+                            : "#38bdf8",
+                          border: isDel
+                            ? "1px solid rgba(255, 51, 75, 0.4)"
+                            : "1px solid rgba(255, 255, 255, 0.1)",
+                        }}
+                      >
+                        {log.action}
+                      </span>
+                    </td>
+                    <td style={{ padding: "8px" }}>
+                      <div style={{ fontSize: 11.5, fontWeight: 600, color: isLight ? "#1e293b" : "#f1f5f9", lineHeight: 1.35 }}>
+                        {log.entityTitle}
+                      </div>
+                      <div style={{ fontSize: 10, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>
+                        Scope: <span style={{ fontWeight: 600 }}>{log.entityType}</span>
+                      </div>
+                    </td>
+                    <td style={{ padding: "8px", textAlign: "center" }}>
+                      {log.details && (
+                        <button
+                          type="button"
+                          onClick={() => setSelectedSnapshot(log)}
+                          style={{
+                            background: "rgba(255, 255, 255, 0.06)",
+                            border: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.15)",
+                            borderRadius: 4,
+                            padding: "3px 7px",
+                            fontSize: 10,
+                            fontWeight: 600,
+                            color: isLight ? "#0f172a" : "#ffffff",
+                            cursor: "pointer",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 3,
+                          }}
+                        >
+                          <Database size={10} /> Inspect
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         )}
       </div>
+
+      {/* Snapshot Modal */}
+      {selectedSnapshot && (
+        <Modal
+          title={`Snapshot: ${selectedSnapshot.action}`}
+          icon={Database}
+          onClose={() => setSelectedSnapshot(null)}
+        >
+          <div>
+            <div style={{ marginBottom: 12, fontSize: 12, color: isLight ? "#64748b" : "#94a3b8" }}>
+              Action performed by <strong style={{ color: isLight ? "#0f172a" : "#ffffff" }}>{selectedSnapshot.actor?.name}</strong> ({selectedSnapshot.actor?.role}) on {new Date(selectedSnapshot.timestamp).toLocaleString()}.
+            </div>
+            <pre
+              style={{
+                background: isLight ? "#f8fafc" : "#0a0c13",
+                padding: 12,
+                borderRadius: 8,
+                border: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.1)",
+                color: isLight ? "#0f172a" : "#4ade80",
+                fontSize: 11,
+                fontFamily: "'JetBrains Mono', monospace",
+                overflowX: "auto",
+                maxHeight: 320,
+                lineHeight: 1.45,
+              }}
+            >
+              {JSON.stringify(selectedSnapshot.details, null, 2)}
+            </pre>
+            <div style={{ marginTop: 14, display: "flex", justifyContent: "flex-end" }}>
+              <button
+                className="btn-red-gradient"
+                onClick={() => setSelectedSnapshot(null)}
+                style={{ padding: "6px 16px", fontSize: 12 }}
+              >
+                Close Snapshot
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }
