@@ -53,6 +53,14 @@ import {
   EyeOff,
   Shield,
   Crown,
+  ClipboardList,
+  Copy,
+  Printer,
+  Building2,
+  CheckSquare,
+  FileText,
+  ChevronUp,
+  Share2,
 } from "lucide-react";
 
 /* ---------------------------------------------------------------
@@ -362,6 +370,7 @@ function seedTestPoints() {
       severity: "Critical",
       tester: "Rutuja",
       assignedDev: "Sankalp",
+      estimatedTime: "4 Hours",
       updatedAt: todayISO(),
     },
     {
@@ -379,6 +388,7 @@ function seedTestPoints() {
       severity: "Major",
       tester: "Rutuja",
       assignedDev: "Sankalp",
+      estimatedTime: "2 Hours",
       updatedAt: todayISO(),
     },
     {
@@ -396,6 +406,7 @@ function seedTestPoints() {
       severity: "Major",
       tester: "Rutuja",
       assignedDev: "Sudhanshu Khande",
+      estimatedTime: "1 Day",
       updatedAt: todayISO(),
     },
     {
@@ -413,7 +424,98 @@ function seedTestPoints() {
       severity: "Critical",
       tester: "Rutuja",
       assignedDev: "Sankalp",
+      estimatedTime: "1.5 Days",
       updatedAt: todayISO(),
+    },
+  ];
+}
+
+function seedMOMs() {
+  return [
+    {
+      id: "mom_1",
+      title: "ZP Pune — Revenue Assessment & CESS Calculation Rules Review",
+      date: todayISO(),
+      time: "11:00 AM",
+      duration: "1h 15m",
+      clientOrg: "Zilla Parishad Pune (Finance & Accounts)",
+      clientAttendees: "Mr. Sachin Patil (Addl. CEO), Mr. Deshmukh (CAO), Smt. Joshi (IT Lead)",
+      internalAttendees: ["Sudhanshu Khande", "Snehal Jagtap", "Sankalp"],
+      mode: "Client In-Person (ZP Pune HQ)",
+      category: "Requirement Alignment",
+      status: "Client Approved",
+      notes: "1. Detailed walkthrough of property tax assessment formulas across rural and semi-urban panchayats.\n2. Addressed CESS surcharge rounding rules for commercial establishments.\n3. Verified Namuna 9 ledger generation requirements with bilingual Marathi/English headers.",
+      decisions: "1. 2% state infrastructure CESS will be computed on base tax and rounded up to nearest whole rupee.\n2. Treasury settlement cron runner will execute daily at 12:00 PM and 6:00 PM.\n3. Final UAT sign-off scheduled for Pune district on coming Friday.",
+      actionItems: [
+        {
+          id: "act_1",
+          task: "Implement UTF-8 Marathi character encoding in Namuna bulk Excel export",
+          owner: "Sankalp",
+          dueDate: "2026-09-24",
+          priority: "High",
+          status: "In Progress",
+          pushedToMatrix: true,
+        },
+        {
+          id: "act_2",
+          task: "Verify bank UTR auto-reconciliation on staging bank gateway",
+          owner: "Sankalp",
+          dueDate: "2026-09-22",
+          priority: "Critical",
+          status: "Done",
+          pushedToMatrix: false,
+        },
+        {
+          id: "act_3",
+          task: "Prepare final UAT test sign-off dossier for Addl. CEO review",
+          owner: "Sudhanshu Khande",
+          dueDate: "2026-09-25",
+          priority: "Medium",
+          status: "Pending",
+          pushedToMatrix: false,
+        },
+      ],
+      createdBy: "Sudhanshu Khande",
+      createdAt: todayISO(),
+      updatedAt: todayISO(),
+    },
+    {
+      id: "mom_2",
+      title: "Ahilyanagar (Ahmednagar) District Deployment & Gateway Verification",
+      date: new Date(Date.now() - 86400000 * 2).toISOString().split("T")[0],
+      time: "03:30 PM",
+      duration: "45 mins",
+      clientOrg: "ZP Ahilyanagar (General Administration)",
+      clientAttendees: "Dy. CEO Mr. Shinde, Lead Treasury Auditor, District Informatics Officer",
+      internalAttendees: ["Sudhanshu Khande", "Snehal Jagtap"],
+      mode: "Google Meet",
+      category: "Sprint Review & Demo",
+      status: "Shared with Client",
+      notes: "1. Demonstrated live bill tracking module and treasury reconciliation dashboard.\n2. Reviewed latency of payment gateway webhook confirmation for bulk gram panchayat collections.\n3. Discussed user role provisioning for district block development officers (BDOs).",
+      decisions: "1. Approved payment status polling interval of 30 seconds.\n2. District user roster to be onboarded via Master Module by Monday.",
+      actionItems: [
+        {
+          id: "act_4",
+          task: "Add block-level filtering to the District Deployment tab",
+          owner: "Sankalp",
+          dueDate: "2026-09-26",
+          priority: "Medium",
+          status: "Pending",
+          pushedToMatrix: false,
+        },
+        {
+          id: "act_5",
+          task: "Send Ahilyanagar credential onboarding guide to Dy. CEO office",
+          owner: "Snehal Jagtap",
+          dueDate: "2026-09-23",
+          priority: "High",
+          status: "In Progress",
+          pushedToMatrix: false,
+        },
+      ],
+      createdBy: "Sudhanshu Khande",
+      createdAt: new Date(Date.now() - 86400000 * 2).toISOString().split("T")[0],
+      updatedAt: new Date(Date.now() - 86400000 * 2).toISOString().split("T")[0],
     },
   ];
 }
@@ -428,6 +530,7 @@ function seedData() {
     districtBills: mergeDistrictBillsWithDefaults([]),
     users: mergeUsersWithDefaults([]),
     auditLogs: [],
+    moms: seedMOMs(),
   };
 }
 
@@ -1650,7 +1753,7 @@ function DistrictBillForm({ initial, onSave, onCancel, isLight }) {
   );
 }
 
-function TestPointForm({ initial, users = TEAM_ROSTER, onSave, onCancel }) {
+function TestPointForm({ initial, users = TEAM_ROSTER, onSave, onCancel, isLight }) {
   const userList = Array.isArray(users) && users.length > 0 ? users : TEAM_ROSTER;
   const devOptions = userList.map((u) => ({
     value: u.name,
@@ -1671,8 +1774,11 @@ function TestPointForm({ initial, users = TEAM_ROSTER, onSave, onCancel }) {
       devRemark: "",
       finalRetestRemarks: "",
       severity: "Major",
+      estimatedTime: "4 Hours",
     }
   );
+
+  const durationPresets = ["30m", "1h", "2h", "4h", "1d", "2d", "3d", "1w"];
 
   return (
     <div>
@@ -1711,7 +1817,7 @@ function TestPointForm({ initial, users = TEAM_ROSTER, onSave, onCancel }) {
         </FormField>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1.2fr 0.8fr", gap: 12 }}>
         <FormField label="3. Assigned Developer (BA Initial Assignment)">
           <SelectInput
             value={f.assignedDev}
@@ -1719,6 +1825,40 @@ function TestPointForm({ initial, users = TEAM_ROSTER, onSave, onCancel }) {
             options={devOptions}
           />
         </FormField>
+        <FormField label="Estimated Dev Duration / Timer">
+          <div style={{ position: "relative" }}>
+            <input
+              style={{ ...darkInputStyle, paddingLeft: 28, fontSize: 12.5 }}
+              value={f.estimatedTime || ""}
+              onChange={(e) => setF({ ...f, estimatedTime: e.target.value })}
+              placeholder="e.g. 4 Hours, 2 Days"
+            />
+            <Clock size={13} style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)", color: "#38bdf8" }} />
+          </div>
+          <div style={{ display: "flex", gap: 4, marginTop: 4, flexWrap: "wrap" }}>
+            {durationPresets.map((preset) => (
+              <button
+                key={preset}
+                type="button"
+                onClick={() => setF({ ...f, estimatedTime: preset })}
+                style={{
+                  padding: "1px 6px",
+                  fontSize: 10,
+                  borderRadius: 3,
+                  border: f.estimatedTime === preset ? "1px solid #38bdf8" : "1px solid rgba(255,255,255,0.1)",
+                  background: f.estimatedTime === preset ? "rgba(56, 189, 248, 0.2)" : "rgba(255,255,255,0.04)",
+                  color: f.estimatedTime === preset ? "#38bdf8" : (isLight ? "#475569" : "#94a3b8"),
+                  cursor: "pointer",
+                }}
+              >
+                {preset}
+              </button>
+            ))}
+          </div>
+        </FormField>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         <FormField label="4. Dev Completion Status">
           <SelectInput
             value={f.devStatus}
@@ -1726,9 +1866,6 @@ function TestPointForm({ initial, users = TEAM_ROSTER, onSave, onCancel }) {
             options={DEV_STATUSES}
           />
         </FormField>
-      </div>
-
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         <FormField label="5. Assigned Tester (Testing Lead Assignment)">
           <SelectInput
             value={f.tester}
@@ -1736,11 +1873,21 @@ function TestPointForm({ initial, users = TEAM_ROSTER, onSave, onCancel }) {
             options={devOptions}
           />
         </FormField>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         <FormField label="6. Tester Verification Status">
           <SelectInput
             value={f.status}
             onChange={(v) => setF({ ...f, status: v })}
             options={TEST_STATUSES}
+          />
+        </FormField>
+        <FormField label="Defect Severity Level">
+          <SelectInput
+            value={f.severity || "Major"}
+            onChange={(v) => setF({ ...f, severity: v })}
+            options={["Minor", "Major", "Critical"]}
           />
         </FormField>
       </div>
@@ -1792,9 +1939,10 @@ function TestPointForm({ initial, users = TEAM_ROSTER, onSave, onCancel }) {
   );
 }
 
-function DevResolveForm({ initial, users = TEAM_ROSTER, onSave, onCancel }) {
+function DevResolveForm({ initial, users = TEAM_ROSTER, onSave, onCancel, isLight }) {
   const [devStatus, setDevStatus] = useState(initial?.devStatus || "Resolved / Ready for Retest");
   const [devRemark, setDevRemark] = useState(initial?.devRemark || "");
+  const [estimatedTime, setEstimatedTime] = useState(initial?.estimatedTime || "4 Hours");
   const userList = Array.isArray(users) && users.length > 0 ? users : TEAM_ROSTER;
   const [assignedDev, setAssignedDev] = useState(initial?.assignedDev || userList[1]?.name || userList[0]?.name);
 
@@ -1802,6 +1950,8 @@ function DevResolveForm({ initial, users = TEAM_ROSTER, onSave, onCancel }) {
     value: u.name,
     label: `${u.name} (${u.role})`,
   }));
+
+  const durationPresets = ["1h", "2h", "4h", "1d", "2d", "3d", "1w"];
 
   return (
     <div>
@@ -1836,6 +1986,38 @@ function DevResolveForm({ initial, users = TEAM_ROSTER, onSave, onCancel }) {
         </FormField>
       </div>
 
+      <FormField label="Developer Estimated Duration / Time Taken">
+        <div style={{ position: "relative" }}>
+          <input
+            style={{ ...darkInputStyle, paddingLeft: 28 }}
+            value={estimatedTime}
+            onChange={(e) => setEstimatedTime(e.target.value)}
+            placeholder="e.g. 4 Hours, 1 Day"
+          />
+          <Clock size={13} style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)", color: "#38bdf8" }} />
+        </div>
+        <div style={{ display: "flex", gap: 4, marginTop: 4, flexWrap: "wrap" }}>
+          {durationPresets.map((preset) => (
+            <button
+              key={preset}
+              type="button"
+              onClick={() => setEstimatedTime(preset)}
+              style={{
+                padding: "1px 6px",
+                fontSize: 10,
+                borderRadius: 3,
+                border: estimatedTime === preset ? "1px solid #38bdf8" : "1px solid rgba(255,255,255,0.1)",
+                background: estimatedTime === preset ? "rgba(56, 189, 248, 0.2)" : "rgba(255,255,255,0.04)",
+                color: estimatedTime === preset ? "#38bdf8" : (isLight ? "#475569" : "#94a3b8"),
+                cursor: "pointer",
+              }}
+            >
+              {preset}
+            </button>
+          ))}
+        </div>
+      </FormField>
+
       <FormField label="Developer Fix Remarks & Notes">
         <textarea
           style={{ ...darkInputStyle, minHeight: 80, resize: "vertical" }}
@@ -1856,12 +2038,445 @@ function DevResolveForm({ initial, users = TEAM_ROSTER, onSave, onCancel }) {
         <button
           className="btn-red-gradient"
           style={{ padding: "9px 20px", fontSize: 13 }}
-          onClick={() => onSave({ devStatus, devRemark, assignedDev })}
+          onClick={() => onSave({ devStatus, devRemark, assignedDev, estimatedTime })}
         >
           Submit Resolution & Notify Tester
         </button>
       </div>
     </div>
+  );
+}
+
+function QuickTimerForm({ initial, onSave, onCancel }) {
+  const [time, setTime] = useState(initial?.estimatedTime || "4 Hours");
+  const presets = ["30 Mins", "1 Hour", "2 Hours", "4 Hours", "1 Day", "2 Days", "3 Days", "1 Week"];
+
+  return (
+    <div>
+      <div style={{ padding: "12px 14px", borderRadius: 8, background: "rgba(56, 189, 248, 0.08)", border: "1px solid rgba(56, 189, 248, 0.2)", marginBottom: 16 }}>
+        <div style={{ fontSize: 11, color: "#38bdf8", fontWeight: 700, textTransform: "uppercase" }}>
+          {initial?.code} · Assigned Dev: {initial?.assignedDev || "Unassigned"}
+        </div>
+        <div style={{ fontSize: 13, color: "#ffffff", fontWeight: 600, marginTop: 3 }}>
+          {initial?.scenario}
+        </div>
+      </div>
+
+      <FormField label="Estimated Time / Completion Duration">
+        <div style={{ position: "relative" }}>
+          <input
+            style={{ ...darkInputStyle, paddingLeft: 30, fontSize: 13 }}
+            value={time}
+            onChange={(e) => setTime(e.target.value)}
+            placeholder="e.g. 4 Hours, 2 Days"
+            autoFocus
+          />
+          <Clock size={14} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#38bdf8" }} />
+        </div>
+      </FormField>
+
+      <div style={{ marginTop: 10 }}>
+        <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 6, fontWeight: 600 }}>Quick Presets:</div>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {presets.map((p) => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => setTime(p)}
+              style={{
+                padding: "3px 10px",
+                borderRadius: 14,
+                fontSize: 11.5,
+                fontWeight: 600,
+                border: time === p ? "1px solid #38bdf8" : "1px solid rgba(255, 255, 255, 0.12)",
+                background: time === p ? "rgba(56, 189, 248, 0.25)" : "rgba(255, 255, 255, 0.04)",
+                color: time === p ? "#38bdf8" : "#cbd5e1",
+                cursor: "pointer",
+                transition: "all 0.15s ease",
+              }}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ display: "flex", gap: 10, marginTop: 22, justifyContent: "flex-end" }}>
+        <button className="btn-ghost-dark" style={{ padding: "8px 16px", fontSize: 12.5 }} onClick={onCancel}>
+          Cancel
+        </button>
+        <button
+          className="btn-red-gradient"
+          style={{ padding: "8px 20px", fontSize: 12.5, display: "flex", alignItems: "center", gap: 5 }}
+          onClick={() => time.trim() && onSave(time.trim())}
+        >
+          <Clock size={13} /> Update Duration
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function MOMForm({ initial, users = TEAM_ROSTER, currentUser, onSave, onCancel, isLight }) {
+  const userList = Array.isArray(users) && users.length > 0 ? users : TEAM_ROSTER;
+  const [title, setTitle] = useState(initial?.title || "");
+  const [date, setDate] = useState(initial?.date || todayISO());
+  const [time, setTime] = useState(initial?.time || "11:00 AM");
+  const [duration, setDuration] = useState(initial?.duration || "1 Hour");
+  const [clientOrg, setClientOrg] = useState(initial?.clientOrg || "");
+  const [clientAttendees, setClientAttendees] = useState(initial?.clientAttendees || "");
+  const [internalAttendees, setInternalAttendees] = useState(
+    Array.isArray(initial?.internalAttendees) ? initial.internalAttendees : [currentUser?.name || "Sudhanshu Khande"]
+  );
+  const [mode, setMode] = useState(initial?.mode || "Client In-Person (ZP HQ)");
+  const [category, setCategory] = useState(initial?.category || "Requirement Alignment");
+  const [status, setStatus] = useState(initial?.status || "Draft");
+  const [notes, setNotes] = useState(initial?.notes || "");
+  const [decisions, setDecisions] = useState(initial?.decisions || "");
+  const [actionItems, setActionItems] = useState(
+    Array.isArray(initial?.actionItems)
+      ? initial.actionItems
+      : [
+          {
+            id: `act_${uid()}`,
+            task: "",
+            owner: userList[1]?.name || userList[0]?.name || "Sankalp",
+            dueDate: todayISO(),
+            priority: "High",
+            status: "Pending",
+          },
+        ]
+  );
+  const [error, setError] = useState("");
+
+  const MODES = [
+    "Client In-Person (ZP HQ)",
+    "Google Meet",
+    "Microsoft Teams",
+    "Zoom Conference",
+    "Phone Discussion",
+    "Internal Alignment",
+  ];
+
+  const CATEGORIES = [
+    "Requirement Alignment",
+    "Sprint Review & Demo",
+    "UAT Feedback & Sign-off",
+    "Production Issue Escalation",
+    "Steering Committee / Review",
+    "Technical Architecture",
+  ];
+
+  const MOM_STATUSES = ["Draft", "Shared with Client", "Client Approved"];
+
+  const toggleAttendee = (userName) => {
+    if (internalAttendees.includes(userName)) {
+      if (internalAttendees.length === 1) return;
+      setInternalAttendees(internalAttendees.filter((u) => u !== userName));
+    } else {
+      setInternalAttendees([...internalAttendees, userName]);
+    }
+  };
+
+  const addActionItem = () => {
+    setActionItems([
+      ...actionItems,
+      {
+        id: `act_${uid()}`,
+        task: "",
+        owner: userList[0]?.name || "Sudhanshu Khande",
+        dueDate: todayISO(),
+        priority: "Medium",
+        status: "Pending",
+      },
+    ]);
+  };
+
+  const removeActionItem = (id) => {
+    setActionItems(actionItems.filter((a) => a.id !== id));
+  };
+
+  const updateActionItem = (id, key, value) => {
+    setActionItems(actionItems.map((a) => (a.id === id ? { ...a, [key]: value } : a)));
+  };
+
+  const handleSubmit = (e) => {
+    e?.preventDefault();
+    if (!title.trim() || !clientOrg.trim()) {
+      setError("Please provide at least a Meeting Subject/Title and Client Organization.");
+      return;
+    }
+    const cleanActionItems = actionItems.filter((a) => a.task && a.task.trim());
+    onSave({
+      id: initial?.id || `mom_${uid()}`,
+      title: title.trim(),
+      date,
+      time: time.trim(),
+      duration: duration.trim(),
+      clientOrg: clientOrg.trim(),
+      clientAttendees: clientAttendees.trim(),
+      internalAttendees,
+      mode,
+      category,
+      status,
+      notes: notes.trim(),
+      decisions: decisions.trim(),
+      actionItems: cleanActionItems,
+      createdBy: initial?.createdBy || currentUser?.name || "Sudhanshu Khande",
+      createdAt: initial?.createdAt || todayISO(),
+      updatedAt: todayISO(),
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} style={{ maxHeight: "78vh", overflowY: "auto", paddingRight: 6 }}>
+      {error && (
+        <div
+          style={{
+            padding: "8px 12px",
+            borderRadius: 6,
+            background: "rgba(239, 68, 68, 0.15)",
+            border: "1px solid rgba(239, 68, 68, 0.35)",
+            color: "#ff6479",
+            fontSize: 12,
+            marginBottom: 14,
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+          }}
+        >
+          <AlertTriangle size={14} /> {error}
+        </div>
+      )}
+
+      {/* Section 1: Meeting Meta */}
+      <FormField label="Meeting Subject / Discussion Title *">
+        <input
+          style={{ ...darkInputStyle, fontSize: 13 }}
+          value={title}
+          onChange={(e) => { setTitle(e.target.value); setError(""); }}
+          placeholder="e.g. ZP Pune — Revenue Assessment & CESS Calculation Rules Review"
+        />
+      </FormField>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr", gap: 10 }}>
+        <FormField label="Meeting Date *">
+          <input
+            type="date"
+            style={darkInputStyle}
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
+        </FormField>
+        <FormField label="Start Time">
+          <input
+            style={darkInputStyle}
+            value={time}
+            onChange={(e) => setTime(e.target.value)}
+            placeholder="e.g. 11:00 AM"
+          />
+        </FormField>
+        <FormField label="Duration">
+          <input
+            style={darkInputStyle}
+            value={duration}
+            onChange={(e) => setDuration(e.target.value)}
+            placeholder="e.g. 1 Hour, 45m"
+          />
+        </FormField>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+        <FormField label="Meeting Mode / Channel">
+          <SelectInput value={mode} onChange={setMode} options={MODES} />
+        </FormField>
+        <FormField label="Discussion Category">
+          <SelectInput value={category} onChange={setCategory} options={CATEGORIES} />
+        </FormField>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1.2fr 0.8fr", gap: 10 }}>
+        <FormField label="Client Organization / Dept *">
+          <input
+            style={darkInputStyle}
+            value={clientOrg}
+            onChange={(e) => { setClientOrg(e.target.value); setError(""); }}
+            placeholder="e.g. Zilla Parishad Pune (Finance & Accounts)"
+          />
+        </FormField>
+        <FormField label="MOM Approval Status">
+          <SelectInput value={status} onChange={setStatus} options={MOM_STATUSES} />
+        </FormField>
+      </div>
+
+      <FormField label="Client Side Attendees">
+        <input
+          style={darkInputStyle}
+          value={clientAttendees}
+          onChange={(e) => setClientAttendees(e.target.value)}
+          placeholder="e.g. Mr. Sachin Patil (Addl. CEO), Mr. Deshmukh (CAO), Smt. Joshi (IT Lead)"
+        />
+      </FormField>
+
+      <FormField label="Internal Team Attendees (Select Present)">
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {userList.map((u) => {
+            const isSelected = internalAttendees.includes(u.name);
+            return (
+              <button
+                key={u.id || u.username}
+                type="button"
+                onClick={() => toggleAttendee(u.name)}
+                style={{
+                  padding: "4px 10px",
+                  borderRadius: 6,
+                  fontSize: 11.5,
+                  fontWeight: 600,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 5,
+                  border: isSelected ? "1px solid #ff334b" : "1px solid rgba(255,255,255,0.12)",
+                  background: isSelected ? "rgba(255, 51, 75, 0.18)" : "rgba(255,255,255,0.04)",
+                  color: isSelected ? "#ff6479" : (isLight ? "#475569" : "#cbd5e1"),
+                  cursor: "pointer",
+                }}
+              >
+                <div style={{ width: 14, height: 14, borderRadius: "50%", background: u.avatar || "#38bdf8", color: "#fff", fontSize: 8, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}>
+                  {(u.name || "U").charAt(0)}
+                </div>
+                <span>{u.name}</span>
+                {isSelected && <span style={{ fontSize: 9 }}>✓</span>}
+              </button>
+            );
+          })}
+        </div>
+      </FormField>
+
+      {/* Section 2: Discussion Points & Decisions */}
+      <FormField label="Key Discussion Points & Discussion Minutes (Bulleted or Numbered)">
+        <textarea
+          style={{ ...darkInputStyle, minHeight: 90, resize: "vertical", lineHeight: 1.4 }}
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="Record core business and operational points discussed with the client...&#10;1. Reviewed property tax calculation logic&#10;2. Addressed CESS surcharge rounding rules..."
+        />
+      </FormField>
+
+      <FormField label="Decisions Taken & Approvals Ratified">
+        <textarea
+          style={{ ...darkInputStyle, minHeight: 70, resize: "vertical", lineHeight: 1.4, borderLeft: "3px solid #22c55e" }}
+          value={decisions}
+          onChange={(e) => setDecisions(e.target.value)}
+          placeholder="Explicit agreements, approved formulas, deployment dates, or signed-off policies...&#10;1. 2% CESS will be computed on base tax and rounded up to nearest whole rupee&#10;2. UAT sign-off date set to Friday..."
+        />
+      </FormField>
+
+      {/* Section 3: Action Items */}
+      <div style={{ marginTop: 16, marginBottom: 8, borderTop: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255,255,255,0.08)", paddingTop: 14 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: isLight ? "#0f172a" : "#ffffff", display: "flex", alignItems: "center", gap: 6 }}>
+            <CheckSquare size={15} color="#38bdf8" /> Action Items & Deliverables ({actionItems.length})
+          </div>
+          <button
+            type="button"
+            onClick={addActionItem}
+            style={{
+              padding: "4px 10px",
+              borderRadius: 6,
+              background: "rgba(56, 189, 248, 0.15)",
+              border: "1px solid rgba(56, 189, 248, 0.35)",
+              color: "#38bdf8",
+              fontSize: 11.5,
+              fontWeight: 600,
+              cursor: "pointer",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+            }}
+          >
+            <Plus size={12} /> Add Action Item
+          </button>
+        </div>
+
+        {actionItems.map((item, idx) => (
+          <div
+            key={item.id}
+            style={{
+              padding: "10px 12px",
+              borderRadius: 8,
+              background: isLight ? "#f8fafc" : "rgba(255, 255, 255, 0.02)",
+              border: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.06)",
+              marginBottom: 8,
+              position: "relative",
+            }}
+          >
+            <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#64748b", marginTop: 6 }}>#{idx + 1}</span>
+              <div style={{ flex: 1 }}>
+                <input
+                  style={{ ...darkInputStyle, marginBottom: 6, fontSize: 12.5 }}
+                  value={item.task}
+                  onChange={(e) => updateActionItem(item.id, "task", e.target.value)}
+                  placeholder="Action item task description..."
+                />
+                <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr 1fr auto", gap: 8, alignItems: "center" }}>
+                  <div>
+                    <SelectInput
+                      value={item.owner}
+                      onChange={(v) => updateActionItem(item.id, "owner", v)}
+                      options={userList.map((u) => u.name)}
+                    />
+                  </div>
+                  <div>
+                    <input
+                      type="date"
+                      style={{ ...darkInputStyle, padding: "5px 8px", fontSize: 11 }}
+                      value={item.dueDate || todayISO()}
+                      onChange={(e) => updateActionItem(item.id, "dueDate", e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <SelectInput
+                      value={item.priority || "Medium"}
+                      onChange={(v) => updateActionItem(item.id, "priority", v)}
+                      options={["Critical", "High", "Medium", "Low"]}
+                    />
+                  </div>
+                  <div>
+                    <SelectInput
+                      value={item.status || "Pending"}
+                      onChange={(v) => updateActionItem(item.id, "status", v)}
+                      options={["Pending", "In Progress", "Done"]}
+                    />
+                  </div>
+                  <IconButton onClick={() => removeActionItem(item.id)} variant="danger" title="Remove action item">
+                    <Trash2 size={13} />
+                  </IconButton>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display: "flex", gap: 10, marginTop: 22, justifyContent: "flex-end" }}>
+        <button
+          type="button"
+          className="btn-ghost-dark"
+          style={{ padding: "9px 18px", fontSize: 13, fontWeight: 500 }}
+          onClick={onCancel}
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className="btn-red-gradient"
+          style={{ padding: "9px 24px", fontSize: 13, display: "flex", alignItems: "center", gap: 6 }}
+        >
+          <ClipboardList size={14} /> Save Meeting Minutes (MOM)
+        </button>
+      </div>
+    </form>
   );
 }
 
@@ -2727,6 +3342,7 @@ export default function App() {
             users: fullUsers,
             auditLogs: Array.isArray(fetched.auditLogs) ? fetched.auditLogs : [],
             notifications: Array.isArray(fetched.notifications) ? fetched.notifications : [],
+            moms: Array.isArray(fetched.moms) && fetched.moms.length > 0 ? fetched.moms : seedMOMs(),
             testPoints:
               Array.isArray(fetched.testPoints) && fetched.testPoints.length > 0
                 ? fetched.testPoints
@@ -3192,6 +3808,103 @@ export default function App() {
     setModal(null);
   };
 
+  const updateTestPointTimer = (id, estimatedTime) => {
+    const target = (data?.testPoints || []).find((t) => t.id === id);
+    const updatedPoints = (data?.testPoints || []).map((t) =>
+      t.id === id ? { ...t, estimatedTime, updatedAt: todayISO() } : t
+    );
+    const nextLogs = logActivity(
+      "UPDATE",
+      "Dev-Test Matrix Point",
+      target?.code || "Test Point",
+      `Set Estimated Dev Duration / Timer to: ${estimatedTime}`
+    );
+    persist({ ...data, testPoints: updatedPoints, auditLogs: nextLogs });
+  };
+
+  const promptDeleteMOM = (mom) => {
+    setConfirmDelete({
+      itemType: "Minutes of Meeting (MOM)",
+      itemTitle: mom.title || "Meeting Record",
+      details: `Date: ${mom.date || "N/A"} · Client: ${mom.clientOrg || "N/A"}\nAttendees: ${mom.clientAttendees || "N/A"}\nDecisions: ${mom.decisions || "None"}\nAction Items: ${(mom.actionItems || []).length} items`,
+      onConfirm: () => {
+        const nextMoms = (data?.moms || []).filter((m) => m.id !== mom.id);
+        const nextLogs = logActivity(
+          "DELETE",
+          "MOM Record",
+          mom.title || mom.id,
+          `Deleted MOM. Full Data Snapshot: ${JSON.stringify(mom)}`
+        );
+        persist({ ...data, moms: nextMoms, auditLogs: nextLogs });
+        setConfirmDelete(null);
+      },
+    });
+  };
+
+  const saveMOM = (item) => {
+    const isEdit = !!modal?.editing?.id;
+    const updatedMOMs = addOrUpdate(data?.moms || [], item, modal?.editing?.id);
+    const nextLogs = logActivity(
+      isEdit ? "UPDATE" : "CREATE",
+      "MOM Record",
+      item.title || "Meeting Minutes",
+      `Client: ${item.clientOrg || "N/A"} · Date: ${item.date || "N/A"} · Status: ${item.status || "Draft"} · Action Items: ${(item.actionItems || []).length}`
+    );
+    persist({ ...data, moms: updatedMOMs, auditLogs: nextLogs });
+    setModal(null);
+  };
+
+  const handleToggleMOMActionItem = (momId, actionItemId) => {
+    const nextMoms = (data?.moms || []).map((m) => {
+      if (m.id !== momId) return m;
+      const updatedActionItems = (m.actionItems || []).map((ai) => {
+        if (ai.id !== actionItemId) return ai;
+        const nextStatus = ai.status === "Done" ? "Pending" : ai.status === "Pending" ? "In Progress" : "Done";
+        return { ...ai, status: nextStatus };
+      });
+      return { ...m, actionItems: updatedActionItems, updatedAt: todayISO() };
+    });
+    persist({ ...data, moms: nextMoms });
+  };
+
+  const handlePushActionItemToMatrix = (mom, actionItem) => {
+    const newPoint = {
+      id: `tp_${uid()}`,
+      code: `MOM-${Math.floor(100 + Math.random() * 900)}`,
+      module: "MOM Directive",
+      scenario: `[MOM Action - ${mom.clientOrg}] ${actionItem.task}`,
+      assignedDate: todayISO(),
+      assignedDev: actionItem.owner || "Sankalp",
+      devStatus: "Pending Dev Fix",
+      tester: "Rutuja",
+      status: "Untested",
+      actualResult: `Originated from client discussion on ${mom.date} (${mom.title}). Due: ${actionItem.dueDate || "TBD"}`,
+      devRemark: `Target Due Date: ${actionItem.dueDate || "N/A"} · Priority: ${actionItem.priority || "Medium"}`,
+      finalRetestRemarks: "",
+      severity: actionItem.priority === "Critical" ? "Critical" : actionItem.priority === "High" ? "Major" : "Normal",
+      estimatedTime: "1 Day",
+      createdAt: todayISO(),
+      updatedAt: todayISO(),
+    };
+
+    const nextPoints = [newPoint, ...(data?.testPoints || [])];
+    const nextMoms = (data?.moms || []).map((m) => {
+      if (m.id !== mom.id) return m;
+      return {
+        ...m,
+        actionItems: (m.actionItems || []).map((ai) => (ai.id === actionItem.id ? { ...ai, pushedToMatrix: true } : ai)),
+      };
+    });
+    const nextLogs = logActivity(
+      "CREATE",
+      "Dev-Test Matrix Point",
+      newPoint.code,
+      `Converted from MOM Action Item: "${actionItem.task}" (Client: ${mom.clientOrg})`
+    );
+    persist({ ...data, testPoints: nextPoints, moms: nextMoms, auditLogs: nextLogs });
+    alert(`Action Item successfully pushed to Dev-Test Execution Matrix as ${newPoint.code}!`);
+  };
+
   const dispatchTestPointToIssue = (tp) => {
     setModal({
       type: "issue",
@@ -3329,9 +4042,28 @@ export default function App() {
   const pendingTasks = (data?.tasks || []).filter((t) => t.status !== "Done").length;
   const liveDistrictsCount = (data?.districts || []).filter((d) => d.stage === "Live").length;
 
+  const userRoleLower = (currentUser?.role || "").toLowerCase();
+  const isBA =
+    isSudhanshu ||
+    userRoleLower.includes("analyst") ||
+    userRoleLower.includes("ba");
+  const isManager = userRoleLower.includes("manager");
+  const isCEO = currentUser?.role === "CEO" || userRoleLower.includes("ceo");
+  const canAccessMOM = isBA || isManager || isCEO;
+
   const navItems = [
     { key: "my_desk", label: "My Desk & Tasks", icon: UserCheck, count: myOpenIssues + myPendingTasks, highlight: true },
     { key: "test_hub", label: "Dev-Test Execution Matrix", icon: FileSpreadsheet, count: failedTestPointsCount, isAlert: failedTestPointsCount > 0 },
+    ...(canAccessMOM
+      ? [
+          {
+            key: "mom",
+            label: "MOM (Minutes of Meeting)",
+            icon: ClipboardList,
+            count: (data?.moms || []).length,
+          },
+        ]
+      : []),
     { key: "bill_tracker", label: "Bill Tracker Matrix", icon: Receipt, count: totalBillsCount },
     { key: "dashboard", label: "Operations Deck", icon: LayoutGrid },
     { key: "issues", label: "Issues Matrix", icon: AlertTriangle, count: openIssues, isAlert: criticalOpen > 0 },
@@ -3735,6 +4467,8 @@ export default function App() {
                 ? `Assigned directives and active defects for ${currentUser?.name || "User"}`
                 : tab === "test_hub"
                 ? "Unified Dev-Test Execution Matrix, lead assignment, developer completion status, and retest log"
+                : tab === "mom"
+                ? "Minutes of Meeting repository: client discussions, agreed decisions, and date-wise deliverables"
                 : tab === "master_module"
                 ? "Manage personnel access, register developers, testers, BAs, and managers (Master Admin Only)"
                 : tab === "audit_logs"
@@ -4108,7 +4842,8 @@ export default function App() {
             onCycleStatus={cycleTestPointStatus}
             onOpenResolve={(tp) => setModal({ type: "dev_resolve", editing: tp })}
             onOpenEdit={(tp) => setModal({ type: "test_point", editing: tp })}
-            onDelete={removeTestPoint}
+            onQuickTimer={(tp) => setModal({ type: "quick_timer", editing: tp })}
+            onDelete={promptDeleteTestPoint}
             onDispatchIssue={dispatchTestPointToIssue}
             onOpenAdd={() => setModal({ type: "test_point" })}
             onExportCSV={() => exportTestPointsCSV(allTestPoints)}
@@ -4120,6 +4855,20 @@ export default function App() {
             setSelectedDevStatus={setQaDevStatus}
             searchQuery={qaSearch}
             setSearchQuery={setQaSearch}
+            isLight={isLight}
+          />
+        )}
+
+        {tab === "mom" && canAccessMOM && (
+          <MOMView
+            moms={data?.moms || []}
+            users={data?.users || TEAM_ROSTER}
+            currentUser={currentUser}
+            onOpenAdd={() => setModal({ type: "mom" })}
+            onOpenEdit={(m) => setModal({ type: "mom", editing: m })}
+            onDelete={promptDeleteMOM}
+            onToggleActionItem={handleToggleMOMActionItem}
+            onPushToTestMatrix={handlePushActionItemToMatrix}
             isLight={isLight}
           />
         )}
@@ -4248,6 +4997,40 @@ export default function App() {
               saveDistrictBill(updated);
               setModal(null);
             }}
+            onCancel={() => setModal(null)}
+            isLight={isLight}
+          />
+        </Modal>
+      )}
+
+      {modal?.type === "quick_timer" && (
+        <Modal
+          title={`Set Estimated Duration: ${modal.editing?.code || "Test Point"}`}
+          icon={Clock}
+          onClose={() => setModal(null)}
+        >
+          <QuickTimerForm
+            initial={modal.editing}
+            onSave={(time) => {
+              updateTestPointTimer(modal.editing.id, time);
+              setModal(null);
+            }}
+            onCancel={() => setModal(null)}
+          />
+        </Modal>
+      )}
+
+      {modal?.type === "mom" && (
+        <Modal
+          title={modal.editing ? "Update Meeting Record (MOM)" : "Record New Client Discussion (MOM)"}
+          icon={ClipboardList}
+          onClose={() => setModal(null)}
+        >
+          <MOMForm
+            initial={modal.editing}
+            users={data?.users || TEAM_ROSTER}
+            currentUser={currentUser}
+            onSave={saveMOM}
             onCancel={() => setModal(null)}
             isLight={isLight}
           />
@@ -5111,6 +5894,7 @@ function TestHubView({
   onCycleStatus,
   onOpenResolve,
   onOpenEdit,
+  onQuickTimer,
   onDelete,
   onDispatchIssue,
   onOpenAdd,
@@ -5465,16 +6249,16 @@ function TestHubView({
                     </span>
                   </td>
 
-                  {/* 4. Assigned Developer */}
-                  <td style={{ padding: "8px 6px", verticalAlign: "middle", overflow: "hidden" }}>
+                  {/* 4. Assigned Developer & Estimated Time / Timer */}
+                  <td style={{ padding: "6px 6px", verticalAlign: "middle", overflow: "hidden" }}>
                     <div
                       title={`Developer: ${tp.assignedDev || "Unassigned"}`}
                       style={{ display: "flex", alignItems: "center", gap: 5, overflow: "hidden", minWidth: 0 }}
                     >
                       <div
                         style={{
-                          width: 19,
-                          height: 19,
+                          width: 18,
+                          height: 18,
                           borderRadius: "50%",
                           background: "rgba(56, 189, 248, 0.18)",
                           border: "1px solid rgba(56, 189, 248, 0.4)",
@@ -5500,6 +6284,34 @@ function TestHubView({
                         }}
                       >
                         {tp.assignedDev || "Unassigned"}
+                      </span>
+                    </div>
+
+                    <div style={{ marginTop: 2, display: "flex", alignItems: "center" }}>
+                      <span
+                        onClick={() => (onQuickTimer ? onQuickTimer(tp) : onOpenEdit(tp))}
+                        title={`Estimated Time: ${tp.estimatedTime || "Click to set duration"}`}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 3,
+                          fontSize: 9.5,
+                          fontWeight: 700,
+                          padding: "1px 5px",
+                          borderRadius: 4,
+                          background: tp.estimatedTime ? "rgba(56, 189, 248, 0.14)" : "rgba(255, 255, 255, 0.04)",
+                          color: tp.estimatedTime ? "#38bdf8" : (isLight ? "#64748b" : "#94a3b8"),
+                          border: tp.estimatedTime ? "1px solid rgba(56, 189, 248, 0.3)" : "1px dashed rgba(255, 255, 255, 0.15)",
+                          cursor: "pointer",
+                          maxWidth: "100%",
+                          boxSizing: "border-box",
+                          transition: "all 0.15s ease",
+                        }}
+                      >
+                        <Clock size={8.5} style={{ flexShrink: 0 }} />
+                        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {tp.estimatedTime || "Set Time"}
+                        </span>
                       </span>
                     </div>
                   </td>
@@ -6301,6 +7113,844 @@ function AuditLogsView({ logs = [], isLight }) {
           </div>
         </Modal>
       )}
+    </div>
+  );
+}
+
+/* ---------------------------- MOM (Minutes of Meeting) Module ---------------------------- */
+
+function formatCleanMOMText(mom) {
+  const lines = [];
+  lines.push("=================================================================");
+  lines.push("MINUTES OF MEETING (MOM) — MAHARASHTRA ZPBDMS OPERATIONS");
+  lines.push("=================================================================");
+  lines.push(`SUBJECT: ${mom.title}`);
+  lines.push(`DATE: ${mom.date} | TIME: ${mom.time} (Duration: ${mom.duration || "N/A"})`);
+  lines.push(`MODE: ${mom.mode || "In-Person"} | STATUS: ${mom.status || "Draft"}`);
+  lines.push(`CLIENT ORG: ${mom.clientOrg || "N/A"}`);
+  lines.push(`CLIENT ATTENDEES: ${mom.clientAttendees || "N/A"}`);
+  lines.push(`INTERNAL ATTENDEES: ${(mom.internalAttendees || []).join(", ") || "N/A"}`);
+  lines.push("-----------------------------------------------------------------");
+  lines.push("KEY DISCUSSION POINTS & MINUTES:");
+  if (mom.notes) {
+    lines.push(mom.notes);
+  } else {
+    lines.push("None recorded.");
+  }
+  lines.push("-----------------------------------------------------------------");
+  lines.push("DECISIONS TAKEN & APPROVALS RATIFIED:");
+  if (mom.decisions) {
+    lines.push(mom.decisions);
+  } else {
+    lines.push("None recorded.");
+  }
+  lines.push("-----------------------------------------------------------------");
+  lines.push(`ACTION ITEMS & DELIVERABLES (${(mom.actionItems || []).length}):`);
+  if (Array.isArray(mom.actionItems) && mom.actionItems.length > 0) {
+    mom.actionItems.forEach((ai, idx) => {
+      lines.push(`${idx + 1}. ${ai.task}`);
+      lines.push(`   Owner: ${ai.owner || "Unassigned"} | Due: ${ai.dueDate || "TBD"} | Priority: ${ai.priority || "Normal"} | Status: ${ai.status || "Pending"}`);
+    });
+  } else {
+    lines.push("No specific action items recorded.");
+  }
+  lines.push("=================================================================");
+  lines.push(`Recorded By: ${mom.createdBy || "Sudhanshu Khande"} | ZPBDMS Management Portal`);
+  return lines.join("\n");
+}
+
+function MOMView({
+  moms = [],
+  users = TEAM_ROSTER,
+  currentUser,
+  onOpenAdd,
+  onOpenEdit,
+  onDelete,
+  onToggleActionItem,
+  onPushToTestMatrix,
+  isLight,
+}) {
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All Statuses");
+  const [dateFilter, setDateFilter] = useState("All Dates");
+  const [expandedMoms, setExpandedMoms] = useState({});
+  const [copiedId, setCopiedId] = useState(null);
+
+  const toggleExpand = (id) => {
+    setExpandedMoms((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const handleCopyMOM = (mom) => {
+    const text = formatCleanMOMText(mom);
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(text);
+      setCopiedId(mom.id);
+      setTimeout(() => setCopiedId(null), 2500);
+    } else {
+      alert("MOM Text copied to clipboard!");
+    }
+  };
+
+  const handlePrintMOM = (mom) => {
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>MOM: ${mom.title}</title>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 30px; line-height: 1.6; color: #1e293b; }
+            h1 { font-size: 20px; margin-bottom: 4px; color: #0f172a; }
+            .meta { font-size: 13px; color: #64748b; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; }
+            .section-title { font-size: 14px; font-weight: 700; text-transform: uppercase; color: #e11d48; margin-top: 20px; margin-bottom: 6px; }
+            .box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; border-radius: 6px; font-size: 13px; white-space: pre-line; }
+            .decisions { border-left: 4px solid #10b981; background: #f0fdf4; }
+            table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+            th, td { border: 1px solid #cbd5e1; padding: 8px 10px; text-align: left; }
+            th { background: #f1f5f9; font-weight: 700; }
+            @media print { body { padding: 10px; } }
+          </style>
+        </head>
+        <body>
+          <h1>${mom.title}</h1>
+          <div class="meta">
+            <strong>Client:</strong> ${mom.clientOrg} &nbsp;|&nbsp;
+            <strong>Date:</strong> ${mom.date} (${mom.time || "N/A"}, ${mom.duration || "N/A"}) &nbsp;|&nbsp;
+            <strong>Mode:</strong> ${mom.mode || "In-Person"} &nbsp;|&nbsp;
+            <strong>Status:</strong> ${mom.status || "Draft"}
+            <br />
+            <strong>Client Attendees:</strong> ${mom.clientAttendees || "None specified"}
+            <br />
+            <strong>Internal Attendees:</strong> ${(mom.internalAttendees || []).join(", ")}
+          </div>
+
+          <div class="section-title">Key Discussion Points & Minutes</div>
+          <div class="box">${mom.notes || "None"}</div>
+
+          <div class="section-title">Decisions Taken & Approvals</div>
+          <div class="box decisions">${mom.decisions || "None"}</div>
+
+          <div class="section-title">Action Items & Next Steps (${(mom.actionItems || []).length})</div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 35px;">#</th>
+                <th>Action Directive / Task</th>
+                <th>Owner</th>
+                <th>Due Date</th>
+                <th>Priority</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${(mom.actionItems || [])
+                .map(
+                  (ai, idx) => `
+                <tr>
+                  <td>${idx + 1}</td>
+                  <td>${ai.task}</td>
+                  <td>${ai.owner || "Unassigned"}</td>
+                  <td>${ai.dueDate || "TBD"}</td>
+                  <td>${ai.priority || "Medium"}</td>
+                  <td>${ai.status || "Pending"}</td>
+                </tr>
+              `
+                )
+                .join("")}
+            </tbody>
+          </table>
+          <div style="margin-top: 30px; font-size: 11px; color: #94a3b8;">
+            Recorded by: ${mom.createdBy || "Sudhanshu Khande"} &nbsp;|&nbsp; Maharashtra ZPBDMS Operations & Governance
+          </div>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+    }, 400);
+  };
+
+  const allMoms = Array.isArray(moms) ? moms : [];
+  const totalMoms = allMoms.length;
+  const thisMonthMoms = allMoms.filter((m) => m.date && m.date.startsWith(todayISO().slice(0, 7))).length;
+  const totalActionItems = allMoms.reduce((acc, m) => acc + (Array.isArray(m.actionItems) ? m.actionItems.length : 0), 0);
+  const openActionItems = allMoms.reduce(
+    (acc, m) =>
+      acc + (Array.isArray(m.actionItems) ? m.actionItems.filter((a) => a.status !== "Done").length : 0),
+    0
+  );
+  const approvedMoms = allMoms.filter((m) => m.status === "Client Approved").length;
+
+  const filtered = allMoms.filter((m) => {
+    if (statusFilter !== "All Statuses" && m.status !== statusFilter) return false;
+    if (dateFilter === "Today" && m.date !== todayISO()) return false;
+    if (dateFilter === "This Month" && (!m.date || !m.date.startsWith(todayISO().slice(0, 7)))) return false;
+    if (dateFilter === "Last 7 Days") {
+      const d = new Date(m.date).getTime();
+      const now = Date.now();
+      if (now - d > 7 * 86400000) return false;
+    }
+
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      const haystack = [
+        m.title,
+        m.clientOrg,
+        m.clientAttendees,
+        (m.internalAttendees || []).join(" "),
+        m.mode,
+        m.category,
+        m.notes,
+        m.decisions,
+        (m.actionItems || []).map((a) => `${a.task} ${a.owner}`).join(" "),
+      ]
+        .join(" ")
+        .toLowerCase();
+      if (!haystack.includes(q)) return false;
+    }
+    return true;
+  });
+
+  filtered.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+
+  return (
+    <div>
+      {/* Top MOM Operational KPI Metrics */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))",
+          gap: 14,
+          marginBottom: 18,
+        }}
+      >
+        <div className="glass-card" style={{ padding: "14px 16px", borderTop: "2px solid #ff334b" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", textTransform: "uppercase", fontWeight: 700 }}>
+              Total Meetings
+            </span>
+            <ClipboardList size={16} color="#ff334b" />
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 800, color: isLight ? "#0f172a" : "#ffffff", marginTop: 6 }}>
+            {totalMoms}
+          </div>
+          <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>
+            Client discussions on record
+          </div>
+        </div>
+
+        <div className="glass-card" style={{ padding: "14px 16px", borderTop: "2px solid #38bdf8" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 11, color: "#0284c7", textTransform: "uppercase", fontWeight: 700 }}>
+              This Month
+            </span>
+            <Calendar size={16} color="#38bdf8" />
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 800, color: "#38bdf8", marginTop: 6 }}>
+            {thisMonthMoms}
+          </div>
+          <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>
+            Conducted in {new Date().toLocaleString("en-US", { month: "short", year: "numeric" })}
+          </div>
+        </div>
+
+        <div className="glass-card" style={{ padding: "14px 16px", borderTop: "2px solid #a855f7" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 11, color: "#9333ea", textTransform: "uppercase", fontWeight: 700 }}>
+              Open Action Items
+            </span>
+            <CheckSquare size={16} color="#a855f7" />
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 800, color: "#a855f7", marginTop: 6 }}>
+            {openActionItems}
+            <span style={{ fontSize: 13, fontWeight: 500, color: isLight ? "#64748b" : "#94a3b8", marginLeft: 6 }}>
+              / {totalActionItems}
+            </span>
+          </div>
+          <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>
+            Deliverables in progress or pending
+          </div>
+        </div>
+
+        <div className="glass-card" style={{ padding: "14px 16px", borderTop: "2px solid #10b981" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 11, color: "#059669", textTransform: "uppercase", fontWeight: 700 }}>
+              Client Approved
+            </span>
+            <CheckCircle size={16} color="#10b981" />
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 800, color: "#10b981", marginTop: 6 }}>
+            {approvedMoms}
+          </div>
+          <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>
+            Formal sign-off received
+          </div>
+        </div>
+      </div>
+
+      {/* Toolbar */}
+      <div
+        className="glass-card"
+        style={{
+          padding: "12px 16px",
+          marginBottom: 16,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: 10,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 260, flexWrap: "wrap" }}>
+          <div style={{ position: "relative", width: 280, maxWidth: "100%" }}>
+            <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#94a3b8" }} />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search MOM by title, client, decisions, action..."
+              style={{
+                ...darkInputStyle,
+                padding: "6px 10px 6px 30px",
+                fontSize: 12,
+                background: isLight ? "#ffffff" : "rgba(18, 22, 34, 0.8)",
+                width: "100%",
+              }}
+            />
+          </div>
+
+          <div style={{ minWidth: 140 }}>
+            <SelectInput
+              value={statusFilter}
+              onChange={setStatusFilter}
+              options={["All Statuses", "Draft", "Shared with Client", "Client Approved"]}
+            />
+          </div>
+
+          <div style={{ minWidth: 130 }}>
+            <SelectInput
+              value={dateFilter}
+              onChange={setDateFilter}
+              options={["All Dates", "Today", "Last 7 Days", "This Month"]}
+            />
+          </div>
+        </div>
+
+        <button
+          className="btn-red-gradient"
+          onClick={onOpenAdd}
+          style={{ padding: "7px 16px", fontSize: 12.5, display: "flex", alignItems: "center", gap: 6 }}
+        >
+          <Plus size={14} /> Record New Discussion (MOM)
+        </button>
+      </div>
+
+      {/* Date-wise MOM Stream Cards */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        {filtered.length === 0 ? (
+          <div className="glass-card" style={{ padding: "40px 20px", textAlign: "center" }}>
+            <ClipboardList size={34} color="#64748b" style={{ margin: "0 auto 10px", display: "block" }} />
+            <div style={{ color: isLight ? "#0f172a" : "#ffffff", fontSize: 14, fontWeight: 700 }}>
+              No Minutes of Meeting found
+            </div>
+            <div style={{ color: isLight ? "#64748b" : "#94a3b8", fontSize: 12, marginTop: 4 }}>
+              {search || statusFilter !== "All Statuses" || dateFilter !== "All Dates"
+                ? "Try clearing filters to view all recorded discussions."
+                : "Start documenting client discussions and requirements."}
+            </div>
+            <button
+              className="btn-red-gradient"
+              onClick={onOpenAdd}
+              style={{ padding: "7px 16px", fontSize: 12.5, marginTop: 14, display: "inline-flex", alignItems: "center", gap: 6 }}
+            >
+              <Plus size={14} /> Record First Meeting (MOM)
+            </button>
+          </div>
+        ) : (
+          filtered.map((m, idx) => {
+            const isExpanded = expandedMoms[m.id] !== undefined ? expandedMoms[m.id] : idx === 0;
+            const dateObj = new Date(m.date);
+            const formattedDate = isNaN(dateObj.getTime())
+              ? m.date
+              : dateObj.toLocaleDateString("en-IN", {
+                  weekday: "short",
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                });
+            const openActions = (m.actionItems || []).filter((a) => a.status !== "Done").length;
+            const isCopied = copiedId === m.id;
+
+            return (
+              <div
+                key={m.id}
+                className="glass-card"
+                style={{
+                  padding: "16px 20px",
+                  borderLeft:
+                    m.status === "Client Approved"
+                      ? "4px solid #10b981"
+                      : m.status === "Shared with Client"
+                      ? "4px solid #38bdf8"
+                      : "4px solid #f59e0b",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                {/* Header Row */}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 10 }}>
+                  <div style={{ flex: 1, minWidth: 260 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 6 }}>
+                      {/* Date Badge */}
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 4,
+                          fontSize: 11,
+                          fontWeight: 700,
+                          padding: "2px 8px",
+                          borderRadius: 4,
+                          background: isLight ? "#e2e8f0" : "rgba(255, 255, 255, 0.08)",
+                          color: isLight ? "#1e293b" : "#f1f5f9",
+                        }}
+                      >
+                        <Calendar size={11} color="#ff334b" />
+                        {formattedDate}
+                      </span>
+
+                      {/* Time & Duration */}
+                      {(m.time || m.duration) && (
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 4,
+                            fontSize: 10.5,
+                            fontWeight: 600,
+                            padding: "2px 7px",
+                            borderRadius: 4,
+                            background: isLight ? "#f1f5f9" : "rgba(255, 255, 255, 0.04)",
+                            color: isLight ? "#64748b" : "#94a3b8",
+                          }}
+                        >
+                          <Clock size={10.5} color="#38bdf8" />
+                          {m.time} {m.duration ? `(${m.duration})` : ""}
+                        </span>
+                      )}
+
+                      {/* Mode Badge */}
+                      {m.mode && (
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 4,
+                            fontSize: 10.5,
+                            fontWeight: 600,
+                            padding: "2px 7px",
+                            borderRadius: 4,
+                            background: "rgba(168, 85, 247, 0.12)",
+                            color: "#c084fc",
+                            border: "1px solid rgba(168, 85, 247, 0.3)",
+                          }}
+                        >
+                          <Building2 size={10.5} />
+                          {m.mode}
+                        </span>
+                      )}
+
+                      {/* Status Chip */}
+                      <span
+                        style={{
+                          display: "inline-block",
+                          fontSize: 10,
+                          fontWeight: 700,
+                          padding: "2px 8px",
+                          borderRadius: 12,
+                          background:
+                            m.status === "Client Approved"
+                              ? "rgba(34, 197, 94, 0.16)"
+                              : m.status === "Shared with Client"
+                              ? "rgba(56, 189, 248, 0.16)"
+                              : "rgba(245, 158, 11, 0.16)",
+                          color:
+                            m.status === "Client Approved"
+                              ? "#4ade80"
+                              : m.status === "Shared with Client"
+                              ? "#38bdf8"
+                              : "#fbbf24",
+                          border:
+                            m.status === "Client Approved"
+                              ? "1px solid rgba(34, 197, 94, 0.4)"
+                              : m.status === "Shared with Client"
+                              ? "1px solid rgba(56, 189, 248, 0.4)"
+                              : "1px solid rgba(245, 158, 11, 0.4)",
+                        }}
+                      >
+                        ● {m.status || "Draft"}
+                      </span>
+                    </div>
+
+                    {/* Title */}
+                    <div
+                      style={{
+                        fontSize: 16,
+                        fontWeight: 800,
+                        color: isLight ? "#0f172a" : "#ffffff",
+                        letterSpacing: "-0.2px",
+                        lineHeight: 1.35,
+                      }}
+                    >
+                      {m.title}
+                    </div>
+
+                    {/* Client Organization & Category */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4, flexWrap: "wrap" }}>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "#ff6479" }}>
+                        🏢 {m.clientOrg}
+                      </span>
+                      {m.category && (
+                        <span style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8" }}>
+                          · {m.category}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Actions Header */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <button
+                      onClick={() => handleCopyMOM(m)}
+                      className="btn-ghost-dark"
+                      style={{
+                        padding: "5px 10px",
+                        fontSize: 11.5,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 4,
+                        background: isCopied ? "rgba(34, 197, 94, 0.2)" : undefined,
+                        color: isCopied ? "#4ade80" : undefined,
+                        border: isCopied ? "1px solid rgba(34, 197, 94, 0.4)" : undefined,
+                      }}
+                      title="Copy professional plain text email minutes to clipboard"
+                    >
+                      <Copy size={12} />
+                      <span>{isCopied ? "Copied!" : "Copy Clean MOM"}</span>
+                    </button>
+
+                    <button
+                      onClick={() => handlePrintMOM(m)}
+                      className="btn-ghost-dark"
+                      style={{ padding: "5px 10px", fontSize: 11.5, display: "inline-flex", alignItems: "center", gap: 4 }}
+                      title="Print or export formatted PDF"
+                    >
+                      <Printer size={12} />
+                      <span>Print / PDF</span>
+                    </button>
+
+                    <IconButton onClick={() => onOpenEdit(m)} title="Edit Meeting Minutes" style={{ padding: 4 }}>
+                      <Pencil size={13} />
+                    </IconButton>
+
+                    <IconButton onClick={() => onDelete(m)} title="Delete Meeting Record" variant="danger" style={{ padding: 4 }}>
+                      <Trash2 size={13} />
+                    </IconButton>
+
+                    <button
+                      onClick={() => toggleExpand(m.id)}
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        color: isLight ? "#475569" : "#94a3b8",
+                        cursor: "pointer",
+                        padding: "4px 6px",
+                        display: "flex",
+                        alignItems: "center",
+                      }}
+                      title={isExpanded ? "Collapse MOM details" : "Expand MOM details"}
+                    >
+                      {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Attendees Summary Row */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginTop: 10,
+                    paddingTop: 8,
+                    borderTop: isLight ? "1px solid #f1f5f9" : "1px solid rgba(255, 255, 255, 0.05)",
+                    fontSize: 11.5,
+                    flexWrap: "wrap",
+                    gap: 8,
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                    <span style={{ fontWeight: 700, color: isLight ? "#475569" : "#94a3b8" }}>Client Attendees:</span>
+                    <span style={{ color: isLight ? "#1e293b" : "#e2e8f0" }}>{m.clientAttendees || "None logged"}</span>
+                  </div>
+
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                    <span style={{ fontWeight: 700, color: isLight ? "#475569" : "#94a3b8" }}>Team Present:</span>
+                    <div style={{ display: "flex", gap: 4 }}>
+                      {(m.internalAttendees || []).map((name) => (
+                        <span
+                          key={name}
+                          style={{
+                            fontSize: 10.5,
+                            fontWeight: 600,
+                            padding: "1px 6px",
+                            borderRadius: 4,
+                            background: "rgba(56, 189, 248, 0.12)",
+                            color: "#38bdf8",
+                            border: "1px solid rgba(56, 189, 248, 0.25)",
+                          }}
+                        >
+                          {name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Expanded Details: Discussion, Decisions, Action Items */}
+                {isExpanded && (
+                  <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 12 }}>
+                    {/* Discussion Points & Decisions 2-Col Grid */}
+                    <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 12 }}>
+                      {/* Discussion Points */}
+                      <div
+                        style={{
+                          padding: "12px 14px",
+                          borderRadius: 8,
+                          background: isLight ? "#f8fafc" : "rgba(255, 255, 255, 0.02)",
+                          border: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.06)",
+                        }}
+                      >
+                        <div style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "#ff6479", marginBottom: 6, display: "flex", alignItems: "center", gap: 5 }}>
+                          <FileText size={13} /> Key Discussion Points & Minutes
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 12,
+                            color: isLight ? "#334155" : "#cbd5e1",
+                            lineHeight: 1.5,
+                            whiteSpace: "pre-line",
+                          }}
+                        >
+                          {m.notes || "No discussion points documented."}
+                        </div>
+                      </div>
+
+                      {/* Decisions Taken */}
+                      <div
+                        style={{
+                          padding: "12px 14px",
+                          borderRadius: 8,
+                          background: isLight ? "#f0fdf4" : "rgba(34, 197, 94, 0.04)",
+                          border: isLight ? "1px solid #bbf7d0" : "1px solid rgba(34, 197, 94, 0.2)",
+                          borderLeft: "3px solid #22c55e",
+                        }}
+                      >
+                        <div style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: "#22c55e", marginBottom: 6, display: "flex", alignItems: "center", gap: 5 }}>
+                          <CheckCircle2 size={13} /> Decisions Taken & Approvals Ratified
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 12,
+                            color: isLight ? "#166534" : "#86efac",
+                            lineHeight: 1.5,
+                            whiteSpace: "pre-line",
+                          }}
+                        >
+                          {m.decisions || "No explicit decisions logged."}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action Items Section */}
+                    {Array.isArray(m.actionItems) && m.actionItems.length > 0 && (
+                      <div
+                        style={{
+                          padding: "12px 14px",
+                          borderRadius: 8,
+                          background: isLight ? "#ffffff" : "rgba(255, 255, 255, 0.02)",
+                          border: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.08)",
+                        }}
+                      >
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                          <div style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", color: isLight ? "#0f172a" : "#ffffff", display: "flex", alignItems: "center", gap: 6 }}>
+                            <CheckSquare size={14} color="#38bdf8" /> Action Items & Deliverables ({m.actionItems.length})
+                          </div>
+                          <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8" }}>
+                            {openActions === 0 ? "✓ All action items completed" : `${openActions} open items pending`}
+                          </div>
+                        </div>
+
+                        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                          {m.actionItems.map((ai, aidx) => {
+                            const isDone = ai.status === "Done";
+                            return (
+                              <div
+                                key={ai.id || aidx}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                  padding: "8px 10px",
+                                  borderRadius: 6,
+                                  background: isDone
+                                    ? (isLight ? "#f1f5f9" : "rgba(255, 255, 255, 0.02)")
+                                    : (isLight ? "#f8fafc" : "rgba(18, 22, 34, 0.6)"),
+                                  border: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.05)",
+                                  flexWrap: "wrap",
+                                  gap: 8,
+                                }}
+                              >
+                                <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 260 }}>
+                                  {/* Interactive Status Pill */}
+                                  <button
+                                    type="button"
+                                    onClick={() => onToggleActionItem(m.id, ai.id)}
+                                    title="Click to toggle status (Pending → In Progress → Done)"
+                                    style={{
+                                      fontSize: 10,
+                                      fontWeight: 700,
+                                      padding: "2px 7px",
+                                      borderRadius: 12,
+                                      border: isDone
+                                        ? "1px solid rgba(34, 197, 94, 0.4)"
+                                        : ai.status === "In Progress"
+                                        ? "1px solid rgba(168, 85, 247, 0.4)"
+                                        : "1px solid rgba(245, 158, 11, 0.4)",
+                                      background: isDone
+                                        ? "rgba(34, 197, 94, 0.16)"
+                                        : ai.status === "In Progress"
+                                        ? "rgba(168, 85, 247, 0.16)"
+                                        : "rgba(245, 158, 11, 0.16)",
+                                      color: isDone
+                                        ? "#4ade80"
+                                        : ai.status === "In Progress"
+                                        ? "#c084fc"
+                                        : "#fbbf24",
+                                      cursor: "pointer",
+                                    }}
+                                  >
+                                    {isDone ? "✓ Done" : ai.status || "Pending"}
+                                  </button>
+
+                                  {/* Task Description */}
+                                  <span
+                                    style={{
+                                      fontSize: 12,
+                                      fontWeight: 600,
+                                      color: isDone
+                                        ? (isLight ? "#94a3b8" : "#64748b")
+                                        : (isLight ? "#0f172a" : "#f1f5f9"),
+                                      textDecoration: isDone ? "line-through" : "none",
+                                    }}
+                                  >
+                                    {ai.task}
+                                  </span>
+                                </div>
+
+                                <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11 }}>
+                                  {/* Owner */}
+                                  <span style={{ color: isLight ? "#475569" : "#94a3b8", fontWeight: 600 }}>
+                                    👤 {ai.owner || "Unassigned"}
+                                  </span>
+
+                                  {/* Due Date */}
+                                  {ai.dueDate && (
+                                    <span style={{ color: isLight ? "#64748b" : "#94a3b8", fontFamily: "'JetBrains Mono', monospace", fontSize: 10.5 }}>
+                                      📅 {ai.dueDate}
+                                    </span>
+                                  )}
+
+                                  {/* Priority */}
+                                  <span
+                                    style={{
+                                      fontSize: 9.5,
+                                      fontWeight: 700,
+                                      padding: "1px 5px",
+                                      borderRadius: 3,
+                                      background:
+                                        ai.priority === "Critical"
+                                          ? "rgba(239, 68, 68, 0.18)"
+                                          : ai.priority === "High"
+                                          ? "rgba(245, 158, 11, 0.18)"
+                                          : "rgba(56, 189, 248, 0.15)",
+                                      color:
+                                        ai.priority === "Critical"
+                                          ? "#ff6479"
+                                          : ai.priority === "High"
+                                          ? "#fbbf24"
+                                          : "#38bdf8",
+                                    }}
+                                  >
+                                    {ai.priority || "Medium"}
+                                  </span>
+
+                                  {/* Push to Dev-Test Matrix */}
+                                  {ai.pushedToMatrix ? (
+                                    <span
+                                      style={{
+                                        fontSize: 10,
+                                        fontWeight: 700,
+                                        color: "#22c55e",
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        gap: 3,
+                                        background: "rgba(34, 197, 94, 0.12)",
+                                        padding: "2px 6px",
+                                        borderRadius: 4,
+                                      }}
+                                    >
+                                      ✓ In Matrix
+                                    </span>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => onPushToTestMatrix(m, ai)}
+                                      title="Convert this client action item into a directive on the Dev-Test Execution Matrix"
+                                      style={{
+                                        fontSize: 10,
+                                        fontWeight: 700,
+                                        color: "#38bdf8",
+                                        background: "rgba(56, 189, 248, 0.12)",
+                                        border: "1px solid rgba(56, 189, 248, 0.3)",
+                                        padding: "2px 7px",
+                                        borderRadius: 4,
+                                        cursor: "pointer",
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        gap: 3,
+                                        transition: "all 0.15s ease",
+                                      }}
+                                    >
+                                      <FileSpreadsheet size={10} />
+                                      + Push to Matrix
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })
+        )}
+      </div>
     </div>
   );
 }
