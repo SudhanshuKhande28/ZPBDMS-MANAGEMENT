@@ -52,6 +52,7 @@ import {
   Eye,
   EyeOff,
   Shield,
+  Crown,
 } from "lucide-react";
 
 /* ---------------------------------------------------------------
@@ -99,13 +100,14 @@ const TEAM_ROSTER = [
 ];
 
 const ROLES_LIST = [
+  "CEO",
+  "Manager",
   "Business Analyst",
   "Main Admin / Business Analyst",
   "Lead Developer",
   "Developer",
   "Tester",
   "Testing Lead",
-  "Manager",
 ];
 
 function mergeUsersWithDefaults(existingUsers = []) {
@@ -549,13 +551,13 @@ function StatusChip({ value, interactive = false }) {
   );
 }
 
-function TestStatusChip({ value, interactive = false, onClick }) {
+function TestStatusChip({ value, interactive = false, onClick, compact = false }) {
   const map = {
     Passed: {
       bg: "rgba(34, 197, 94, 0.16)",
       fg: "#4ade80",
       border: "rgba(34, 197, 94, 0.4)",
-      glow: "0 0 10px rgba(34, 197, 94, 0.25)",
+      glow: "0 0 10px rgba(34, 197, 94, 0.2)",
       dot: "#22c55e",
     },
     Failed: {
@@ -592,21 +594,24 @@ function TestStatusChip({ value, interactive = false, onClick }) {
   return (
     <span
       onClick={onClick}
+      title={interactive ? `${value || "Untested"} (Click to cycle status)` : (value || "Untested")}
       style={{
         display: "inline-flex",
         alignItems: "center",
-        gap: 6,
+        gap: compact ? 4 : 6,
         background: s.bg,
         color: s.fg,
         border: `1px solid ${s.border}`,
         boxShadow: s.glow,
         fontFamily: "'Inter', sans-serif",
-        fontSize: 12,
+        fontSize: compact ? 11 : 12,
         fontWeight: 700,
-        padding: "3px 10px",
+        padding: compact ? "2px 8px" : "3px 10px",
         borderRadius: 20,
         whiteSpace: "nowrap",
         letterSpacing: "0.2px",
+        maxWidth: "100%",
+        boxSizing: "border-box",
         cursor: interactive ? "pointer" : "default",
         userSelect: "none",
         transition: "all 0.18s ease",
@@ -614,19 +619,22 @@ function TestStatusChip({ value, interactive = false, onClick }) {
     >
       <span
         style={{
-          width: 6,
-          height: 6,
+          width: compact ? 5 : 6,
+          height: compact ? 5 : 6,
           borderRadius: "50%",
           backgroundColor: s.dot,
           boxShadow: `0 0 6px ${s.dot}`,
+          flexShrink: 0,
         }}
       />
-      {value}
+      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        {value || "Untested"}
+      </span>
     </span>
   );
 }
 
-function DevStatusChip({ value, onClick }) {
+function DevStatusChip({ value, onClick, compact = false }) {
   const map = {
     "Resolved / Ready for Retest": {
       bg: "rgba(34, 197, 94, 0.16)",
@@ -634,6 +642,7 @@ function DevStatusChip({ value, onClick }) {
       border: "rgba(34, 197, 94, 0.4)",
       glow: "0 0 10px rgba(34, 197, 94, 0.2)",
       dot: "#22c55e",
+      short: "Resolved / Retest",
     },
     "Dev In Progress": {
       bg: "rgba(168, 85, 247, 0.16)",
@@ -641,6 +650,7 @@ function DevStatusChip({ value, onClick }) {
       border: "rgba(168, 85, 247, 0.4)",
       glow: "0 0 10px rgba(168, 85, 247, 0.2)",
       dot: "#a855f7",
+      short: "In Progress",
     },
     "Pending Dev Fix": {
       bg: "rgba(245, 158, 11, 0.16)",
@@ -648,6 +658,7 @@ function DevStatusChip({ value, onClick }) {
       border: "rgba(245, 158, 11, 0.4)",
       glow: "0 0 8px rgba(245, 158, 11, 0.15)",
       dot: "#f59e0b",
+      short: "Pending Fix",
     },
     "Cannot Reproduce / As Designed": {
       bg: "rgba(148, 163, 184, 0.12)",
@@ -655,26 +666,31 @@ function DevStatusChip({ value, onClick }) {
       border: "rgba(148, 163, 184, 0.25)",
       glow: "none",
       dot: "#94a3b8",
+      short: "As Designed",
     },
   };
   const s = map[value] || map["Pending Dev Fix"];
+  const displayLabel = compact ? (s.short || value) : (value || "Pending Dev Fix");
 
   return (
     <span
       onClick={onClick}
+      title={`${value || "Pending Dev Fix"} (Click to update resolution)`}
       style={{
         display: "inline-flex",
         alignItems: "center",
-        gap: 6,
+        justifyContent: "center",
+        gap: 5,
         background: s.bg,
         color: s.fg,
         border: `1px solid ${s.border}`,
         boxShadow: s.glow,
-        fontSize: 11.5,
+        fontSize: compact ? 10.5 : 11.5,
         fontWeight: 600,
-        padding: "3px 10px",
+        padding: compact ? "2.5px 8px" : "3px 10px",
         borderRadius: 20,
-        whiteSpace: "nowrap",
+        maxWidth: "100%",
+        boxSizing: "border-box",
         cursor: onClick ? "pointer" : "default",
         userSelect: "none",
         transition: "all 0.18s ease",
@@ -682,13 +698,22 @@ function DevStatusChip({ value, onClick }) {
     >
       <span
         style={{
-          width: 6,
-          height: 6,
+          width: 5,
+          height: 5,
           borderRadius: "50%",
           backgroundColor: s.dot,
+          flexShrink: 0,
         }}
       />
-      {value || "Pending Dev Fix"}
+      <span
+        style={{
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {displayLabel}
+      </span>
     </span>
   );
 }
@@ -1096,6 +1121,17 @@ function UserForm({ initial, onSave, onCancel, isLight }) {
     "#64748b",
   ];
 
+  const handleRoleChange = (newRole) => {
+    setRole(newRole);
+    if (!initial) {
+      if (newRole === "CEO") setAvatar("#f59e0b");
+      else if (newRole?.includes("Manager")) setAvatar("#10b981");
+      else if (newRole?.includes("Tester")) setAvatar("#a855f7");
+      else if (newRole?.includes("Developer")) setAvatar("#38bdf8");
+      else if (newRole?.includes("Analyst")) setAvatar("#ff334b");
+    }
+  };
+
   const handleSubmit = (e) => {
     e?.preventDefault();
     if (!name.trim() || !username.trim() || !password.trim()) {
@@ -1155,7 +1191,7 @@ function UserForm({ initial, onSave, onCancel, isLight }) {
           />
         </FormField>
         <FormField label="Role / Designation">
-          <SelectInput value={role} onChange={setRole} options={ROLES_LIST} />
+          <SelectInput value={role} onChange={handleRoleChange} options={ROLES_LIST} />
         </FormField>
       </div>
 
@@ -5307,16 +5343,16 @@ function TestHubView({
       >
         <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
           <colgroup>
-            <col style={{ width: 55 }} />
-            <col style={{ width: "21%" }} />
-            <col style={{ width: 85 }} />
-            <col style={{ width: "11%" }} />
-            <col style={{ width: "11%" }} />
-            <col style={{ width: "10%" }} />
-            <col style={{ width: "14%" }} />
-            <col style={{ width: "12%" }} />
+            <col style={{ width: 60 }} />
+            <col style={{ width: "19%" }} />
+            <col style={{ width: 80 }} />
             <col style={{ width: "10.5%" }} />
-            <col style={{ width: 65 }} />
+            <col style={{ width: "13%" }} />
+            <col style={{ width: "11%" }} />
+            <col style={{ width: "13.5%" }} />
+            <col style={{ width: "11.5%" }} />
+            <col style={{ width: "10%" }} />
+            <col style={{ width: 62 }} />
           </colgroup>
           <thead>
             <tr
@@ -5370,7 +5406,7 @@ function TestHubView({
                   }}
                 >
                   {/* 1. Sr. / Code */}
-                  <td style={{ padding: "8px 4px", textAlign: "center", verticalAlign: "middle" }}>
+                  <td style={{ padding: "8px 4px", textAlign: "center", verticalAlign: "middle", overflow: "hidden" }}>
                     <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, fontWeight: 700, color: isLight ? "#0f172a" : "#ffffff" }}>
                       {tp.code || `TP-${idx + 1}`}
                     </div>
@@ -5380,7 +5416,7 @@ function TestHubView({
                   </td>
 
                   {/* 2. Point / Directive */}
-                  <td style={{ padding: "8px 8px", verticalAlign: "middle" }}>
+                  <td style={{ padding: "8px 8px", verticalAlign: "middle", overflow: "hidden" }}>
                     <div
                       title={tp.scenario}
                       style={{
@@ -5415,7 +5451,7 @@ function TestHubView({
                   </td>
 
                   {/* 3. Date Assigned */}
-                  <td style={{ padding: "8px 4px", textAlign: "center", verticalAlign: "middle" }}>
+                  <td style={{ padding: "8px 4px", textAlign: "center", verticalAlign: "middle", overflow: "hidden" }}>
                     <span
                       style={{
                         fontSize: 10.5,
@@ -5430,10 +5466,10 @@ function TestHubView({
                   </td>
 
                   {/* 4. Assigned Developer */}
-                  <td style={{ padding: "8px 6px", verticalAlign: "middle" }}>
+                  <td style={{ padding: "8px 6px", verticalAlign: "middle", overflow: "hidden" }}>
                     <div
                       title={`Developer: ${tp.assignedDev || "Unassigned"}`}
-                      style={{ display: "flex", alignItems: "center", gap: 5, overflow: "hidden" }}
+                      style={{ display: "flex", alignItems: "center", gap: 5, overflow: "hidden", minWidth: 0 }}
                     >
                       <div
                         style={{
@@ -5469,15 +5505,15 @@ function TestHubView({
                   </td>
 
                   {/* 5. Dev Completion Status */}
-                  <td style={{ padding: "8px 4px", textAlign: "center", verticalAlign: "middle" }}>
+                  <td style={{ padding: "8px 4px", textAlign: "center", verticalAlign: "middle", overflow: "hidden" }}>
                     <DevStatusChip value={tp.devStatus} onClick={() => onOpenResolve(tp)} compact />
                   </td>
 
                   {/* 6. Assigned Tester */}
-                  <td style={{ padding: "8px 6px", verticalAlign: "middle" }}>
+                  <td style={{ padding: "8px 6px", verticalAlign: "middle", overflow: "hidden" }}>
                     <div
                       title={`Tester: ${tp.tester || "Unassigned"}`}
-                      style={{ display: "flex", alignItems: "center", gap: 5, overflow: "hidden" }}
+                      style={{ display: "flex", alignItems: "center", gap: 5, overflow: "hidden", minWidth: 0 }}
                     >
                       <div
                         style={{
@@ -5513,7 +5549,7 @@ function TestHubView({
                   </td>
 
                   {/* 7. Tester Status / Remarks */}
-                  <td style={{ padding: "8px 6px", verticalAlign: "middle" }}>
+                  <td style={{ padding: "8px 6px", verticalAlign: "middle", overflow: "hidden" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 2 }}>
                       <TestStatusChip value={tp.status} interactive onClick={() => onCycleStatus(tp)} compact />
                     </div>
@@ -5540,7 +5576,7 @@ function TestHubView({
                   </td>
 
                   {/* 8. Developer Reassigned Remarks */}
-                  <td style={{ padding: "8px 6px", verticalAlign: "middle" }}>
+                  <td style={{ padding: "8px 6px", verticalAlign: "middle", overflow: "hidden" }}>
                     {tp.devRemark ? (
                       <div
                         title={tp.devRemark}
@@ -5566,7 +5602,7 @@ function TestHubView({
                   </td>
 
                   {/* 9. Final Retest Remarks */}
-                  <td style={{ padding: "8px 6px", verticalAlign: "middle" }}>
+                  <td style={{ padding: "8px 6px", verticalAlign: "middle", overflow: "hidden" }}>
                     {tp.finalRetestRemarks ? (
                       <div
                         title={tp.finalRetestRemarks}
@@ -5592,7 +5628,7 @@ function TestHubView({
                   </td>
 
                   {/* 10. Actions */}
-                  <td style={{ padding: "8px 4px", textAlign: "center", verticalAlign: "middle" }}>
+                  <td style={{ padding: "8px 4px", textAlign: "center", verticalAlign: "middle", overflow: "hidden" }}>
                     <div style={{ display: "inline-flex", gap: 3, alignItems: "center" }}>
                       <IconButton onClick={() => onOpenEdit(tp)} title="Edit Matrix Point" style={{ padding: 3 }}>
                         <Pencil size={12} />
@@ -5632,6 +5668,7 @@ function MasterModuleView({
 
   const allUsers = Array.isArray(users) ? users : [];
   const totalUsers = allUsers.length;
+  const ceoCount = allUsers.filter((u) => u.role === "CEO" || u.role?.toLowerCase().includes("ceo")).length;
   const devCount = allUsers.filter((u) => u.role?.toLowerCase().includes("dev")).length;
   const testerCount = allUsers.filter((u) => u.role?.toLowerCase().includes("test")).length;
   const baCount = allUsers.filter((u) => u.role?.toLowerCase().includes("analyst") || u.role?.toLowerCase().includes("ba")).length;
@@ -5657,7 +5694,7 @@ function MasterModuleView({
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+          gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))",
           gap: 14,
           marginBottom: 18,
         }}
@@ -5674,6 +5711,21 @@ function MasterModuleView({
           </div>
           <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>
             Registered team members
+          </div>
+        </div>
+
+        <div className="glass-card" style={{ padding: "14px 16px", borderTop: "2px solid #f59e0b" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 11, color: "#d97706", textTransform: "uppercase", fontWeight: 700 }}>
+              CEO & Leadership
+            </span>
+            <Crown size={16} color="#f59e0b" />
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 800, color: "#f59e0b", marginTop: 6 }}>
+            {ceoCount}
+          </div>
+          <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>
+            Executive Leadership
           </div>
         </div>
 
@@ -5888,21 +5940,27 @@ function MasterModuleView({
                         borderRadius: 4,
                         fontSize: 10.5,
                         fontWeight: 600,
-                        background: u.role?.includes("Developer")
+                        background: u.role === "CEO" || u.role?.toLowerCase().includes("ceo")
+                          ? "rgba(245, 158, 11, 0.18)"
+                          : u.role?.includes("Developer")
                           ? "rgba(56, 189, 248, 0.15)"
                           : u.role?.includes("Tester")
                           ? "rgba(168, 85, 247, 0.15)"
                           : u.role?.includes("Manager")
                           ? "rgba(16, 185, 129, 0.15)"
                           : "rgba(255, 51, 75, 0.15)",
-                        color: u.role?.includes("Developer")
+                        color: u.role === "CEO" || u.role?.toLowerCase().includes("ceo")
+                          ? "#fbbf24"
+                          : u.role?.includes("Developer")
                           ? "#38bdf8"
                           : u.role?.includes("Tester")
                           ? "#c084fc"
                           : u.role?.includes("Manager")
                           ? "#34d399"
                           : "#ff6479",
-                        border: `1px solid ${u.avatar || "#ff334b"}44`,
+                        border: u.role === "CEO" || u.role?.toLowerCase().includes("ceo")
+                          ? "1px solid rgba(245, 158, 11, 0.4)"
+                          : `1px solid ${u.avatar || "#ff334b"}44`,
                       }}
                     >
                       {u.role}
