@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
 import { db, auth } from "./firebase.js";
-import { signInWithEmailAndPassword, signOut as fbSignOut } from "firebase/auth";
+import { signInWithEmailAndPassword, signOut as fbSignOut, sendPasswordResetEmail } from "firebase/auth";
 import {
   AlertTriangle,
   Plus,
@@ -30,6 +30,11 @@ import {
   BellRing,
   Volume2,
   VolumeX,
+  Settings,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Timer,
+  RefreshCw,
   LogOut,
   UserCheck,
   Lock,
@@ -42,6 +47,7 @@ import {
   FileSpreadsheet,
   FlaskConical,
   Download,
+  Mail,
   MessageSquare,
   CheckCircle,
   XCircle,
@@ -284,6 +290,135 @@ export function validateSessionToken(token, user) {
   } catch (e) {
     return false;
   }
+}
+
+/* ---------------- Live SLA Countdown Timers (Zero Quota Impact) ---------------- */
+
+export function parseDurationToMs(str) {
+  if (!str || typeof str !== "string") return null;
+  const lower = str.toLowerCase().trim();
+  if (lower === "none" || lower === "clear" || lower === "no timer") return null;
+  if (lower.includes("min") || lower.endsWith("m")) {
+    const num = parseFloat(lower);
+    return isNaN(num) ? 30 * 60 * 1000 : Math.round(num * 60 * 1000);
+  }
+  if (lower.includes("hour") || lower.endsWith("h")) {
+    const num = parseFloat(lower);
+    return isNaN(num) ? 60 * 60 * 1000 : Math.round(num * 60 * 60 * 1000);
+  }
+  if (lower.includes("day") || lower.endsWith("d")) {
+    const num = parseFloat(lower);
+    return isNaN(num) ? 24 * 60 * 60 * 1000 : Math.round(num * 24 * 60 * 60 * 1000);
+  }
+  if (lower.includes("week") || lower.endsWith("w")) {
+    const num = parseFloat(lower);
+    return isNaN(num) ? 7 * 24 * 60 * 60 * 1000 : Math.round(num * 7 * 24 * 60 * 60 * 1000);
+  }
+  return null;
+}
+
+export const TIMER_PRESETS = [
+  { label: "No Timer Assigned", value: 0 },
+  { label: "15 Minutes (Sprint Fix)", value: 15 * 60 * 1000 },
+  { label: "30 Minutes (Hotfix)", value: 30 * 60 * 1000 },
+  { label: "1 Hour (Standard Directive)", value: 60 * 60 * 1000 },
+  { label: "2 Hours (Feature Review)", value: 2 * 60 * 60 * 1000 },
+  { label: "4 Hours (Half Day Sprint)", value: 4 * 60 * 60 * 1000 },
+  { label: "8 Hours (1 Business Day)", value: 8 * 60 * 60 * 1000 },
+  { label: "24 Hours (Full Day SLA)", value: 24 * 60 * 60 * 1000 },
+  { label: "48 Hours (2 Business Days)", value: 48 * 60 * 60 * 1000 },
+];
+
+export function LiveCountdown({ timerDeadline, status, compact = false }) {
+  const isCompleted = status === "Resolved" || status === "Passed" || status === "Done";
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    if (!timerDeadline || isCompleted) return;
+    const interval = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(interval);
+  }, [timerDeadline, isCompleted]);
+
+  if (!timerDeadline) return null;
+
+  const targetMs = typeof timerDeadline === "number" ? timerDeadline : new Date(timerDeadline).getTime();
+  if (isNaN(targetMs)) return null;
+
+  if (isCompleted) {
+    return (
+      <span
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 4,
+          padding: compact ? "1px 6px" : "3px 8px",
+          borderRadius: 6,
+          background: "rgba(16, 185, 129, 0.12)",
+          border: "1px solid rgba(16, 185, 129, 0.3)",
+          color: "#10b981",
+          fontSize: compact ? 10 : 11,
+          fontWeight: 700,
+          fontFamily: "'JetBrains Mono', monospace",
+        }}
+        title="Completed within target SLA"
+      >
+        <CheckCircle2 size={compact ? 10 : 12} /> Finished in Time
+      </span>
+    );
+  }
+
+  const diff = targetMs - now;
+  if (diff <= 0) {
+    const overdueMs = Math.abs(diff);
+    const m = Math.floor(overdueMs / 60000);
+    const s = Math.floor((overdueMs % 60000) / 1000);
+    return (
+      <span
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 4,
+          padding: compact ? "1px 6px" : "3px 8px",
+          borderRadius: 6,
+          background: "rgba(239, 68, 68, 0.15)",
+          border: "1px solid rgba(239, 68, 68, 0.4)",
+          color: "#f87171",
+          fontSize: compact ? 10 : 11,
+          fontWeight: 700,
+          fontFamily: "'JetBrains Mono', monospace",
+        }}
+        title="Task has exceeded assigned deadline"
+      >
+        <AlertTriangle size={compact ? 10 : 12} /> Overdue {m}m {s.toString().padStart(2, "0")}s
+      </span>
+    );
+  }
+
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  const isUrgent = diff < 30 * 60 * 1000;
+
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 4,
+        padding: compact ? "1px 6px" : "3px 8px",
+        borderRadius: 6,
+        background: isUrgent ? "rgba(245, 158, 11, 0.12)" : "rgba(56, 189, 248, 0.12)",
+        border: isUrgent ? "1px solid rgba(245, 158, 11, 0.35)" : "1px solid rgba(56, 189, 248, 0.3)",
+        color: isUrgent ? "#fbbf24" : "#38bdf8",
+        fontSize: compact ? 10 : 11,
+        fontWeight: 700,
+        fontFamily: "'JetBrains Mono', monospace",
+      }}
+      title={`Live SLA countdown: ${h}h ${m}m ${s}s remaining`}
+    >
+      <Timer size={compact ? 10 : 12} /> {h > 0 ? `${h}h ` : ""}{m.toString().padStart(2, "0")}m {s.toString().padStart(2, "0")}s
+    </span>
+  );
 }
 
 /* ---------------- Audio & Desktop Notification System ---------------- */
@@ -2117,6 +2252,32 @@ function TaskForm({ initial, users = TEAM_ROSTER, onSave, onCancel }) {
         </FormField>
       </div>
 
+      <FormField label="Assigned SLA Timer (Live Countdown · Zero Quota Impact)">
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <select
+            style={{ ...darkInputStyle, flex: 1 }}
+            value={f.timerPreset || 0}
+            onChange={(e) => {
+              const val = Number(e.target.value);
+              setF({
+                ...f,
+                timerPreset: val,
+                timerDeadline: val > 0 ? Date.now() + val : null,
+              });
+            }}
+          >
+            {TIMER_PRESETS.map((p) => (
+              <option key={p.value} value={p.value}>
+                {p.label}
+              </option>
+            ))}
+          </select>
+          {f.timerDeadline && (
+            <LiveCountdown timerDeadline={f.timerDeadline} status={f.status} />
+          )}
+        </div>
+      </FormField>
+
       <div style={{ display: "flex", gap: 10, marginTop: 22, justifyContent: "flex-end" }}>
         <button
           className="btn-ghost-dark"
@@ -2417,7 +2578,14 @@ function TestPointForm({ initial, users = TEAM_ROSTER, currentUser, onSave, onCa
               <button
                 key={preset}
                 type="button"
-                onClick={() => setF({ ...f, estimatedTime: preset })}
+                onClick={() => {
+                  const ms = parseDurationToMs(preset);
+                  setF({
+                    ...f,
+                    estimatedTime: preset,
+                    timerDeadline: ms ? Date.now() + ms : null,
+                  });
+                }}
                 style={{
                   padding: "1px 6px",
                   fontSize: 10,
@@ -2432,6 +2600,12 @@ function TestPointForm({ initial, users = TEAM_ROSTER, currentUser, onSave, onCa
               </button>
             ))}
           </div>
+          {f.timerDeadline && (
+            <div style={{ marginTop: 6, display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ fontSize: 10, color: "#94a3b8" }}>Active Countdown:</span>
+              <LiveCountdown timerDeadline={f.timerDeadline} status={f.status} compact />
+            </div>
+          )}
         </FormField>
       </div>
 
@@ -2626,7 +2800,19 @@ function DevResolveForm({ initial, users = TEAM_ROSTER, onSave, onCancel, isLigh
 
 function QuickTimerForm({ initial, onSave, onCancel }) {
   const [time, setTime] = useState(initial?.estimatedTime || "4 Hours");
-  const presets = ["30 Mins", "1 Hour", "2 Hours", "4 Hours", "1 Day", "2 Days", "3 Days", "1 Week"];
+  const presets = ["15 Mins", "30 Mins", "1 Hour", "2 Hours", "4 Hours", "1 Day", "2 Days", "No Timer"];
+
+  const handleSave = () => {
+    const trimmed = time.trim();
+    if (!trimmed) return;
+    if (trimmed.toLowerCase() === "no timer" || trimmed.toLowerCase() === "none") {
+      onSave("", null);
+    } else {
+      const ms = parseDurationToMs(trimmed);
+      const deadline = ms ? Date.now() + ms : null;
+      onSave(trimmed, deadline);
+    }
+  };
 
   return (
     <div>
@@ -2637,15 +2823,21 @@ function QuickTimerForm({ initial, onSave, onCancel }) {
         <div style={{ fontSize: 13, color: "#ffffff", fontWeight: 600, marginTop: 3 }}>
           {initial?.scenario}
         </div>
+        {initial?.timerDeadline && (
+          <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ fontSize: 11, color: "#94a3b8" }}>Active Countdown:</span>
+            <LiveCountdown timerDeadline={initial.timerDeadline} status={initial.status} />
+          </div>
+        )}
       </div>
 
-      <FormField label="Estimated Time / Completion Duration">
+      <FormField label="Estimated Time / Completion SLA Duration">
         <div style={{ position: "relative" }}>
           <input
             style={{ ...darkInputStyle, paddingLeft: 30, fontSize: 13 }}
             value={time}
             onChange={(e) => setTime(e.target.value)}
-            placeholder="e.g. 4 Hours, 2 Days"
+            placeholder="e.g. 30 Mins, 1 Hour, 4 Hours, 2 Days"
             autoFocus
           />
           <Clock size={14} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#38bdf8" }} />
@@ -2653,7 +2845,7 @@ function QuickTimerForm({ initial, onSave, onCancel }) {
       </FormField>
 
       <div style={{ marginTop: 10 }}>
-        <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 6, fontWeight: 600 }}>Quick Presets:</div>
+        <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 6, fontWeight: 600 }}>Quick SLA Presets (Zero Quota Impact):</div>
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
           {presets.map((p) => (
             <button
@@ -2685,9 +2877,9 @@ function QuickTimerForm({ initial, onSave, onCancel }) {
         <button
           className="btn-red-gradient"
           style={{ padding: "8px 20px", fontSize: 12.5, display: "flex", alignItems: "center", gap: 5 }}
-          onClick={() => time.trim() && onSave(time.trim())}
+          onClick={handleSave}
         >
-          <Clock size={13} /> Update Duration
+          <Timer size={13} /> Set SLA & Start Countdown
         </button>
       </div>
     </div>
@@ -3057,13 +3249,1076 @@ function MOMForm({ initial, users = TEAM_ROSTER, currentUser, onSave, onCancel, 
   );
 }
 
+/* ---------------------------- Outside Forgot Password Modal ---------------------------- */
+
+function ForgotPasswordModal({ onClose, users = [], isLight = false, onDispatchAdminAlert }) {
+  const [handle, setHandle] = useState("");
+  const [method, setMethod] = useState("email");
+  const [status, setStatus] = useState("idle");
+  const [statusMsg, setStatusMsg] = useState("");
+
+  const handleResetSubmit = async (e) => {
+    e?.preventDefault();
+    const cleanHandle = handle.trim().toLowerCase();
+    if (!cleanHandle) {
+      setStatus("error");
+      setStatusMsg("Please enter your registered username or email address.");
+      return;
+    }
+
+    setStatus("loading");
+    setStatusMsg("");
+
+    const foundUser = users.find((u) => {
+      const uName = (u.name || "").toLowerCase();
+      const uUser = (u.username || "").toLowerCase();
+      const uEmail = (u.email || "").toLowerCase();
+      return uUser === cleanHandle || uEmail === cleanHandle || uName === cleanHandle;
+    });
+
+    if (method === "email") {
+      const targetEmail = foundUser?.email || (cleanHandle.includes("@") ? cleanHandle : null);
+      if (!targetEmail) {
+        setStatus("error");
+        setStatusMsg(
+          `No registered email address found for "${handle}". Please select "Admin Assistance" below to request an administrative password reset.`
+        );
+        return;
+      }
+
+      try {
+        if (auth) {
+          await sendPasswordResetEmail(auth, targetEmail);
+          setStatus("success");
+          setStatusMsg(
+            `Password reset link successfully dispatched to ${targetEmail}! Please check your email inbox and spam folder.`
+          );
+        } else {
+          throw new Error("Firebase Auth is not initialized.");
+        }
+      } catch (err) {
+        console.warn("Firebase email reset fallback:", err);
+        if (onDispatchAdminAlert) {
+          onDispatchAdminAlert(
+            cleanHandle,
+            `User requested password reset. Direct email notification forwarded to Admin for: ${foundUser?.name || cleanHandle}`
+          );
+        }
+        setStatus("success");
+        setStatusMsg(
+          `Emergency reset request logged directly for Administrator (Sudhanshu Khande). Admin will provide your updated password.`
+        );
+      }
+    } else {
+      if (onDispatchAdminAlert) {
+        onDispatchAdminAlert(
+          cleanHandle,
+          `Emergency password reset requested for account "${foundUser?.name || cleanHandle}" (${foundUser?.role || "Team Member"}).`
+        );
+      }
+      setStatus("success");
+      setStatusMsg(
+        `Emergency reset request received! Administrator (Sudhanshu Khande) has been notified and will verify your credentials.`
+      );
+    }
+  };
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 9999,
+        background: "rgba(0, 0, 0, 0.78)",
+        backdropFilter: "blur(8px)",
+        WebkitBackdropFilter: "blur(8px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 20,
+      }}
+      onClick={onClose}
+    >
+      <div
+        className="glass-card modal-enter"
+        style={{
+          width: 440,
+          maxWidth: "100%",
+          padding: "32px 28px",
+          position: "relative",
+          borderTop: "2px solid #ff334b",
+          boxShadow: isLight
+            ? "0 20px 50px rgba(0,0,0,0.1), 0 0 25px rgba(255, 51, 75, 0.15)"
+            : "0 25px 65px rgba(0,0,0,0.85), 0 0 35px rgba(255, 51, 75, 0.2)",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          style={{
+            position: "absolute",
+            top: 18,
+            right: 18,
+            background: "none",
+            border: "none",
+            color: isLight ? "#64748b" : "#94a3b8",
+            cursor: "pointer",
+            padding: 4,
+          }}
+          title="Close dialog"
+        >
+          <X size={18} />
+        </button>
+
+        <div style={{ textAlign: "center", marginBottom: 20 }}>
+          <div
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 12,
+              background: "linear-gradient(135deg, #ff334b 0%, #b91c1c 100%)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#ffffff",
+              margin: "0 auto 12px",
+              boxShadow: "0 0 20px rgba(255, 51, 75, 0.4)",
+            }}
+          >
+            <KeyRound size={24} />
+          </div>
+          <h2
+            style={{
+              fontFamily: "'Outfit', sans-serif",
+              fontSize: 20,
+              fontWeight: 800,
+              color: isLight ? "#0f172a" : "#ffffff",
+              margin: 0,
+            }}
+          >
+            Account Recovery
+          </h2>
+          <p style={{ fontSize: 12.5, color: isLight ? "#475569" : "#94a3b8", marginTop: 4 }}>
+            Reset your ZPBDMS portal credentials
+          </p>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: 6,
+            background: isLight ? "#e2e8f0" : "rgba(255, 255, 255, 0.05)",
+            padding: 4,
+            borderRadius: 8,
+            marginBottom: 18,
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => {
+              setMethod("email");
+              setStatus("idle");
+              setStatusMsg("");
+            }}
+            style={{
+              border: "none",
+              background: method === "email" ? (isLight ? "#ffffff" : "#ff334b") : "transparent",
+              color: method === "email" ? (isLight ? "#0f172a" : "#ffffff") : (isLight ? "#64748b" : "#94a3b8"),
+              padding: "7px 10px",
+              borderRadius: 6,
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 5,
+              transition: "all 0.15s ease",
+            }}
+          >
+            <Mail size={13} /> Email Reset Link
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setMethod("admin");
+              setStatus("idle");
+              setStatusMsg("");
+            }}
+            style={{
+              border: "none",
+              background: method === "admin" ? (isLight ? "#ffffff" : "#ff334b") : "transparent",
+              color: method === "admin" ? (isLight ? "#0f172a" : "#ffffff") : (isLight ? "#64748b" : "#94a3b8"),
+              padding: "7px 10px",
+              borderRadius: 6,
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 5,
+              transition: "all 0.15s ease",
+            }}
+          >
+            <ShieldAlert size={13} /> Admin Assistance
+          </button>
+        </div>
+
+        <form onSubmit={handleResetSubmit}>
+          <FormField label="Registered Username or Email">
+            <div style={{ position: "relative" }}>
+              <User
+                size={15}
+                style={{
+                  position: "absolute",
+                  left: 12,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  color: "#94a3b8",
+                }}
+              />
+              <input
+                type="text"
+                value={handle}
+                onChange={(e) => {
+                  setHandle(e.target.value);
+                  if (status === "error") setStatus("idle");
+                }}
+                placeholder="e.g. sudhanshu, snehal, sankalp, rutuja"
+                style={{
+                  width: "100%",
+                  boxSizing: "border-box",
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 13,
+                  padding: "10px 12px 10px 36px",
+                  borderRadius: 8,
+                  border: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.12)",
+                  background: isLight ? "#ffffff" : "rgba(11, 14, 23, 0.88)",
+                  color: isLight ? "#0f172a" : "#ffffff",
+                  outline: "none",
+                }}
+                autoFocus
+              />
+            </div>
+          </FormField>
+
+          {status === "error" && (
+            <div
+              style={{
+                marginTop: 12,
+                padding: "10px 12px",
+                borderRadius: 8,
+                background: "rgba(239, 68, 68, 0.12)",
+                border: "1px solid rgba(239, 68, 68, 0.35)",
+                color: "#ff6479",
+                fontSize: 12,
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 8,
+                lineHeight: 1.4,
+              }}
+            >
+              <AlertTriangle size={14} style={{ flexShrink: 0, marginTop: 2 }} />
+              <div>{statusMsg}</div>
+            </div>
+          )}
+
+          {status === "success" && (
+            <div
+              style={{
+                marginTop: 12,
+                padding: "10px 12px",
+                borderRadius: 8,
+                background: "rgba(34, 197, 94, 0.12)",
+                border: "1px solid rgba(34, 197, 94, 0.35)",
+                color: "#4ade80",
+                fontSize: 12,
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 8,
+                lineHeight: 1.4,
+              }}
+            >
+              <CheckCircle2 size={14} style={{ flexShrink: 0, marginTop: 2 }} />
+              <div>{statusMsg}</div>
+            </div>
+          )}
+
+          <div style={{ display: "flex", gap: 10, marginTop: 20, justifyContent: "flex-end" }}>
+            <button
+              type="button"
+              className="btn-ghost-dark"
+              style={{ padding: "8px 16px", fontSize: 12.5 }}
+              onClick={onClose}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={status === "loading"}
+              className="btn-red-gradient"
+              style={{
+                padding: "8px 20px",
+                fontSize: 12.5,
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                opacity: status === "loading" ? 0.7 : 1,
+              }}
+            >
+              {status === "loading" ? "Processing..." : method === "email" ? "Send Reset Email" : "Request Reset"}
+              <ArrowRight size={13} />
+            </button>
+          </div>
+        </form>
+
+        <div
+          style={{
+            marginTop: 18,
+            paddingTop: 12,
+            borderTop: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
+            fontSize: 11,
+            color: isLight ? "#64748b" : "#94a3b8",
+            textAlign: "center",
+            lineHeight: 1.5,
+          }}
+        >
+          Administrator: <strong style={{ color: isLight ? "#0f172a" : "#ffffff" }}>Sudhanshu Khande</strong>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------------------- Global System Settings Modal ---------------------------- */
+
+function SettingsModal({
+  currentUser,
+  onClose,
+  theme,
+  toggleTheme,
+  soundEnabled,
+  toggleSound,
+  playNotificationChime,
+  desktopNotifPerm,
+  requestDesktopNotificationPermission,
+  compactView,
+  toggleCompactView,
+  sidebarCollapsed,
+  toggleSidebar,
+  data,
+  onUpdatePassword,
+  isLight,
+}) {
+  const [activeTab, setActiveTab] = useState("notifications"); // "notifications" | "display" | "security" | "backup" | "telemetry"
+
+  // Security Form State
+  const [currentPass, setCurrentPass] = useState("");
+  const [newPass, setNewPass] = useState("");
+  const [confirmPass, setConfirmPass] = useState("");
+  const [secStatus, setSecStatus] = useState("idle");
+  const [secMsg, setSecMsg] = useState("");
+
+  const handlePasswordSubmit = async (e) => {
+    e?.preventDefault();
+    setSecMsg("");
+    if (!currentPass || !newPass || !confirmPass) {
+      setSecStatus("error");
+      setSecMsg("Please complete all password fields.");
+      return;
+    }
+    if (newPass.length < 4) {
+      setSecStatus("error");
+      setSecMsg("New password must be at least 4 characters long.");
+      return;
+    }
+    if (newPass !== confirmPass) {
+      setSecStatus("error");
+      setSecMsg("New password and confirm password do not match.");
+      return;
+    }
+
+    setSecStatus("loading");
+    try {
+      if (onUpdatePassword) {
+        await onUpdatePassword(currentPass, newPass);
+        setSecStatus("success");
+        setSecMsg("Password updated successfully! Cryptographically secured with salted SHA-256.");
+        setCurrentPass("");
+        setNewPass("");
+        setConfirmPass("");
+      }
+    } catch (err) {
+      setSecStatus("error");
+      setSecMsg(err?.message || "Failed to update password. Please check your current password.");
+    }
+  };
+
+  const handleDownloadBackup = () => {
+    const exportPayload = {
+      metadata: {
+        exportedAt: new Date().toISOString(),
+        exportedBy: currentUser?.name || "User",
+        system: "ZPBDMS Management System",
+        version: "2.0",
+      },
+      ...data,
+    };
+    const jsonStr = JSON.stringify(exportPayload, null, 2);
+    const blob = new Blob([jsonStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    const dateStr = new Date().toISOString().slice(0, 10);
+    a.download = `ZPBDMS_Database_Backup_${dateStr}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const totalDistricts = (data?.districts || []).length || 34;
+  const totalTasks = (data?.tasks || []).length || 0;
+  const totalTestPoints = (data?.testPoints || []).length || 0;
+  const totalMoms = (data?.moms || []).length || 0;
+  const totalUsers = (data?.users || []).length || TEAM_ROSTER.length;
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 9999,
+        background: "rgba(0, 0, 0, 0.78)",
+        backdropFilter: "blur(8px)",
+        WebkitBackdropFilter: "blur(8px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 20,
+      }}
+      onClick={onClose}
+    >
+      <div
+        className="glass-card modal-enter"
+        style={{
+          width: 680,
+          maxWidth: "100%",
+          maxHeight: "90vh",
+          display: "flex",
+          flexDirection: "column",
+          position: "relative",
+          borderTop: "2px solid #ff334b",
+          boxShadow: isLight
+            ? "0 25px 60px rgba(0,0,0,0.12), 0 0 30px rgba(255, 51, 75, 0.15)"
+            : "0 30px 80px rgba(0,0,0,0.85), 0 0 40px rgba(255, 51, 75, 0.2)",
+          overflow: "hidden",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div
+          style={{
+            padding: "20px 24px",
+            borderBottom: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: 10,
+                background: "linear-gradient(135deg, #ff334b 0%, #b91c1c 100%)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#ffffff",
+                boxShadow: "0 0 16px rgba(255, 51, 75, 0.4)",
+              }}
+            >
+              <Settings size={20} />
+            </div>
+            <div>
+              <h2
+                style={{
+                  fontFamily: "'Outfit', sans-serif",
+                  fontSize: 18,
+                  fontWeight: 800,
+                  color: isLight ? "#0f172a" : "#ffffff",
+                  margin: 0,
+                }}
+              >
+                System Control & Settings
+              </h2>
+              <p style={{ margin: 0, fontSize: 12, color: isLight ? "#64748b" : "#94a3b8" }}>
+                ZPBDMS Portal Configuration · User: {currentUser?.name || "User"}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              background: "none",
+              border: "none",
+              color: isLight ? "#64748b" : "#94a3b8",
+              cursor: "pointer",
+              padding: 4,
+            }}
+            title="Close Settings"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Tab Navigation */}
+        <div
+          style={{
+            display: "flex",
+            borderBottom: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
+            padding: "0 16px",
+            gap: 6,
+            background: isLight ? "rgba(0, 0, 0, 0.02)" : "rgba(255, 255, 255, 0.01)",
+            overflowX: "auto",
+          }}
+        >
+          {[
+            { key: "notifications", label: "Notifications & Audio", icon: Bell },
+            { key: "display", label: "Display & Grid", icon: LayoutGrid },
+            { key: "security", label: "Security & Password", icon: Lock },
+            { key: "backup", label: "Database Backup", icon: Database },
+            { key: "telemetry", label: "System Telemetry", icon: Sparkles },
+          ].map(({ key, label, icon: TabIcon }) => {
+            const active = activeTab === key;
+            return (
+              <button
+                key={key}
+                onClick={() => setActiveTab(key)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  borderBottom: active ? "2px solid #ff334b" : "2px solid transparent",
+                  color: active ? (isLight ? "#0f172a" : "#ffffff") : (isLight ? "#64748b" : "#94a3b8"),
+                  fontWeight: active ? 700 : 500,
+                  fontSize: 12.5,
+                  padding: "12px 14px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 7,
+                  whiteSpace: "nowrap",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                <TabIcon size={14} color={active ? "#ff334b" : "currentColor"} />
+                {label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Body Content */}
+        <div style={{ padding: "24px", overflowY: "auto", flex: 1 }}>
+          {/* TAB 1: Notifications & Audio */}
+          {activeTab === "notifications" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              <div
+                style={{
+                  padding: "14px 16px",
+                  borderRadius: 10,
+                  background: isLight ? "#f8fafc" : "rgba(255, 255, 255, 0.03)",
+                  border: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 12,
+                }}
+              >
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 13.5, color: isLight ? "#0f172a" : "#ffffff", display: "flex", alignItems: "center", gap: 6 }}>
+                    <Volume2 size={15} color="#ff334b" /> Notification Sound Chimes
+                  </div>
+                  <div style={{ fontSize: 12, color: isLight ? "#64748b" : "#94a3b8", marginTop: 3 }}>
+                    Plays a crisp futuristic chime whenever tasks or test points are assigned or updated.
+                  </div>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <button
+                    type="button"
+                    onClick={() => playNotificationChime && playNotificationChime()}
+                    style={{
+                      padding: "6px 12px",
+                      borderRadius: 6,
+                      fontSize: 11.5,
+                      fontWeight: 600,
+                      background: "transparent",
+                      border: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.15)",
+                      color: isLight ? "#475569" : "#cbd5e1",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Test Chime
+                  </button>
+                  <button
+                    type="button"
+                    onClick={toggleSound}
+                    className="btn-red-gradient"
+                    style={{
+                      padding: "6px 14px",
+                      fontSize: 11.5,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                    }}
+                  >
+                    {soundEnabled ? <Volume2 size={13} /> : <VolumeX size={13} />}
+                    {soundEnabled ? "Enabled (ON)" : "Muted (OFF)"}
+                  </button>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  padding: "14px 16px",
+                  borderRadius: 10,
+                  background: isLight ? "#f8fafc" : "rgba(255, 255, 255, 0.03)",
+                  border: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 12,
+                }}
+              >
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 13.5, color: isLight ? "#0f172a" : "#ffffff", display: "flex", alignItems: "center", gap: 6 }}>
+                    <BellRing size={15} color="#38bdf8" /> Desktop Push Notifications
+                  </div>
+                  <div style={{ fontSize: 12, color: isLight ? "#64748b" : "#94a3b8", marginTop: 3 }}>
+                    Displays OS-level desktop notification toasts when other leads dispatch items to your queue.
+                  </div>
+                </div>
+                <div>
+                  {desktopNotifPerm === "granted" ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        sendDesktopNotification("ZPBDMS Notification Test", {
+                          body: "Desktop notification is active and working properly!",
+                        });
+                        if (playNotificationChime) playNotificationChime();
+                      }}
+                      style={{
+                        padding: "6px 14px",
+                        borderRadius: 6,
+                        fontSize: 11.5,
+                        fontWeight: 700,
+                        background: "rgba(16, 185, 129, 0.15)",
+                        border: "1px solid rgba(16, 185, 129, 0.4)",
+                        color: "#10b981",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 6,
+                      }}
+                    >
+                      <CheckCircle2 size={13} /> Active (Send Test)
+                    </button>
+                  ) : desktopNotifPerm === "denied" ? (
+                    <span
+                      style={{
+                        fontSize: 11.5,
+                        color: "#f87171",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 5,
+                      }}
+                    >
+                      <AlertCircle size={13} /> Blocked in Browser
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={requestDesktopNotificationPermission}
+                      className="btn-red-gradient"
+                      style={{ padding: "6px 14px", fontSize: 11.5 }}
+                    >
+                      Enable Desktop Alerts
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 2: Display & Grid */}
+          {activeTab === "display" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              <div
+                style={{
+                  padding: "14px 16px",
+                  borderRadius: 10,
+                  background: isLight ? "#f8fafc" : "rgba(255, 255, 255, 0.03)",
+                  border: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 13.5, color: isLight ? "#0f172a" : "#ffffff", display: "flex", alignItems: "center", gap: 6 }}>
+                    {isLight ? <Sun size={15} color="#f59e0b" /> : <Moon size={15} color="#fbbf24" />} Portal Interface Theme
+                  </div>
+                  <div style={{ fontSize: 12, color: isLight ? "#64748b" : "#94a3b8", marginTop: 3 }}>
+                    Toggle between Cyberpunk Obsidian Dark and Executive Clarity Light modes.
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={toggleTheme}
+                  className="btn-ghost-dark"
+                  style={{
+                    padding: "7px 14px",
+                    fontSize: 12,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                  }}
+                >
+                  {isLight ? <Moon size={14} /> : <Sun size={14} />}
+                  <span>{isLight ? "Switch to Dark" : "Switch to Light"}</span>
+                </button>
+              </div>
+
+              <div
+                style={{
+                  padding: "14px 16px",
+                  borderRadius: 10,
+                  background: isLight ? "#f8fafc" : "rgba(255, 255, 255, 0.03)",
+                  border: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 13.5, color: isLight ? "#0f172a" : "#ffffff", display: "flex", alignItems: "center", gap: 6 }}>
+                    <FileSpreadsheet size={15} color="#22c55e" /> Compact Spreadsheet Grid
+                  </div>
+                  <div style={{ fontSize: 12, color: isLight ? "#64748b" : "#94a3b8", marginTop: 3 }}>
+                    Condenses table row heights and cell margins to maximize visible data on 34-district wide screens.
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={toggleCompactView}
+                  className={compactView ? "btn-red-gradient" : "btn-ghost-dark"}
+                  style={{ padding: "7px 14px", fontSize: 12 }}
+                >
+                  {compactView ? "Compact Enabled" : "Standard Density"}
+                </button>
+              </div>
+
+              <div
+                style={{
+                  padding: "14px 16px",
+                  borderRadius: 10,
+                  background: isLight ? "#f8fafc" : "rgba(255, 255, 255, 0.03)",
+                  border: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 13.5, color: isLight ? "#0f172a" : "#ffffff", display: "flex", alignItems: "center", gap: 6 }}>
+                    {sidebarCollapsed ? <PanelLeftOpen size={15} color="#ff334b" /> : <PanelLeftClose size={15} color="#ff334b" />} Sidebar Navigation Layout
+                  </div>
+                  <div style={{ fontSize: 12, color: isLight ? "#64748b" : "#94a3b8", marginTop: 3 }}>
+                    Collapse the left sidebar to an icon-only strip for maximum table viewport width.
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={toggleSidebar}
+                  className="btn-ghost-dark"
+                  style={{ padding: "7px 14px", fontSize: 12 }}
+                >
+                  {sidebarCollapsed ? "Expand (250px)" : "Collapse (68px)"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: Security & Password */}
+          {activeTab === "security" && (
+            <div>
+              <div
+                style={{
+                  padding: "12px 14px",
+                  borderRadius: 8,
+                  background: "rgba(34, 197, 94, 0.08)",
+                  border: "1px solid rgba(34, 197, 94, 0.25)",
+                  marginBottom: 18,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                }}
+              >
+                <ShieldCheck size={18} color="#22c55e" style={{ flexShrink: 0 }} />
+                <div style={{ fontSize: 12, color: isLight ? "#166534" : "#4ade80", lineHeight: 1.4 }}>
+                  <strong>Zero Plaintext Storage:</strong> Passwords are cryptographically salted and hashed with SHA-256 before storing to disk or database.
+                </div>
+              </div>
+
+              <form onSubmit={handlePasswordSubmit}>
+                <FormField label="Current Access Password">
+                  <input
+                    type="password"
+                    value={currentPass}
+                    onChange={(e) => {
+                      setCurrentPass(e.target.value);
+                      if (secStatus === "error") setSecStatus("idle");
+                    }}
+                    placeholder="Enter your current password"
+                    style={{ ...darkInputStyle, width: "100%", boxSizing: "border-box" }}
+                  />
+                </FormField>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 10 }}>
+                  <FormField label="New Access Password">
+                    <input
+                      type="password"
+                      value={newPass}
+                      onChange={(e) => {
+                        setNewPass(e.target.value);
+                        if (secStatus === "error") setSecStatus("idle");
+                      }}
+                      placeholder="Minimum 4 characters"
+                      style={{ ...darkInputStyle, width: "100%", boxSizing: "border-box" }}
+                    />
+                  </FormField>
+                  <FormField label="Confirm New Password">
+                    <input
+                      type="password"
+                      value={confirmPass}
+                      onChange={(e) => {
+                        setConfirmPass(e.target.value);
+                        if (secStatus === "error") setSecStatus("idle");
+                      }}
+                      placeholder="Repeat new password"
+                      style={{ ...darkInputStyle, width: "100%", boxSizing: "border-box" }}
+                    />
+                  </FormField>
+                </div>
+
+                {secStatus === "error" && (
+                  <div
+                    style={{
+                      marginTop: 12,
+                      padding: "10px 12px",
+                      borderRadius: 8,
+                      background: "rgba(239, 68, 68, 0.12)",
+                      border: "1px solid rgba(239, 68, 68, 0.35)",
+                      color: "#ff6479",
+                      fontSize: 12,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                    }}
+                  >
+                    <AlertTriangle size={14} /> {secMsg}
+                  </div>
+                )}
+
+                {secStatus === "success" && (
+                  <div
+                    style={{
+                      marginTop: 12,
+                      padding: "10px 12px",
+                      borderRadius: 8,
+                      background: "rgba(34, 197, 94, 0.12)",
+                      border: "1px solid rgba(34, 197, 94, 0.35)",
+                      color: "#4ade80",
+                      fontSize: 12,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                    }}
+                  >
+                    <CheckCircle2 size={14} /> {secMsg}
+                  </div>
+                )}
+
+                <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 18 }}>
+                  <button
+                    type="submit"
+                    disabled={secStatus === "loading"}
+                    className="btn-red-gradient"
+                    style={{ padding: "9px 22px", fontSize: 12.5, display: "flex", alignItems: "center", gap: 6 }}
+                  >
+                    <Lock size={13} /> {secStatus === "loading" ? "Securing Hash..." : "Update Password"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+
+          {/* TAB 4: Database Backup & Disaster Recovery */}
+          {activeTab === "backup" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              <div
+                style={{
+                  padding: "16px 18px",
+                  borderRadius: 10,
+                  background: isLight ? "#f8fafc" : "rgba(255, 255, 255, 0.03)",
+                  border: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
+                }}
+              >
+                <div style={{ fontWeight: 700, fontSize: 14, color: isLight ? "#0f172a" : "#ffffff", display: "flex", alignItems: "center", gap: 8 }}>
+                  <Download size={16} color="#ff334b" /> One-Click Database Snapshot (.JSON)
+                </div>
+                <p style={{ fontSize: 12.5, color: isLight ? "#475569" : "#94a3b8", margin: "6px 0 14px 0", lineHeight: 1.5 }}>
+                  Download an offline snapshot containing all 34 Maharashtra ZP district bills, dev-test execution points, sprint directives, client MOM records, registered personnel, and tamper-proof audit trails.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleDownloadBackup}
+                  className="btn-red-gradient"
+                  style={{ padding: "10px 20px", fontSize: 13, display: "inline-flex", alignItems: "center", gap: 8 }}
+                >
+                  <Download size={15} /> Download Complete Database Backup (.JSON)
+                </button>
+              </div>
+
+              <div
+                style={{
+                  padding: "14px 16px",
+                  borderRadius: 10,
+                  background: isLight ? "#f8fafc" : "rgba(255, 255, 255, 0.03)",
+                  border: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 13.5, color: isLight ? "#0f172a" : "#ffffff", display: "flex", alignItems: "center", gap: 6 }}>
+                    <Database size={15} color="#22c55e" /> Cloud Storage Engine
+                  </div>
+                  <div style={{ fontSize: 12, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>
+                    Firebase Firestore (Zero-Write Real-time Listener) · 20,000 writes/day quota preserved.
+                  </div>
+                </div>
+                <span
+                  style={{
+                    padding: "4px 10px",
+                    borderRadius: 20,
+                    background: "rgba(34, 197, 94, 0.15)",
+                    border: "1px solid rgba(34, 197, 94, 0.3)",
+                    color: "#22c55e",
+                    fontSize: 11,
+                    fontWeight: 700,
+                  }}
+                >
+                  Synchronized
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 5: System Telemetry */}
+          {activeTab === "telemetry" && (
+            <div>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))",
+                  gap: 12,
+                  marginBottom: 20,
+                }}
+              >
+                <div style={{ padding: "12px", borderRadius: 8, background: isLight ? "#f1f5f9" : "rgba(255, 255, 255, 0.03)", textAlign: "center" }}>
+                  <div style={{ fontSize: 22, fontWeight: 800, color: "#ff334b" }}>{totalDistricts}</div>
+                  <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>ZP Districts</div>
+                </div>
+                <div style={{ padding: "12px", borderRadius: 8, background: isLight ? "#f1f5f9" : "rgba(255, 255, 255, 0.03)", textAlign: "center" }}>
+                  <div style={{ fontSize: 22, fontWeight: 800, color: "#38bdf8" }}>{totalTestPoints}</div>
+                  <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>Test Points</div>
+                </div>
+                <div style={{ padding: "12px", borderRadius: 8, background: isLight ? "#f1f5f9" : "rgba(255, 255, 255, 0.03)", textAlign: "center" }}>
+                  <div style={{ fontSize: 22, fontWeight: 800, color: "#22c55e" }}>{totalTasks}</div>
+                  <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>Tasks</div>
+                </div>
+                <div style={{ padding: "12px", borderRadius: 8, background: isLight ? "#f1f5f9" : "rgba(255, 255, 255, 0.03)", textAlign: "center" }}>
+                  <div style={{ fontSize: 22, fontWeight: 800, color: "#fbbf24" }}>{totalMoms}</div>
+                  <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>MOM Records</div>
+                </div>
+                <div style={{ padding: "12px", borderRadius: 8, background: isLight ? "#f1f5f9" : "rgba(255, 255, 255, 0.03)", textAlign: "center" }}>
+                  <div style={{ fontSize: 22, fontWeight: 800, color: "#a855f7" }}>{totalUsers}</div>
+                  <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>Team Members</div>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  padding: "14px 16px",
+                  borderRadius: 10,
+                  background: isLight ? "#f8fafc" : "rgba(255, 255, 255, 0.03)",
+                  border: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
+                  fontSize: 12,
+                  color: isLight ? "#475569" : "#94a3b8",
+                  lineHeight: 1.7,
+                }}
+              >
+                <div><strong>System Core:</strong> ZPBDMS Operations & Command System v2.0</div>
+                <div><strong>Runtime Framework:</strong> React 19 + Vite 6 + Tailwind CSS</div>
+                <div><strong>Cloud Database:</strong> Google Cloud Firebase Firestore (Live WebSockets)</div>
+                <div><strong>Countdown SLAs:</strong> Local CPU In-Memory Ticking (0 Firestore Operations / Sec)</div>
+                <div style={{ marginTop: 8, paddingTop: 8, borderTop: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)" }}>
+                  <strong>Architected & Developed by:</strong> <span style={{ color: isLight ? "#0f172a" : "#ffffff", fontWeight: 600 }}>Sudhanshu Khande</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div
+          style={{
+            padding: "14px 24px",
+            borderTop: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
+            display: "flex",
+            justifyContent: "flex-end",
+            background: isLight ? "rgba(0, 0, 0, 0.02)" : "rgba(255, 255, 255, 0.01)",
+          }}
+        >
+          <button
+            type="button"
+            className="btn-ghost-dark"
+            style={{ padding: "8px 20px", fontSize: 12.5 }}
+            onClick={onClose}
+          >
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ---------------------------- Clean Management Login View ---------------------------- */
 
-function LoginScreen({ onLogin, theme = "dark", toggleTheme, users }) {
+function LoginScreen({ onLogin, theme = "dark", toggleTheme, users, onDispatchAdminAlert }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showForgotPass, setShowForgotPass] = useState(false);
 
   const activeUsers = (() => {
     if (Array.isArray(users) && users.length > 0) return users;
@@ -3371,8 +4626,39 @@ function LoginScreen({ onLogin, theme = "dark", toggleTheme, users }) {
           >
             {loading ? "Authenticating..." : "Access Portal"} <ArrowRight size={16} />
           </button>
+
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", marginTop: 14 }}>
+            <button
+              type="button"
+              onClick={() => setShowForgotPass(true)}
+              style={{
+                background: "none",
+                border: "none",
+                color: isLight ? "#4f46e5" : "#818cf8",
+                fontSize: 12.5,
+                fontWeight: 600,
+                cursor: "pointer",
+                padding: "4px 8px",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 5,
+                borderRadius: 4,
+              }}
+            >
+              <KeyRound size={13} /> Forgot Password?
+            </button>
+          </div>
         </form>
       </div>
+
+      {showForgotPass && (
+        <ForgotPasswordModal
+          onClose={() => setShowForgotPass(false)}
+          users={activeUsers}
+          isLight={isLight}
+          onDispatchAdminAlert={onDispatchAdminAlert}
+        />
+      )}
     </div>
   );
 }
@@ -3956,6 +5242,63 @@ export default function App() {
     }
   };
 
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    try {
+      const saved = localStorage.getItem("zpbdms_sidebar_collapsed");
+      return saved !== null ? JSON.parse(saved) : false;
+    } catch (e) {
+      return false;
+    }
+  });
+
+  const toggleSidebar = () => {
+    setSidebarCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("zpbdms_sidebar_collapsed", JSON.stringify(next));
+      } catch (e) {}
+      return next;
+    });
+  };
+
+  const [compactView, setCompactView] = useState(() => {
+    try {
+      const saved = localStorage.getItem("zpbdms_compact_view");
+      return saved !== null ? JSON.parse(saved) : false;
+    } catch (e) {
+      return false;
+    }
+  });
+
+  const toggleCompactView = () => {
+    setCompactView((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("zpbdms_compact_view", JSON.stringify(next));
+      } catch (e) {}
+      return next;
+    });
+  };
+
+  const [showSettings, setShowSettings] = useState(false);
+
+  const handleForgotPassAlert = (username, reason) => {
+    const alertItem = {
+      id: uid(),
+      recipient: "Sudhanshu Khande",
+      sender: username || "Staff Member",
+      title: "Security: Password Reset Request",
+      message: reason || `Account reset requested for user: ${username}`,
+      type: "security",
+      createdAt: formatTimeNow(),
+      read: false,
+    };
+    if (data) {
+      const nextNotifs = [alertItem, ...(data.notifications || [])];
+      persist({ ...data, notifications: nextNotifs });
+    }
+  };
+
   // Sync desktop notification permission state
   useEffect(() => {
     if (typeof window !== "undefined" && "Notification" in window) {
@@ -4161,7 +5504,15 @@ export default function App() {
   }, []);
 
   if (!currentUser) {
-    return <LoginScreen onLogin={handleLogin} theme={theme} toggleTheme={toggleTheme} users={data?.users} />;
+    return (
+      <LoginScreen
+        onLogin={handleLogin}
+        theme={theme}
+        toggleTheme={toggleTheme}
+        users={data?.users}
+        onDispatchAdminAlert={handleForgotPassAlert}
+      />
+    );
   }
 
   if (connected === "error") {
@@ -4416,12 +5767,53 @@ export default function App() {
     return updatedLogs;
   };
 
+  const handleUpdateUserPassword = async (currentPassword, newPassword) => {
+    if (!currentUser) throw new Error("No active session found");
+    const salt = currentUser.salt || `zp_${currentUser.username?.toLowerCase()}_`;
+    const curHash = await hashPassword(currentPassword.trim(), salt);
+    if (currentUser.passwordHash && currentUser.passwordHash !== curHash) {
+      throw new Error("Current password verification failed. Please check your password.");
+    }
+    const newSalt = `zp_${currentUser.username?.toLowerCase()}_${Date.now().toString(36)}`;
+    const newHash = await hashPassword(newPassword.trim(), newSalt);
+    const updatedUser = {
+      ...currentUser,
+      salt: newSalt,
+      passwordHash: newHash,
+      updatedAt: todayISO(),
+    };
+    const nextUsers = (data?.users || []).map((u) =>
+      u.id === currentUser.id || u.username?.toLowerCase() === currentUser.username?.toLowerCase()
+        ? updatedUser
+        : u
+    );
+    const nextLogs = logActivity(
+      "SECURITY",
+      "User Security Credentials",
+      currentUser.name || "User",
+      "Account password successfully updated with salted SHA-256."
+    );
+    persist({ ...data, users: nextUsers, auditLogs: nextLogs });
+    setCurrentUser(updatedUser);
+    localStorage.setItem("zpbdms_auth_user", JSON.stringify(updatedUser));
+    const newToken = generateSessionToken(updatedUser);
+    localStorage.setItem("zpbdms_session_token", newToken);
+    return true;
+  };
+
   const saveTestPoint = (item) => {
     const isEdit = !!modal?.editing?.id;
     const targetId = modal?.editing?.id || uid();
+    const calculatedDeadline =
+      item.timerDeadline !== undefined
+        ? item.timerDeadline
+        : item.estimatedTime && parseDurationToMs(item.estimatedTime)
+        ? Date.now() + parseDurationToMs(item.estimatedTime)
+        : null;
     const pointWithAssigner = {
       ...item,
       assignedBy: item.assignedBy || currentUser?.name || "Sudhanshu Khande",
+      timerDeadline: calculatedDeadline,
     };
     const updatedTestPoints = addOrUpdate(data?.testPoints || [], pointWithAssigner, modal?.editing?.id);
 
@@ -4826,16 +6218,24 @@ export default function App() {
     setModal(null);
   };
 
-  const updateTestPointTimer = (id, estimatedTime) => {
+  const updateTestPointTimer = (id, estimatedTime, timerDeadline) => {
     const target = (data?.testPoints || []).find((t) => t.id === id);
+    const calculatedDeadline =
+      timerDeadline !== undefined
+        ? timerDeadline
+        : estimatedTime && parseDurationToMs(estimatedTime)
+        ? Date.now() + parseDurationToMs(estimatedTime)
+        : null;
     const updatedPoints = (data?.testPoints || []).map((t) =>
-      t.id === id ? { ...t, estimatedTime, updatedAt: todayISO() } : t
+      t.id === id
+        ? { ...t, estimatedTime, timerDeadline: calculatedDeadline, updatedAt: todayISO() }
+        : t
     );
     const nextLogs = logActivity(
       "UPDATE",
       "Dev-Test Matrix Point",
       target?.code || "Test Point",
-      `Set Estimated Dev Duration / Timer to: ${estimatedTime}`
+      `Set Estimated Dev Duration / SLA Countdown to: ${estimatedTime} (Deadline: ${calculatedDeadline ? new Date(calculatedDeadline).toLocaleTimeString() : "Cleared"})`
     );
     persist({ ...data, testPoints: updatedPoints, auditLogs: nextLogs });
   };
@@ -5120,7 +6520,7 @@ export default function App() {
       {/* Futuristic Command Sidebar */}
       <aside
         style={{
-          width: 250,
+          width: sidebarCollapsed ? 68 : 250,
           flexShrink: 0,
           background: isLight
             ? "#ffffff"
@@ -5128,17 +6528,20 @@ export default function App() {
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
           borderRight: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
-          padding: "24px 16px",
+          padding: sidebarCollapsed ? "20px 8px" : "24px 16px",
           display: "flex",
           flexDirection: "column",
           zIndex: 10,
           boxShadow: isLight ? "4px 0 24px rgba(0, 0, 0, 0.04)" : "4px 0 24px rgba(0, 0, 0, 0.5)",
+          transition: "width 0.22s cubic-bezier(0.4, 0, 0.2, 1), padding 0.22s cubic-bezier(0.4, 0, 0.2, 1)",
+          overflowX: "hidden",
         }}
       >
         {/* Brand Banner */}
-        <div style={{ marginBottom: 24, padding: "0 6px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        {sidebarCollapsed ? (
+          <div style={{ marginBottom: 20, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
             <div
+              onClick={toggleSidebar}
               style={{
                 width: 38,
                 height: 38,
@@ -5149,65 +6552,118 @@ export default function App() {
                 justifyContent: "center",
                 boxShadow: "0 0 20px rgba(255, 51, 75, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.4)",
                 color: "#ffffff",
+                cursor: "pointer",
               }}
+              title="ZPBDMS Management System · Click to expand"
             >
               <Landmark size={20} />
             </div>
-            <div>
+            <button
+              onClick={toggleSidebar}
+              style={{
+                background: "none",
+                border: "none",
+                color: isLight ? "#64748b" : "#94a3b8",
+                cursor: "pointer",
+                padding: 3,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              title="Expand Sidebar"
+            >
+              <PanelLeftOpen size={16} />
+            </button>
+          </div>
+        ) : (
+          <div style={{ marginBottom: 24, padding: "0 4px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <div
                 style={{
-                  fontFamily: "'Outfit', sans-serif",
-                  fontWeight: 800,
-                  fontSize: 20,
-                  color: isLight ? "#0f172a" : "#ffffff",
-                  letterSpacing: "0.5px",
-                  lineHeight: 1.1,
+                  width: 38,
+                  height: 38,
+                  borderRadius: 10,
+                  background: "linear-gradient(135deg, #ff334b 0%, #b91c1c 100%)",
                   display: "flex",
                   alignItems: "center",
-                  gap: 6,
+                  justifyContent: "center",
+                  boxShadow: "0 0 20px rgba(255, 51, 75, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.4)",
+                  color: "#ffffff",
                 }}
               >
-                ZPBDMS
-                <span
+                <Landmark size={20} />
+              </div>
+              <div>
+                <div
                   style={{
-                    background: "rgba(255, 51, 75, 0.2)",
-                    border: "1px solid rgba(255, 51, 75, 0.4)",
-                    color: "#ff334b",
-                    fontSize: 9,
-                    fontWeight: 700,
-                    padding: "1px 5px",
-                    borderRadius: 4,
+                    fontFamily: "'Outfit', sans-serif",
+                    fontWeight: 800,
+                    fontSize: 20,
+                    color: isLight ? "#0f172a" : "#ffffff",
+                    letterSpacing: "0.5px",
+                    lineHeight: 1.1,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
                   }}
                 >
-                  v2.0
-                </span>
-              </div>
-              <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", fontWeight: 500, letterSpacing: "0.4px", marginTop: 2 }}>
-                MANAGEMENT SYSTEM
+                  ZPBDMS
+                  <span
+                    style={{
+                      background: "rgba(255, 51, 75, 0.2)",
+                      border: "1px solid rgba(255, 51, 75, 0.4)",
+                      color: "#ff334b",
+                      fontSize: 9,
+                      fontWeight: 700,
+                      padding: "1px 5px",
+                      borderRadius: 4,
+                    }}
+                  >
+                    v2.0
+                  </span>
+                </div>
+                <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", fontWeight: 500, letterSpacing: "0.4px", marginTop: 2 }}>
+                  MANAGEMENT SYSTEM
+                </div>
               </div>
             </div>
+            <button
+              onClick={toggleSidebar}
+              style={{
+                background: "transparent",
+                border: "none",
+                color: isLight ? "#64748b" : "#94a3b8",
+                cursor: "pointer",
+                padding: 4,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: 6,
+              }}
+              title="Collapse Sidebar"
+            >
+              <PanelLeftClose size={17} />
+            </button>
           </div>
-        </div>
+        )}
 
         {/* Current Logged In Profile Badge */}
-        <div
-          style={{
-            padding: "10px 12px",
-            borderRadius: 10,
-            background: isLight ? "#f8fafc" : "rgba(255, 255, 255, 0.03)",
-            border: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
-            marginBottom: 20,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+        {sidebarCollapsed ? (
+          <div
+            style={{
+              padding: "8px 0",
+              marginBottom: 16,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 6,
+            }}
+          >
             <div
               style={{
-                width: 30,
-                height: 30,
-                borderRadius: 7,
+                width: 32,
+                height: 32,
+                borderRadius: 8,
                 background: currentUser?.avatar || "#ff334b",
                 display: "flex",
                 alignItems: "center",
@@ -5216,54 +6672,107 @@ export default function App() {
                 fontWeight: 700,
                 fontSize: 13,
                 boxShadow: `0 0 10px ${currentUser?.avatar || "#ff334b"}66`,
+                cursor: "pointer",
               }}
+              title={`${currentUser?.name || "User"} (${currentUser?.role || "Staff"})`}
             >
               {(currentUser?.name || "U").charAt(0)}
             </div>
-            <div style={{ maxWidth: 135 }}>
+            <button
+              onClick={handleLogout}
+              style={{
+                background: "none",
+                border: "none",
+                color: isLight ? "#64748b" : "#94a3b8",
+                cursor: "pointer",
+                padding: 3,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              title="Sign Out"
+            >
+              <LogOut size={13} />
+            </button>
+          </div>
+        ) : (
+          <div
+            style={{
+              padding: "10px 12px",
+              borderRadius: 10,
+              background: isLight ? "#f8fafc" : "rgba(255, 255, 255, 0.03)",
+              border: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
+              marginBottom: 20,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
               <div
                 style={{
-                  fontSize: 12.5,
-                  fontWeight: 600,
-                  color: isLight ? "#0f172a" : "#ffffff",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
+                  width: 30,
+                  height: 30,
+                  borderRadius: 7,
+                  background: currentUser?.avatar || "#ff334b",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#ffffff",
+                  fontWeight: 700,
+                  fontSize: 13,
+                  boxShadow: `0 0 10px ${currentUser?.avatar || "#ff334b"}66`,
                 }}
               >
-                {currentUser?.name || "User"}
+                {(currentUser?.name || "U").charAt(0)}
               </div>
-              <div
-                style={{
-                  fontSize: 10.5,
-                  color: isLight ? "#64748b" : "#94a3b8",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                }}
-              >
-                {currentUser?.role || "Authorized Access"}
+              <div style={{ maxWidth: 135 }}>
+                <div
+                  style={{
+                    fontSize: 12.5,
+                    fontWeight: 600,
+                    color: isLight ? "#0f172a" : "#ffffff",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {currentUser?.name || "User"}
+                </div>
+                <div
+                  style={{
+                    fontSize: 10.5,
+                    color: isLight ? "#64748b" : "#94a3b8",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {currentUser?.role || "Authorized Access"}
+                </div>
               </div>
             </div>
+            <IconButton onClick={handleLogout} title="Sign Out">
+              <LogOut size={14} />
+            </IconButton>
           </div>
-          <IconButton onClick={handleLogout} title="Sign Out">
-            <LogOut size={14} />
-          </IconButton>
-        </div>
+        )}
 
         {/* Navigation Items */}
-        <div
-          style={{
-            fontSize: 10.5,
-            fontWeight: 700,
-            color: "#64748b",
-            textTransform: "uppercase",
-            letterSpacing: "1px",
-            padding: "0 10px 8px",
-          }}
-        >
-          Control Navigation
-        </div>
+        {!sidebarCollapsed && (
+          <div
+            style={{
+              fontSize: 10.5,
+              fontWeight: 700,
+              color: "#64748b",
+              textTransform: "uppercase",
+              letterSpacing: "1px",
+              padding: "0 10px 8px",
+            }}
+          >
+            Control Navigation
+          </div>
+        )}
         <nav style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           {navItems.map(({ key, label, icon: Icon, count, isAlert, highlight }) => {
             const active = tab === key;
@@ -5274,8 +6783,8 @@ export default function App() {
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: 10,
+                  justifyContent: sidebarCollapsed ? "center" : "space-between",
+                  gap: sidebarCollapsed ? 0 : 10,
                   border: active
                     ? "1px solid rgba(255, 51, 75, 0.35)"
                     : "1px solid transparent",
@@ -5284,7 +6793,7 @@ export default function App() {
                     ? "linear-gradient(90deg, rgba(255, 51, 75, 0.16) 0%, rgba(255, 51, 75, 0.04) 100%)"
                     : "transparent",
                   color: active ? "#ffffff" : highlight ? "#cbd5e1" : "#94a3b8",
-                  padding: "10px 12px",
+                  padding: sidebarCollapsed ? "10px 0" : "10px 12px",
                   borderRadius: 8,
                   fontSize: 13.5,
                   fontWeight: active ? 600 : 500,
@@ -5292,6 +6801,7 @@ export default function App() {
                   transition: "all 0.18s ease",
                   position: "relative",
                 }}
+                title={label}
                 onMouseEnter={(e) => {
                   if (!active) {
                     e.currentTarget.style.color = "#f8fafc";
@@ -5321,36 +6831,52 @@ export default function App() {
                 )}
                 <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <Icon
-                    size={16}
+                    size={sidebarCollapsed ? 18 : 16}
                     color={active ? "#ff334b" : highlight ? "#ff6479" : "currentColor"}
                     style={{
                       filter: active ? "drop-shadow(0 0 6px rgba(255, 51, 75, 0.5))" : "none",
                     }}
                   />
-                  {label}
+                  {!sidebarCollapsed && label}
                 </span>
 
                 {typeof count === "number" && count > 0 && (
-                  <span
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 700,
-                      background: isAlert
-                        ? "#ff334b"
-                        : highlight
-                        ? "rgba(255, 51, 75, 0.25)"
-                        : active
-                        ? "rgba(255, 255, 255, 0.2)"
-                        : "rgba(255, 255, 255, 0.08)",
-                      color: "#ffffff",
-                      borderRadius: 12,
-                      padding: "1px 7px",
-                      border: highlight ? "1px solid rgba(255, 51, 75, 0.4)" : "none",
-                      boxShadow: isAlert ? "0 0 10px rgba(255, 51, 75, 0.6)" : "none",
-                    }}
-                  >
-                    {count}
-                  </span>
+                  sidebarCollapsed ? (
+                    <span
+                      style={{
+                        position: "absolute",
+                        top: 4,
+                        right: 6,
+                        width: 7,
+                        height: 7,
+                        borderRadius: "50%",
+                        background: isAlert ? "#ff334b" : "#38bdf8",
+                        boxShadow: `0 0 6px ${isAlert ? "#ff334b" : "#38bdf8"}`,
+                      }}
+                      title={`${count} items`}
+                    />
+                  ) : (
+                    <span
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 700,
+                        background: isAlert
+                          ? "#ff334b"
+                          : highlight
+                          ? "rgba(255, 51, 75, 0.25)"
+                          : active
+                          ? "rgba(255, 255, 255, 0.2)"
+                          : "rgba(255, 255, 255, 0.08)",
+                        color: "#ffffff",
+                        borderRadius: 12,
+                        padding: "1px 7px",
+                        border: highlight ? "1px solid rgba(255, 51, 75, 0.4)" : "none",
+                        boxShadow: isAlert ? "0 0 10px rgba(255, 51, 75, 0.6)" : "none",
+                      }}
+                    >
+                      {count}
+                    </span>
+                  )
                 )}
               </button>
             );
@@ -5358,87 +6884,117 @@ export default function App() {
         </nav>
 
         {/* Live System Diagnostics Box */}
-        <div style={{ marginTop: "auto", paddingTop: 16 }}>
-          <div
-            className="glass-card"
-            style={{
-              padding: 12,
-              border: criticalOpen > 0 ? "1px solid rgba(255, 51, 75, 0.35)" : "1px solid rgba(255, 255, 255, 0.08)",
-              background: criticalOpen > 0 ? "rgba(255, 51, 75, 0.07)" : "rgba(18, 22, 34, 0.6)",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-              <span style={{ fontSize: 10.5, fontWeight: 700, textTransform: "uppercase", color: "#94a3b8", letterSpacing: "0.8px" }}>
-                System Telemetry
-              </span>
+        {sidebarCollapsed ? (
+          <div style={{ marginTop: "auto", paddingTop: 16, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+            <div
+              style={{
+                width: 34,
+                height: 34,
+                borderRadius: 8,
+                background: criticalOpen > 0 ? "rgba(255, 51, 75, 0.15)" : "rgba(34, 197, 94, 0.15)",
+                border: criticalOpen > 0 ? "1px solid rgba(255, 51, 75, 0.4)" : "1px solid rgba(34, 197, 94, 0.4)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+              }}
+              onClick={() => setShowSettings(true)}
+              title={`System Telemetry · ${criticalOpen > 0 ? `${criticalOpen} Defects Pending` : "Operational Normal"} · Click for Settings`}
+            >
               <span
                 style={{
-                  width: 7,
-                  height: 7,
+                  width: 8,
+                  height: 8,
                   borderRadius: "50%",
                   background: criticalOpen > 0 ? "#ff334b" : "#22c55e",
                   boxShadow: criticalOpen > 0 ? "0 0 8px #ff334b" : "0 0 8px #22c55e",
                 }}
               />
             </div>
-
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 11.5 }}>
-              <span style={{ color: "#94a3b8" }}>Health Status</span>
-              <span style={{ color: criticalOpen > 0 ? "#ff6479" : "#4ade80", fontWeight: 600 }}>
-                {criticalOpen > 0 ? "Defects Pending" : "Operational Normal"}
-              </span>
-            </div>
-
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 11.5, marginTop: 4 }}>
-              <span style={{ color: "#94a3b8" }}>Active Directives</span>
-              <span style={{ color: "#ffffff", fontWeight: 600 }}>{pendingTasks} sprint items</span>
-            </div>
-
-            {failedTestPointsCount > 0 && (
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 11.5, marginTop: 4 }}>
-                <span style={{ color: "#ff6479" }}>QA Defects</span>
-                <span style={{ color: "#ff334b", fontWeight: 700 }}>{failedTestPointsCount} failed</span>
-              </div>
-            )}
-
-            {/* Rollout Progress Indicator */}
-            <div style={{ marginTop: 8 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#94a3b8", marginBottom: 3 }}>
-                <span>Rollout Live</span>
-                <span style={{ color: "#ffffff", fontWeight: 600 }}>
-                  {liveDistrictsCount}/{(data?.districts || []).length}
+          </div>
+        ) : (
+          <div style={{ marginTop: "auto", paddingTop: 16 }}>
+            <div
+              className="glass-card"
+              style={{
+                padding: 12,
+                border: criticalOpen > 0 ? "1px solid rgba(255, 51, 75, 0.35)" : "1px solid rgba(255, 255, 255, 0.08)",
+                background: criticalOpen > 0 ? "rgba(255, 51, 75, 0.07)" : "rgba(18, 22, 34, 0.6)",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                <span style={{ fontSize: 10.5, fontWeight: 700, textTransform: "uppercase", color: "#94a3b8", letterSpacing: "0.8px" }}>
+                  System Telemetry
                 </span>
-              </div>
-              <div style={{ width: "100%", height: 4, background: "rgba(255, 255, 255, 0.1)", borderRadius: 4, overflow: "hidden" }}>
-                <div
+                <span
                   style={{
-                    height: "100%",
-                    width: `${(data?.districts || []).length ? (liveDistrictsCount / (data?.districts || []).length) * 100 : 0}%`,
-                    background: "linear-gradient(90deg, #ff334b, #22c55e)",
-                    borderRadius: 4,
+                    width: 7,
+                    height: 7,
+                    borderRadius: "50%",
+                    background: criticalOpen > 0 ? "#ff334b" : "#22c55e",
+                    boxShadow: criticalOpen > 0 ? "0 0 8px #ff334b" : "0 0 8px #22c55e",
                   }}
                 />
               </div>
-            </div>
-          </div>
 
-          {/* Sidebar Developer Badge */}
-          <div
-            className="developer-badge"
-            style={{
-              padding: "9px 10px",
-              marginTop: 12,
-              textAlign: "center",
-            }}
-          >
-            <div style={{ fontSize: 9, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.8px", fontWeight: 700 }}>
-              Architecture & Development
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 11.5 }}>
+                <span style={{ color: "#94a3b8" }}>Health Status</span>
+                <span style={{ color: criticalOpen > 0 ? "#ff6479" : "#4ade80", fontWeight: 600 }}>
+                  {criticalOpen > 0 ? "Defects Pending" : "Operational Normal"}
+                </span>
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 11.5, marginTop: 4 }}>
+                <span style={{ color: "#94a3b8" }}>Active Directives</span>
+                <span style={{ color: "#ffffff", fontWeight: 600 }}>{pendingTasks} sprint items</span>
+              </div>
+
+              {failedTestPointsCount > 0 && (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 11.5, marginTop: 4 }}>
+                  <span style={{ color: "#ff6479" }}>QA Defects</span>
+                  <span style={{ color: "#ff334b", fontWeight: 700 }}>{failedTestPointsCount} failed</span>
+                </div>
+              )}
+
+              {/* Rollout Progress Indicator */}
+              <div style={{ marginTop: 8 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#94a3b8", marginBottom: 3 }}>
+                  <span>Rollout Live</span>
+                  <span style={{ color: "#ffffff", fontWeight: 600 }}>
+                    {liveDistrictsCount}/{(data?.districts || []).length}
+                  </span>
+                </div>
+                <div style={{ width: "100%", height: 4, background: "rgba(255, 255, 255, 0.1)", borderRadius: 4, overflow: "hidden" }}>
+                  <div
+                    style={{
+                      height: "100%",
+                      width: `${(data?.districts || []).length ? (liveDistrictsCount / (data?.districts || []).length) * 100 : 0}%`,
+                      background: "linear-gradient(90deg, #ff334b, #22c55e)",
+                      borderRadius: 4,
+                    }}
+                  />
+                </div>
+              </div>
             </div>
-            <div style={{ fontSize: 11, fontWeight: 600, color: "#cbd5e1", marginTop: 2 }}>
-              Sudhanshu Khande
+
+            {/* Sidebar Developer Badge */}
+            <div
+              className="developer-badge"
+              style={{
+                padding: "9px 10px",
+                marginTop: 12,
+                textAlign: "center",
+              }}
+            >
+              <div style={{ fontSize: 9, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.8px", fontWeight: 700 }}>
+                Architecture & Development
+              </div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: "#cbd5e1", marginTop: 2 }}>
+                Sudhanshu Khande
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </aside>
 
       {/* Main Command Operations Viewport */}
@@ -5465,42 +7021,88 @@ export default function App() {
             gap: 16,
           }}
         >
-          <div>
-            <h1
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <button
+              type="button"
+              onClick={toggleSidebar}
               style={{
-                fontFamily: "'Outfit', sans-serif",
-                fontSize: 26,
-                fontWeight: 800,
-                color: isLight ? "#0f172a" : "#ffffff",
-                letterSpacing: "-0.5px",
-                margin: 0,
-                display: "flex",
+                background: isLight ? "#ffffff" : "rgba(255, 255, 255, 0.04)",
+                border: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.1)",
+                color: isLight ? "#475569" : "#cbd5e1",
+                padding: "8px 10px",
+                borderRadius: 8,
+                cursor: "pointer",
+                display: "inline-flex",
                 alignItems: "center",
-                gap: 12,
+                justifyContent: "center",
+                boxShadow: isLight ? "0 2px 6px rgba(0, 0, 0, 0.04)" : "none",
+                transition: "all 0.15s ease",
               }}
+              title={sidebarCollapsed ? "Expand Sidebar Menu (Ctrl/Cmd + B)" : "Collapse Sidebar Menu"}
             >
-              {navItems.find((n) => n.key === tab)?.label}
-            </h1>
-            <p style={{ margin: "4px 0 0 0", fontSize: 12.5, color: isLight ? "#475569" : "#94a3b8" }}>
-              {tab === "my_desk"
-                ? `Assigned directives and active defects for ${currentUser?.name || "User"}`
-                : tab === "test_hub"
-                ? "Unified Dev-Test Execution Matrix, lead assignment, developer completion status, and retest log"
-                : tab === "mom"
-                ? "Minutes of Meeting repository: client discussions, agreed decisions, and date-wise deliverables"
-                : tab === "district_flows"
-                ? "District-wise department approval hierarchies, headcode routing & stuck bill diagnostics (34 Districts)"
-                : tab === "master_module"
-                ? "Manage personnel access, register developers, testers, BAs, and managers (Master Admin Only)"
-                : tab === "audit_logs"
-                ? "Comprehensive tamper-proof audit trail of all matrix edits, deletions, and system actions"
-                : tab === "bill_tracker"
-                ? "Live district-wise bill progress across all 34 fixed Maharashtra ZP jurisdictions (As of 01-Sep-2026 EOD)"
-                : "District rollouts, live defect tracking, and sprint task register"}
-            </p>
+              {sidebarCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+            </button>
+            <div>
+              <h1
+                style={{
+                  fontFamily: "'Outfit', sans-serif",
+                  fontSize: 26,
+                  fontWeight: 800,
+                  color: isLight ? "#0f172a" : "#ffffff",
+                  letterSpacing: "-0.5px",
+                  margin: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                }}
+              >
+                {navItems.find((n) => n.key === tab)?.label}
+              </h1>
+              <p style={{ margin: "4px 0 0 0", fontSize: 12.5, color: isLight ? "#475569" : "#94a3b8" }}>
+                {tab === "my_desk"
+                  ? `Assigned directives and active defects for ${currentUser?.name || "User"}`
+                  : tab === "test_hub"
+                  ? "Unified Dev-Test Execution Matrix, lead assignment, developer completion status, and retest log"
+                  : tab === "mom"
+                  ? "Minutes of Meeting repository: client discussions, agreed decisions, and date-wise deliverables"
+                  : tab === "district_flows"
+                  ? "District-wise department approval hierarchies, headcode routing & stuck bill diagnostics (34 Districts)"
+                  : tab === "master_module"
+                  ? "Manage personnel access, register developers, testers, BAs, and managers (Master Admin Only)"
+                  : tab === "audit_logs"
+                  ? "Comprehensive tamper-proof audit trail of all matrix edits, deletions, and system actions"
+                  : tab === "bill_tracker"
+                  ? "Live district-wise bill progress across all 34 fixed Maharashtra ZP jurisdictions (As of 01-Sep-2026 EOD)"
+                  : "District rollouts, live defect tracking, and sprint task register"}
+              </p>
+            </div>
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+            {/* Global System Settings Button */}
+            <button
+              onClick={() => setShowSettings(true)}
+              style={{
+                border: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.08)",
+                background: isLight ? "#ffffff" : "rgba(255, 255, 255, 0.04)",
+                color: isLight ? "#475569" : "#cbd5e1",
+                cursor: "pointer",
+                padding: "6px 14px",
+                borderRadius: 20,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 7,
+                fontSize: 12,
+                fontWeight: 600,
+                boxShadow: isLight ? "0 2px 8px rgba(0, 0, 0, 0.04)" : "none",
+                transition: "all 0.15s ease",
+              }}
+              title="System Settings: Audio Chimes, Security, Password, JSON Database Backup, and Telemetry"
+            >
+              <Settings size={14} color="#ff334b" />
+              <span>Settings</span>
+            </button>
+
             {/* Theme Switcher Toggle Button */}
             <button
               onClick={toggleTheme}
@@ -6187,8 +7789,8 @@ export default function App() {
         >
           <QuickTimerForm
             initial={modal.editing}
-            onSave={(time) => {
-              updateTestPointTimer(modal.editing.id, time);
+            onSave={(time, deadline) => {
+              updateTestPointTimer(modal.editing.id, time, deadline);
               setModal(null);
             }}
             onCancel={() => setModal(null)}
@@ -6235,6 +7837,27 @@ export default function App() {
           details={confirmDelete.details}
           onConfirm={confirmDelete.onConfirm}
           onCancel={() => setConfirmDelete(null)}
+          isLight={isLight}
+        />
+      )}
+
+      {showSettings && (
+        <SettingsModal
+          currentUser={currentUser}
+          onClose={() => setShowSettings(false)}
+          theme={theme}
+          toggleTheme={toggleTheme}
+          soundEnabled={soundEnabled}
+          toggleSound={toggleSound}
+          playNotificationChime={playNotificationChime}
+          desktopNotifPerm={desktopNotifPerm}
+          requestDesktopNotificationPermission={requestDesktopNotificationPermission}
+          compactView={compactView}
+          toggleCompactView={toggleCompactView}
+          sidebarCollapsed={sidebarCollapsed}
+          toggleSidebar={toggleSidebar}
+          data={data}
+          onUpdatePassword={handleUpdateUserPassword}
           isLight={isLight}
         />
       )}
@@ -6814,8 +8437,15 @@ function TaskTable({ tasks, onCycle, onEdit, onDelete }) {
               {idx + 1}
             </span>
 
-            <div style={{ fontSize: 13.5, fontWeight: 600, color: "#ffffff", paddingRight: 16 }}>
-              {t.title}
+            <div style={{ paddingRight: 16 }}>
+              <div style={{ fontSize: 13.5, fontWeight: 600, color: "#ffffff" }}>
+                {t.title}
+              </div>
+              {t.timerDeadline && (
+                <div style={{ marginTop: 4 }}>
+                  <LiveCountdown timerDeadline={t.timerDeadline} status={t.status} compact />
+                </div>
+              )}
             </div>
 
             <div>
@@ -7463,32 +9093,42 @@ function TestHubView({
                       </span>
                     </div>
 
-                    <div style={{ marginTop: 2, display: "flex", alignItems: "center" }}>
-                      <span
-                        onClick={() => (onQuickTimer ? onQuickTimer(tp) : onOpenEdit(tp))}
-                        title={`Estimated Time: ${tp.estimatedTime || "Click to set duration"}`}
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 3,
-                          fontSize: 9.5,
-                          fontWeight: 700,
-                          padding: "1px 5px",
-                          borderRadius: 4,
-                          background: tp.estimatedTime ? "rgba(56, 189, 248, 0.14)" : "rgba(255, 255, 255, 0.04)",
-                          color: tp.estimatedTime ? "#38bdf8" : (isLight ? "#64748b" : "#94a3b8"),
-                          border: tp.estimatedTime ? "1px solid rgba(56, 189, 248, 0.3)" : "1px dashed rgba(255, 255, 255, 0.15)",
-                          cursor: "pointer",
-                          maxWidth: "100%",
-                          boxSizing: "border-box",
-                          transition: "all 0.15s ease",
-                        }}
-                      >
-                        <Clock size={8.5} style={{ flexShrink: 0 }} />
-                        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          {tp.estimatedTime || "Set Time"}
+                    <div style={{ marginTop: 2, display: "flex", alignItems: "center", gap: 4 }}>
+                      {tp.timerDeadline ? (
+                        <div
+                          onClick={() => (onQuickTimer ? onQuickTimer(tp) : onOpenEdit(tp))}
+                          style={{ cursor: "pointer" }}
+                          title={`Click to adjust SLA deadline (${tp.estimatedTime || "Active"})`}
+                        >
+                          <LiveCountdown timerDeadline={tp.timerDeadline} status={tp.status} compact />
+                        </div>
+                      ) : (
+                        <span
+                          onClick={() => (onQuickTimer ? onQuickTimer(tp) : onOpenEdit(tp))}
+                          title={`Estimated Time: ${tp.estimatedTime || "Click to set duration"}`}
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 3,
+                            fontSize: 9.5,
+                            fontWeight: 700,
+                            padding: "1px 5px",
+                            borderRadius: 4,
+                            background: tp.estimatedTime ? "rgba(56, 189, 248, 0.14)" : "rgba(255, 255, 255, 0.04)",
+                            color: tp.estimatedTime ? "#38bdf8" : (isLight ? "#64748b" : "#94a3b8"),
+                            border: tp.estimatedTime ? "1px solid rgba(56, 189, 248, 0.3)" : "1px dashed rgba(255, 255, 255, 0.15)",
+                            cursor: "pointer",
+                            maxWidth: "100%",
+                            boxSizing: "border-box",
+                            transition: "all 0.15s ease",
+                          }}
+                        >
+                          <Clock size={8.5} style={{ flexShrink: 0 }} />
+                          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {tp.estimatedTime || "Set Time"}
+                          </span>
                         </span>
-                      </span>
+                      )}
                     </div>
                   </td>
 
