@@ -61,6 +61,14 @@ import {
   FileText,
   ChevronUp,
   Share2,
+  GitMerge,
+  Workflow,
+  ChevronRight,
+  ArrowLeft,
+  Phone,
+  Building,
+  HelpCircle,
+  Tag,
 } from "lucide-react";
 
 /* ---------------------------------------------------------------
@@ -520,6 +528,383 @@ function seedMOMs() {
   ];
 }
 
+const MAHARASHTRA_DIVISIONS = {
+  "Pune Division": ["Pune", "Satara", "Solapur", "Kolhapur", "Sangli"],
+  "Konkan Division": ["Thane", "Palghar", "Raigad", "Ratnagiri", "Sindhudurg"],
+  "Nashik Division": ["Nashik", "Ahilyanagar", "Dhule", "Jalgaon", "Nandurbar"],
+  "Chhatrapati Sambhajinagar Division": [
+    "Chhatrapati Sambhajinagar",
+    "Jalna",
+    "Parbhani",
+    "Hingoli",
+    "Nanded",
+    "Beed",
+    "Latur",
+    "Dharashiv",
+  ],
+  "Amravati Division": ["Amravati", "Akola", "Buldhana", "Yavatmal", "Washim"],
+  "Nagpur Division": ["Nagpur", "Wardha", "Bhandara", "Gondia", "Chandrapur", "Gadchiroli"],
+};
+
+function getDistrictDivision(districtName) {
+  for (const [div, dists] of Object.entries(MAHARASHTRA_DIVISIONS)) {
+    if (dists.some((d) => d.toLowerCase() === (districtName || "").toLowerCase())) {
+      return div;
+    }
+  }
+  return "Maharashtra General";
+}
+
+const STANDARD_BILLING_STAGES = [
+  { step: 1, roleName: "Department Maker", shortRole: "Maker", levelDesc: "Bill preparation, Measurement Book (MB) entry & token generation" },
+  { step: 2, roleName: "Department Checker", shortRole: "Checker", levelDesc: "Technical scrutiny, deduction checks (IT/GST/Royalty) & verification" },
+  { step: 3, roleName: "Department HOD", shortRole: "HOD", levelDesc: "Executive sanction & departmental forwarding to Finance Department" },
+  { step: 4, roleName: "FD Auditor", shortRole: "Auditor", levelDesc: "Primary financial audit, Namuna check & headcode budget validation" },
+  { step: 5, roleName: "FD AAO", shortRole: "AAO", levelDesc: "Assistant Accounts Officer review & treasury compliance scrutiny" },
+  { step: 6, roleName: "FD AO / DY-CAFO", shortRole: "AO / Dy-CAFO", levelDesc: "Accounts Officer / Deputy CAFO financial concurrence & verification" },
+  { step: 7, roleName: "CAFO", shortRole: "CAFO", levelDesc: "Chief Accounts & Finance Officer final sanction & payment approval" },
+  { step: 8, roleName: "CASHIER", shortRole: "Cashier", levelDesc: "Disbursement, CMP advice generation, treasury scroll matching & payment" },
+];
+
+function createStandardDepartment(deptName, deptCode, headCodes, customOfficialsByStep = {}) {
+  const stages = STANDARD_BILLING_STAGES.map((st) => {
+    const officials = customOfficialsByStep[st.step] || [
+      {
+        id: "off_" + Math.random().toString(36).slice(2, 9),
+        name: `Officer (${st.shortRole})`,
+        designation: `${st.shortRole} - ${deptCode}`,
+        username: `${deptCode.toLowerCase()}_${st.shortRole.toLowerCase().replace(/[^a-z0-9]/g, "")}`,
+        phone: "+91 98000 00000",
+        deskLocation: `${deptCode} Office`,
+        headCodes: [...headCodes],
+        notes: `Responsible for ${st.roleName} in ${deptName}`,
+      },
+    ];
+    return {
+      step: st.step,
+      roleName: st.roleName,
+      shortRole: st.shortRole,
+      levelDesc: st.levelDesc,
+      officials,
+    };
+  });
+
+  return {
+    id: deptCode.toLowerCase() + "_" + Math.random().toString(36).slice(2, 8),
+    name: deptName,
+    code: deptCode,
+    headCodes,
+    stages,
+  };
+}
+
+function seedDistrictFlows() {
+  return DISTRICTS_DEFAULT.map((distName) => {
+    const division = getDistrictDivision(distName);
+    const distLower = distName.toLowerCase();
+    const isPune = distLower === "pune";
+    const isAhilya = distLower === "ahilyanagar";
+
+    // 1. Rural Water Supply (RWS)
+    const rwsHeads = ["2215-01 (Rural Water Supply Schemes)", "2215-02 (Jal Jeevan Mission - JJM)", "4215-01 (Capital Outlay Water)"];
+    const rwsDept = createStandardDepartment(
+      "Rural Water Supply (RWS / पाणी पुरवठा)",
+      "RWS",
+      rwsHeads,
+      {
+        1: [
+          {
+            id: "off_rws_m1_" + distLower,
+            name: isPune ? "Shri S. R. Patil" : `Shri V. R. Shinde (${distName})`,
+            designation: "Junior Engineer / Maker (Desk 1)",
+            username: `${distLower}_rws_maker1`,
+            phone: "+91 98220 11421",
+            deskLocation: "RWS Building, Room 204",
+            headCodes: ["2215-01 (Rural Water Supply Schemes)"],
+            notes: "Handles rural water supply scheme maintenance vouchers and MB tokens up to ₹25 Lakhs.",
+          },
+          {
+            id: "off_rws_m2_" + distLower,
+            name: isPune ? "Smt. P. V. Kulkarni" : `Smt. S. K. Joshi (${distName})`,
+            designation: "Junior Engineer / JJM Maker (Desk 2)",
+            username: `${distLower}_rws_maker2`,
+            phone: "+91 98221 44512",
+            deskLocation: "RWS Building, Room 205",
+            headCodes: ["2215-02 (Jal Jeevan Mission - JJM)", "4215-01 (Capital Outlay Water)"],
+            notes: "Dedicated Maker for Jal Jeevan Mission tap connection works and capital asset contracts.",
+          },
+        ],
+        2: [
+          {
+            id: "off_rws_chk_" + distLower,
+            name: isPune ? "Shri A. N. Joshi" : `Shri R. T. Deshmukh (${distName})`,
+            designation: "Sectional Engineer / Technical Checker",
+            username: `${distLower}_rws_checker`,
+            phone: "+91 94220 33819",
+            deskLocation: "RWS Building, Room 206",
+            headCodes: [...rwsHeads],
+            notes: "Performs rate analysis, GST deduction scrutiny, and royalty certificate checks before HOD signoff.",
+          },
+        ],
+        3: [
+          {
+            id: "off_rws_hod_" + distLower,
+            name: isPune ? "Er. R. D. Shinde" : `Er. M. P. Pawar (${distName})`,
+            designation: "Executive Engineer (HOD - RWS)",
+            username: `${distLower}_rws_ee_hod`,
+            phone: "+91 98230 77120",
+            deskLocation: "Executive Engineer Chamber, Room 201",
+            headCodes: [...rwsHeads],
+            notes: "Departmental sanction authority. Forwards verified bills with digital signature to Finance Department.",
+          },
+        ],
+        4: [
+          {
+            id: "off_rws_aud1_" + distLower,
+            name: isPune ? "Shri M. B. Deshmukh" : `Shri P. L. More (${distName})`,
+            designation: "Junior Auditor (Finance Wing - Desk 3)",
+            username: `${distLower}_fd_aud_rws1`,
+            phone: "+91 98500 22910",
+            deskLocation: "Finance Wing, 1st Floor, Table 3",
+            headCodes: ["2215-01 (Rural Water Supply Schemes)"],
+            notes: "Audits primary scheme bills, verifies budget allotment balance under Head 2215-01.",
+          },
+          {
+            id: "off_rws_aud2_" + distLower,
+            name: isPune ? "Smt. K. T. Pawar" : `Smt. M. N. Kale (${distName})`,
+            designation: "Senior Auditor (JJM & Capital - Desk 4)",
+            username: `${distLower}_fd_aud_rws2`,
+            phone: "+91 98600 77182",
+            deskLocation: "Finance Wing, 1st Floor, Table 4",
+            headCodes: ["2215-02 (Jal Jeevan Mission - JJM)", "4215-01 (Capital Outlay Water)"],
+            notes: "Specialized scrutiny for Central/State tied grants under Jal Jeevan Mission.",
+          },
+        ],
+        5: [
+          {
+            id: "off_rws_aao_" + distLower,
+            name: isPune ? "Shri G. K. More" : `Shri D. S. Gaikwad (${distName})`,
+            designation: "Assistant Accounts Officer (AAO - Works)",
+            username: `${distLower}_fd_aao_works`,
+            phone: "+91 94231 99012",
+            deskLocation: "Finance Wing, AAO Cabin 105",
+            headCodes: [...rwsHeads],
+            notes: "Checks treasury classification, statutory TDS deduction, and contract agreement clauses.",
+          },
+        ],
+        6: [
+          {
+            id: "off_rws_ao_" + distLower,
+            name: isPune ? "Shri S. V. Jadhav" : `Shri B. K. Kadam (${distName})`,
+            designation: "Accounts Officer (AO / Dy. CAFO)",
+            username: `${distLower}_fd_ao_works`,
+            phone: "+91 98223 55100",
+            deskLocation: "AO Office, Room 108",
+            headCodes: [...rwsHeads],
+            notes: "Financial concurrence officer. Recommends payment sanction to CAFO.",
+          },
+        ],
+        7: [
+          {
+            id: "off_rws_cafo_" + distLower,
+            name: isPune ? "Smt. Snehal Jagtap" : `Chief Accounts & Finance Officer (${distName})`,
+            designation: "Chief Accounts & Finance Officer (CAFO)",
+            username: `${distLower}_cafo`,
+            phone: "+91 98220 99881",
+            deskLocation: "CAFO Chamber, 2nd Floor",
+            headCodes: ["ALL HEAD CODES"],
+            notes: "Final drawing and disbursing sanction authority for ZP treasury account.",
+          },
+        ],
+        8: [
+          {
+            id: "off_rws_cash_" + distLower,
+            name: isPune ? "Shri N. B. Gaikwad" : `Treasury Cashier (${distName})`,
+            designation: "Senior Cashier / Treasury Officer",
+            username: `${distLower}_cashier`,
+            phone: "+91 98901 22334",
+            deskLocation: "Treasury Counter, Ground Floor, Room 12",
+            headCodes: ["ALL HEAD CODES"],
+            notes: "Disburses approved payments via CMP portal, RTGS advice, or treasury scroll generation.",
+          },
+        ],
+      }
+    );
+
+    // 2. Public Works Department (PWD / Works)
+    const pwdHeads = ["3054-04 (District Roads & Rural Bridges)", "5054-04 (Capital Works Roads)", "2059-80 (Public Buildings)"];
+    const pwdDept = createStandardDepartment(
+      "Public Works Department (PWD / सार्वजनिक बांधकाम)",
+      "PWD",
+      pwdHeads,
+      {
+        1: [
+          {
+            id: "off_pwd_m1_" + distLower,
+            name: `Shri A. R. Chavan (${distName})`,
+            designation: "Junior Engineer / Works Maker",
+            username: `${distLower}_pwd_maker1`,
+            phone: "+91 98222 33441",
+            deskLocation: "PWD Division Office, Table 2",
+            headCodes: ["3054-04 (District Roads & Rural Bridges)"],
+            notes: "Road repair vouchers and asphalt resurfacing bills.",
+          },
+          {
+            id: "off_pwd_m2_" + distLower,
+            name: `Shri T. H. Salunkhe (${distName})`,
+            designation: "Junior Engineer / Buildings Maker",
+            username: `${distLower}_pwd_maker2`,
+            phone: "+91 98222 77889",
+            deskLocation: "PWD Division Office, Table 3",
+            headCodes: ["5054-04 (Capital Works Roads)", "2059-80 (Public Buildings)"],
+            notes: "Bridge construction and ZP administrative building maintenance bills.",
+          },
+        ],
+        3: [
+          {
+            id: "off_pwd_hod_" + distLower,
+            name: `Er. K. S. Jagdale (${distName})`,
+            designation: "Executive Engineer (Works / PWD)",
+            username: `${distLower}_pwd_ee`,
+            phone: "+91 98234 11220",
+            deskLocation: "EE PWD Chamber",
+            headCodes: [...pwdHeads],
+            notes: "PWD technical sanction and forwarding authority.",
+          },
+        ],
+        4: [
+          {
+            id: "off_pwd_aud_" + distLower,
+            name: `Shri S. D. Bhosale (${distName})`,
+            designation: "Senior Auditor (PWD Desk)",
+            username: `${distLower}_fd_aud_pwd`,
+            phone: "+91 98555 44332",
+            deskLocation: "Finance Wing, Table 6",
+            headCodes: [...pwdHeads],
+            notes: "Audits road and infrastructure bill registers.",
+          },
+        ],
+      }
+    );
+
+    // 3. Health & Medical Department
+    const healthHeads = ["2210-03 (Primary Health Centers - PHC)", "2210-06 (Public Health & Epidemics)", "2211-00 (Family Welfare)"];
+    const healthDept = createStandardDepartment(
+      "Health & Medical Services (आरोग्य विभाग)",
+      "HEALTH",
+      healthHeads,
+      {
+        1: [
+          {
+            id: "off_health_m_" + distLower,
+            name: `Smt. S. P. Thorat (${distName})`,
+            designation: "Senior Assistant / Health Bill Maker",
+            username: `${distLower}_health_maker`,
+            phone: "+91 98111 22334",
+            deskLocation: "Health Directorate, Table 1",
+            headCodes: [...healthHeads],
+            notes: "PHC medicine supply, ambulance fuel, and medical officer salary bills.",
+          },
+        ],
+        3: [
+          {
+            id: "off_health_hod_" + distLower,
+            name: `Dr. B. R. Sonawane (${distName})`,
+            designation: "District Health Officer (DHO)",
+            username: `${distLower}_dho`,
+            phone: "+91 98229 00112",
+            deskLocation: "DHO Chamber",
+            headCodes: [...healthHeads],
+            notes: "District Health Officer executive sanction.",
+          },
+        ],
+        4: [
+          {
+            id: "off_health_aud_" + distLower,
+            name: `Shri Y. N. Mahajan (${distName})`,
+            designation: "Auditor (Health & Welfare Desk)",
+            username: `${distLower}_fd_aud_health`,
+            phone: "+91 98333 44556",
+            deskLocation: "Finance Wing, Table 8",
+            headCodes: [...healthHeads],
+            notes: "Audits medical supplies and NHM scheme payments.",
+          },
+        ],
+      }
+    );
+
+    // 4. Panchayat Samiti & Rural Development
+    const rdHeads = ["2515-00 (15th Finance Commission Grants)", "2501-00 (Rural Livelihood & NREGS)"];
+    const rdDept = createStandardDepartment(
+      "Panchayat Samiti & Rural Dev (पंचायत विभाग)",
+      "RURAL_DEV",
+      rdHeads,
+      {
+        1: [
+          {
+            id: "off_rd_m_" + distLower,
+            name: `Shri C. M. Wagh (${distName})`,
+            designation: "Extension Officer / Panchayat Maker",
+            username: `${distLower}_rd_maker`,
+            phone: "+91 98444 55667",
+            deskLocation: "Panchayat Wing, Desk 4",
+            headCodes: [...rdHeads],
+            notes: "Gram panchayat developmental grants and 15th FC tied/untied allocations.",
+          },
+        ],
+        3: [
+          {
+            id: "off_rd_hod_" + distLower,
+            name: `Shri V. S. Bhalerao (${distName})`,
+            designation: "Deputy CEO (Panchayat)",
+            username: `${distLower}_dyceo_panchayat`,
+            phone: "+91 98231 66778",
+            deskLocation: "Dy. CEO Office",
+            headCodes: [...rdHeads],
+            notes: "Deputy Chief Executive Officer sanctioning authority for panchayat funds.",
+          },
+        ],
+        4: [
+          {
+            id: "off_rd_aud_" + distLower,
+            name: `Shri L. K. Gaikwad (${distName})`,
+            designation: "Auditor (Panchayat Accounts)",
+            username: `${distLower}_fd_aud_panchayat`,
+            phone: "+91 98777 88990",
+            deskLocation: "Finance Wing, Table 2",
+            headCodes: [...rdHeads],
+            notes: "Audits 15th Finance Commission utilization certificates.",
+          },
+        ],
+      }
+    );
+
+    // 5. Finance & Accounts Department
+    const finHeads = ["2054-00 (Treasury & Accounts Admin)", "2071-01 (Pension & Gratuity)", "2049-03 (Interest & Loans)"];
+    const finDept = createStandardDepartment(
+      "Finance & Accounts (वित्त व लेखा विभाग)",
+      "FINANCE",
+      finHeads
+    );
+
+    // 6. Education Department
+    const eduHeads = ["2202-01 (Elementary Education - Primary)", "2236-02 (Mid-Day Meal Scheme / पोषण आहार)"];
+    const eduDept = createStandardDepartment(
+      "Education Department (शिक्षण विभाग)",
+      "EDUCATION",
+      eduHeads
+    );
+
+    return {
+      districtId: "dist_flow_" + distLower,
+      districtName: distName,
+      division: division,
+      updatedAt: todayISO(),
+      departments: [rwsDept, pwdDept, healthDept, rdDept, finDept, eduDept],
+    };
+  });
+}
+
 function seedData() {
   return {
     issues: [],
@@ -531,6 +916,7 @@ function seedData() {
     users: mergeUsersWithDefaults([]),
     auditLogs: [],
     moms: seedMOMs(),
+    districtFlows: seedDistrictFlows(),
   };
 }
 
@@ -3343,6 +3729,10 @@ export default function App() {
             auditLogs: Array.isArray(fetched.auditLogs) ? fetched.auditLogs : [],
             notifications: Array.isArray(fetched.notifications) ? fetched.notifications : [],
             moms: Array.isArray(fetched.moms) && fetched.moms.length > 0 ? fetched.moms : seedMOMs(),
+            districtFlows:
+              Array.isArray(fetched.districtFlows) && fetched.districtFlows.length > 0
+                ? fetched.districtFlows
+                : seedDistrictFlows(),
             testPoints:
               Array.isArray(fetched.testPoints) && fetched.testPoints.length > 0
                 ? fetched.testPoints
@@ -4064,6 +4454,7 @@ export default function App() {
           },
         ]
       : []),
+    { key: "district_flows", label: "District Approval Flows", icon: GitMerge, count: 34, highlight: true },
     { key: "bill_tracker", label: "Bill Tracker Matrix", icon: Receipt, count: totalBillsCount },
     { key: "dashboard", label: "Operations Deck", icon: LayoutGrid },
     { key: "issues", label: "Issues Matrix", icon: AlertTriangle, count: openIssues, isAlert: criticalOpen > 0 },
@@ -4469,6 +4860,8 @@ export default function App() {
                 ? "Unified Dev-Test Execution Matrix, lead assignment, developer completion status, and retest log"
                 : tab === "mom"
                 ? "Minutes of Meeting repository: client discussions, agreed decisions, and date-wise deliverables"
+                : tab === "district_flows"
+                ? "District-wise department approval hierarchies, headcode routing & stuck bill diagnostics (34 Districts)"
                 : tab === "master_module"
                 ? "Manage personnel access, register developers, testers, BAs, and managers (Master Admin Only)"
                 : tab === "audit_logs"
@@ -4869,6 +5262,26 @@ export default function App() {
             onDelete={promptDeleteMOM}
             onToggleActionItem={handleToggleMOMActionItem}
             onPushToTestMatrix={handlePushActionItemToMatrix}
+            isLight={isLight}
+          />
+        )}
+
+        {tab === "district_flows" && (
+          <DistrictFlowsView
+            flows={data?.districtFlows || []}
+            onSaveFlows={(nextFlows, changeMsg) => {
+              const nextLogs = logActivity(
+                "UPDATE",
+                "District Approval Flows",
+                "Workflow Hierarchy",
+                changeMsg || "Updated department approval flow or headcode mapping"
+              );
+              persist({ ...data, districtFlows: nextFlows, auditLogs: nextLogs });
+            }}
+            currentUser={currentUser}
+            isSudhanshu={isSudhanshu}
+            isManager={isManager}
+            isCEO={isCEO}
             isLight={isLight}
           />
         )}
@@ -8945,6 +9358,1682 @@ function BillTrackerView({
           All 34 Maharashtra ZP districts are permanently registered. Counts synchronize live across team members in real-time via cloud storage. Data baseline established as of 01-Sep-2026 EOD. Use "Edit" to modify numbers anytime.
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ---------------------------- District Approval Flows & Headcode Routing Module ---------------------------- */
+
+function FlowOfficialModal({ initial, stageName, deptHeadCodes = [], onSave, onCancel, isLight }) {
+  const [name, setName] = useState(initial?.name || "");
+  const [designation, setDesignation] = useState(initial?.designation || "");
+  const [username, setUsername] = useState(initial?.username || "");
+  const [phone, setPhone] = useState(initial?.phone || "");
+  const [deskLocation, setDeskLocation] = useState(initial?.deskLocation || "");
+  const [headCodesText, setHeadCodesText] = useState((initial?.headCodes || []).join(", "));
+  const [notes, setNotes] = useState(initial?.notes || "");
+
+  const handleAddHeadTag = (tag) => {
+    const current = headCodesText
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (!current.includes(tag)) {
+      setHeadCodesText([...current, tag].join(", "));
+    }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!name.trim()) return alert("Official Name is required.");
+    const codes = headCodesText
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    onSave({
+      id: initial?.id || "off_" + Math.random().toString(36).slice(2, 9),
+      name: name.trim(),
+      designation: designation.trim() || stageName,
+      username: username.trim() || name.toLowerCase().replace(/[^a-z0-9]/g, "_"),
+      phone: phone.trim() || "+91 98000 00000",
+      deskLocation: deskLocation.trim() || "District Office",
+      headCodes: codes.length > 0 ? codes : ["ALL HEAD CODES"],
+      notes: notes.trim(),
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <div style={{ fontSize: 12, color: isLight ? "#64748b" : "#94a3b8", marginBottom: 2 }}>
+        Assign or update the official responsible for <strong>{stageName}</strong> and their mapped budget Head Codes.
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <div>
+          <label style={{ display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: isLight ? "#475569" : "#94a3b8", marginBottom: 5 }}>
+            Official Name *
+          </label>
+          <input
+            type="text"
+            className="input-base"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g. Shri S. R. Patil"
+            required
+            autoFocus
+          />
+        </div>
+        <div>
+          <label style={{ display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: isLight ? "#475569" : "#94a3b8", marginBottom: 5 }}>
+            Official Designation *
+          </label>
+          <input
+            type="text"
+            className="input-base"
+            value={designation}
+            onChange={(e) => setDesignation(e.target.value)}
+            placeholder="e.g. Junior Engineer / Desk Maker"
+          />
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <div>
+          <label style={{ display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: isLight ? "#475569" : "#94a3b8", marginBottom: 5 }}>
+            Login Username / Emp Code *
+          </label>
+          <input
+            type="text"
+            className="input-base"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="e.g. pune_rws_maker1"
+            required
+          />
+        </div>
+        <div>
+          <label style={{ display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: isLight ? "#475569" : "#94a3b8", marginBottom: 5 }}>
+            Contact / Mobile Number *
+          </label>
+          <input
+            type="text"
+            className="input-base"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="e.g. +91 98220 12345"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label style={{ display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: isLight ? "#475569" : "#94a3b8", marginBottom: 5 }}>
+          Office / Desk Location
+        </label>
+        <input
+          type="text"
+          className="input-base"
+          value={deskLocation}
+          onChange={(e) => setDeskLocation(e.target.value)}
+          placeholder="e.g. Room 204, RWS Building, Pune ZP"
+        />
+      </div>
+
+      <div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 5 }}>
+          <label style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: isLight ? "#475569" : "#94a3b8" }}>
+            Mapped Head Codes (Comma-Separated) *
+          </label>
+          <span style={{ fontSize: 10, color: "#ff334b", fontWeight: 600 }}>Determines file routing</span>
+        </div>
+        <input
+          type="text"
+          className="input-base"
+          value={headCodesText}
+          onChange={(e) => setHeadCodesText(e.target.value)}
+          placeholder="e.g. 2215-01 (Rural Water), 2215-02 (JJM)"
+          required
+        />
+        {deptHeadCodes.length > 0 && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 6, alignItems: "center" }}>
+            <span style={{ fontSize: 10, color: isLight ? "#64748b" : "#94a3b8" }}>Quick Add:</span>
+            {deptHeadCodes.map((hc, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => handleAddHeadTag(hc)}
+                style={{
+                  background: isLight ? "#f1f5f9" : "rgba(255, 255, 255, 0.06)",
+                  border: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.12)",
+                  color: isLight ? "#0f172a" : "#f1f5f9",
+                  borderRadius: 12,
+                  padding: "2px 8px",
+                  fontSize: 10,
+                  cursor: "pointer",
+                }}
+              >
+                + {hc}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => handleAddHeadTag("ALL HEAD CODES")}
+              style={{
+                background: "rgba(16, 185, 129, 0.1)",
+                border: "1px solid rgba(16, 185, 129, 0.3)",
+                color: "#10b981",
+                borderRadius: 12,
+                padding: "2px 8px",
+                fontSize: 10,
+                cursor: "pointer",
+                fontWeight: 600,
+              }}
+            >
+              + ALL HEAD CODES
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div>
+        <label style={{ display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: isLight ? "#475569" : "#94a3b8", marginBottom: 5 }}>
+          Delegation Powers & Scrutiny Notes
+        </label>
+        <textarea
+          className="input-base"
+          rows={2}
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="e.g. Scrutinizes bills up to ₹25 Lakhs. Forwarding authority for civil works."
+          style={{ resize: "vertical" }}
+        />
+      </div>
+
+      <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 10, paddingTop: 10, borderTop: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)" }}>
+        <button type="button" className="btn-ghost" onClick={onCancel} style={{ padding: "8px 16px", fontSize: 12 }}>
+          Cancel
+        </button>
+        <button type="submit" className="btn-red-gradient" style={{ padding: "8px 20px", fontSize: 12 }}>
+          Save Official Mapping
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function AddDepartmentModal({ onSave, onCancel, isLight }) {
+  const [deptName, setDeptName] = useState("");
+  const [deptCode, setDeptCode] = useState("");
+  const [headCodesText, setHeadCodesText] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!deptName.trim()) return alert("Department Name is required.");
+    const code = (deptCode.trim() || deptName.trim().slice(0, 4)).toUpperCase().replace(/[^A-Z0-9]/g, "");
+    const heads = headCodesText
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const newDept = createStandardDepartment(
+      deptName.trim(),
+      code,
+      heads.length > 0 ? heads : [`${code}-01 (General)`]
+    );
+    onSave(newDept);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <div style={{ fontSize: 12, color: isLight ? "#64748b" : "#94a3b8" }}>
+        Add a new department to this district. It will automatically be provisioned with the standard 8-stage billing workflow: 
+        <strong> Maker ➔ Checker ➔ HOD ➔ FD Auditor ➔ AAO ➔ AO ➔ CAFO ➔ Cashier</strong>.
+      </div>
+
+      <div>
+        <label style={{ display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: isLight ? "#475569" : "#94a3b8", marginBottom: 5 }}>
+          Department Name (English & Marathi) *
+        </label>
+        <input
+          type="text"
+          className="input-base"
+          value={deptName}
+          onChange={(e) => setDeptName(e.target.value)}
+          placeholder="e.g. Social Welfare Department (समाजकल्याण विभाग)"
+          required
+          autoFocus
+        />
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 12 }}>
+        <div>
+          <label style={{ display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: isLight ? "#475569" : "#94a3b8", marginBottom: 5 }}>
+            Department Code *
+          </label>
+          <input
+            type="text"
+            className="input-base"
+            value={deptCode}
+            onChange={(e) => setDeptCode(e.target.value.toUpperCase())}
+            placeholder="e.g. SWD"
+            required
+          />
+        </div>
+        <div>
+          <label style={{ display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: isLight ? "#475569" : "#94a3b8", marginBottom: 5 }}>
+            Primary Head Codes (Comma-Separated)
+          </label>
+          <input
+            type="text"
+            className="input-base"
+            value={headCodesText}
+            onChange={(e) => setHeadCodesText(e.target.value)}
+            placeholder="e.g. 2225-01 (Welfare of SC), 2225-02 (Tribal)"
+          />
+        </div>
+      </div>
+
+      <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 10, paddingTop: 10, borderTop: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)" }}>
+        <button type="button" className="btn-ghost" onClick={onCancel} style={{ padding: "8px 16px", fontSize: 12 }}>
+          Cancel
+        </button>
+        <button type="submit" className="btn-red-gradient" style={{ padding: "8px 20px", fontSize: 12 }}>
+          Provision Department Workflow
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function DistrictFlowsView({ flows = [], onSaveFlows, currentUser, isSudhanshu, isManager, isCEO, isLight }) {
+  const [viewLevel, setViewLevel] = useState("districts"); // "districts" | "departments" | "flow"
+  const [selectedDistrictId, setSelectedDistrictId] = useState(null);
+  const [selectedDeptId, setSelectedDeptId] = useState(null);
+
+  // Filters
+  const [districtSearch, setDistrictSearch] = useState("");
+  const [divisionFilter, setDivisionFilter] = useState("All");
+  const [deptSearch, setDeptSearch] = useState("");
+  const [headCodeQuery, setHeadCodeQuery] = useState("");
+  const [activeStepFilter, setActiveStepFilter] = useState(null);
+
+  // Modals
+  const [modalState, setModalState] = useState(null); // { type: "official" | "add_dept", districtId, deptId, step, official }
+
+  const canEdit = isSudhanshu || isManager || isCEO;
+
+  // Derive active district and department
+  const activeDistrict = flows.find((d) => d.districtId === selectedDistrictId) || null;
+  const activeDepartment = activeDistrict?.departments?.find((dept) => dept.id === selectedDeptId) || null;
+
+  // Filtered districts
+  const filteredDistricts = flows.filter((d) => {
+    const matchesSearch = !districtSearch.trim() || d.districtName.toLowerCase().includes(districtSearch.toLowerCase().trim());
+    const matchesDiv = divisionFilter === "All" || d.division === divisionFilter;
+    return matchesSearch && matchesDiv;
+  });
+
+  // Filtered departments in active district
+  const filteredDepartments = (activeDistrict?.departments || []).filter((dept) => {
+    if (!deptSearch.trim()) return true;
+    const q = deptSearch.toLowerCase().trim();
+    return (
+      dept.name.toLowerCase().includes(q) ||
+      dept.code.toLowerCase().includes(q) ||
+      (dept.headCodes || []).some((h) => h.toLowerCase().includes(q))
+    );
+  });
+
+  // Diagnostic calculations for Level 3
+  const activeHeadQueryClean = headCodeQuery.trim().toLowerCase();
+
+  const diagnosticResults = React.useMemo(() => {
+    if (!activeDepartment || !activeHeadQueryClean) return null;
+    const stages = activeDepartment.stages || [];
+    const results = stages.map((st) => {
+      const matchingOfficials = (st.officials || []).filter((off) => {
+        const matchesHead = (off.headCodes || []).some((hc) => {
+          const lowerHc = hc.toLowerCase();
+          return lowerHc.includes(activeHeadQueryClean) || lowerHc.includes("all head codes");
+        });
+        const matchesName = (off.name || "").toLowerCase().includes(activeHeadQueryClean);
+        return matchesHead || matchesName;
+      });
+      return {
+        step: st.step,
+        roleName: st.roleName,
+        shortRole: st.shortRole,
+        hasMatch: matchingOfficials.length > 0,
+        matchingOfficials,
+      };
+    });
+    const missingSteps = results.filter((r) => !r.hasMatch);
+    return { results, missingSteps };
+  }, [activeDepartment, activeHeadQueryClean]);
+
+  // Handler: Update official in stage
+  const handleSaveOfficial = (updatedOfficial) => {
+    if (!activeDistrict || !activeDepartment || !modalState) return;
+    const { step, isAdd } = modalState;
+
+    const nextFlows = flows.map((dist) => {
+      if (dist.districtId !== activeDistrict.districtId) return dist;
+      const nextDepts = dist.departments.map((dept) => {
+        if (dept.id !== activeDepartment.id) return dept;
+        const nextStages = dept.stages.map((st) => {
+          if (st.step !== step) return st;
+          let nextOfficials = [];
+          if (isAdd) {
+            nextOfficials = [...(st.officials || []), updatedOfficial];
+          } else {
+            nextOfficials = (st.officials || []).map((off) => (off.id === updatedOfficial.id ? updatedOfficial : off));
+          }
+          return { ...st, officials: nextOfficials };
+        });
+        return { ...dept, stages: nextStages };
+      });
+      return { ...dist, departments: nextDepts, updatedAt: todayISO() };
+    });
+
+    onSaveFlows(
+      nextFlows,
+      `${isAdd ? "Added" : "Updated"} official ${updatedOfficial.name} for ${activeDistrict.districtName} - ${activeDepartment.code} (Step ${step})`
+    );
+    setModalState(null);
+  };
+
+  // Handler: Remove official from stage
+  const handleRemoveOfficial = (step, officialId) => {
+    if (!confirm("Are you sure you want to remove this official mapping?")) return;
+    const nextFlows = flows.map((dist) => {
+      if (dist.districtId !== activeDistrict.districtId) return dist;
+      const nextDepts = dist.departments.map((dept) => {
+        if (dept.id !== activeDepartment.id) return dept;
+        const nextStages = dept.stages.map((st) => {
+          if (st.step !== step) return st;
+          return { ...st, officials: (st.officials || []).filter((off) => off.id !== officialId) };
+        });
+        return { ...dept, stages: nextStages };
+      });
+      return { ...dist, departments: nextDepts, updatedAt: todayISO() };
+    });
+
+    onSaveFlows(
+      nextFlows,
+      `Removed official mapping from ${activeDistrict.districtName} - ${activeDepartment.code} (Step ${step})`
+    );
+  };
+
+  // Handler: Add new department
+  const handleSaveNewDepartment = (newDept) => {
+    if (!activeDistrict) return;
+    const nextFlows = flows.map((dist) => {
+      if (dist.districtId !== activeDistrict.districtId) return dist;
+      return {
+        ...dist,
+        departments: [...(dist.departments || []), newDept],
+        updatedAt: todayISO(),
+      };
+    });
+    onSaveFlows(nextFlows, `Provisioned new department ${newDept.name} in ${activeDistrict.districtName}`);
+    setModalState(null);
+  };
+
+  // KPI Calculations
+  const totalDistrictsCount = flows.length;
+  const totalDeptsCount = flows.reduce((sum, d) => sum + (d.departments || []).length, 0);
+  const totalDivisionsCount = Object.keys(MAHARASHTRA_DIVISIONS).length;
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+      {/* Dynamic Breadcrumbs Bar */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          fontSize: 13,
+          color: isLight ? "#64748b" : "#94a3b8",
+          flexWrap: "wrap",
+          padding: "8px 12px",
+          background: isLight ? "#ffffff" : "rgba(255, 255, 255, 0.02)",
+          borderRadius: 8,
+          border: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.06)",
+        }}
+      >
+        <button
+          onClick={() => {
+            setViewLevel("districts");
+            setSelectedDistrictId(null);
+            setSelectedDeptId(null);
+            setHeadCodeQuery("");
+          }}
+          style={{
+            background: "none",
+            border: "none",
+            color: viewLevel === "districts" ? "#ff334b" : isLight ? "#0f172a" : "#f1f5f9",
+            fontWeight: viewLevel === "districts" ? 700 : 500,
+            cursor: "pointer",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 5,
+            fontSize: 13,
+            padding: "2px 6px",
+            borderRadius: 4,
+          }}
+        >
+          <Landmark size={14} color="#ff334b" />
+          All 34 Districts
+        </button>
+
+        {activeDistrict && (
+          <>
+            <ChevronRight size={13} color="#64748b" />
+            <button
+              onClick={() => {
+                setViewLevel("departments");
+                setSelectedDeptId(null);
+                setHeadCodeQuery("");
+              }}
+              style={{
+                background: "none",
+                border: "none",
+                color: viewLevel === "departments" ? "#ff334b" : isLight ? "#0f172a" : "#f1f5f9",
+                fontWeight: viewLevel === "departments" ? 700 : 500,
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 5,
+                fontSize: 13,
+                padding: "2px 6px",
+                borderRadius: 4,
+              }}
+            >
+              <Building2 size={13} color="#3b82f6" />
+              {activeDistrict.districtName} ({activeDistrict.division})
+            </button>
+          </>
+        )}
+
+        {activeDepartment && (
+          <>
+            <ChevronRight size={13} color="#64748b" />
+            <span
+              style={{
+                color: "#ff334b",
+                fontWeight: 700,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 5,
+                fontSize: 13,
+                padding: "2px 6px",
+              }}
+            >
+              <GitMerge size={13} color="#10b981" />
+              {activeDepartment.name} ({activeDepartment.code})
+            </span>
+          </>
+        )}
+      </div>
+
+      {/* =========================================================================
+          LEVEL 1: DISTRICT SELECTION GRID (34 Fixed Maharashtra Jurisdictions)
+          ========================================================================= */}
+      {viewLevel === "districts" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {/* Top KPI Cards */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 12 }}>
+            <div className="glass-card" style={{ padding: "14px 18px", borderLeft: "4px solid #ff334b" }}>
+              <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", fontWeight: 700, textTransform: "uppercase" }}>
+                Total ZP Jurisdictions
+              </div>
+              <div style={{ fontSize: 24, fontWeight: 800, color: isLight ? "#0f172a" : "#ffffff", marginTop: 4 }}>
+                {totalDistrictsCount}{" "}
+                <span style={{ fontSize: 12, fontWeight: 500, color: "#10b981" }}>• Fixed Maharashtra</span>
+              </div>
+              <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>
+                Full 34 Zilla Parishad directories
+              </div>
+            </div>
+
+            <div className="glass-card" style={{ padding: "14px 18px", borderLeft: "4px solid #3b82f6" }}>
+              <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", fontWeight: 700, textTransform: "uppercase" }}>
+                Revenue Divisions
+              </div>
+              <div style={{ fontSize: 24, fontWeight: 800, color: isLight ? "#0f172a" : "#ffffff", marginTop: 4 }}>
+                {totalDivisionsCount}{" "}
+                <span style={{ fontSize: 12, fontWeight: 500, color: "#3b82f6" }}>• Regional Circles</span>
+              </div>
+              <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>
+                Pune, Konkan, Nashik, Sambhajinagar, Amravati, Nagpur
+              </div>
+            </div>
+
+            <div className="glass-card" style={{ padding: "14px 18px", borderLeft: "4px solid #10b981" }}>
+              <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", fontWeight: 700, textTransform: "uppercase" }}>
+                Configured Departments
+              </div>
+              <div style={{ fontSize: 24, fontWeight: 800, color: isLight ? "#0f172a" : "#ffffff", marginTop: 4 }}>
+                {totalDeptsCount}{" "}
+                <span style={{ fontSize: 12, fontWeight: 500, color: "#10b981" }}>• Department Flows</span>
+              </div>
+              <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>
+                RWS, Works, Health, Panchayat, Finance, Education
+              </div>
+            </div>
+
+            <div className="glass-card" style={{ padding: "14px 18px", borderLeft: "4px solid #f59e0b" }}>
+              <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", fontWeight: 700, textTransform: "uppercase" }}>
+                Standard Approval Pipeline
+              </div>
+              <div style={{ fontSize: 24, fontWeight: 800, color: isLight ? "#0f172a" : "#ffffff", marginTop: 4 }}>
+                8 Desks{" "}
+                <span style={{ fontSize: 12, fontWeight: 500, color: "#f59e0b" }}>• Maker to Cashier</span>
+              </div>
+              <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>
+                Headcode-wise user routing & scrutiny checks
+              </div>
+            </div>
+          </div>
+
+          {/* Search & Division Filter Toolbar */}
+          <div
+            className="glass-card"
+            style={{
+              padding: "14px 16px",
+              display: "flex",
+              flexDirection: "column",
+              gap: 12,
+            }}
+          >
+            <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+              <div style={{ position: "relative", flex: "1 1 280px" }}>
+                <Search
+                  size={15}
+                  style={{
+                    position: "absolute",
+                    left: 12,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    color: isLight ? "#64748b" : "#94a3b8",
+                  }}
+                />
+                <input
+                  type="text"
+                  className="input-base"
+                  value={districtSearch}
+                  onChange={(e) => setDistrictSearch(e.target.value)}
+                  placeholder="Search district name (e.g. Pune, Ahilyanagar, Nashik, Satara)..."
+                  style={{ paddingLeft: 36 }}
+                />
+              </div>
+
+              {districtSearch && (
+                <button
+                  className="btn-ghost"
+                  onClick={() => setDistrictSearch("")}
+                  style={{ padding: "6px 12px", fontSize: 12 }}
+                >
+                  Clear Search
+                </button>
+              )}
+            </div>
+
+            {/* Division Pills */}
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+              <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: isLight ? "#64748b" : "#94a3b8", marginRight: 4 }}>
+                Divisions:
+              </span>
+              {["All", ...Object.keys(MAHARASHTRA_DIVISIONS)].map((divKey) => {
+                const isSelected = divisionFilter === divKey;
+                const count = divKey === "All" ? 34 : MAHARASHTRA_DIVISIONS[divKey].length;
+                return (
+                  <button
+                    key={divKey}
+                    onClick={() => setDivisionFilter(divKey)}
+                    style={{
+                      background: isSelected
+                        ? "linear-gradient(135deg, #ff334b 0%, #b91c1c 100%)"
+                        : isLight
+                        ? "#f1f5f9"
+                        : "rgba(255, 255, 255, 0.04)",
+                      border: isSelected
+                        ? "1px solid #ff334b"
+                        : isLight
+                        ? "1px solid #e2e8f0"
+                        : "1px solid rgba(255, 255, 255, 0.08)",
+                      color: isSelected ? "#ffffff" : isLight ? "#334155" : "#cbd5e1",
+                      borderRadius: 20,
+                      padding: "4px 12px",
+                      fontSize: 11.5,
+                      fontWeight: isSelected ? 700 : 500,
+                      cursor: "pointer",
+                      transition: "all 0.15s ease",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 6,
+                    }}
+                  >
+                    <span>{divKey === "All" ? "All Divisions" : divKey.replace(" Division", "")}</span>
+                    <span
+                      style={{
+                        background: isSelected ? "rgba(255, 255, 255, 0.25)" : isLight ? "#e2e8f0" : "rgba(255, 255, 255, 0.1)",
+                        color: isSelected ? "#ffffff" : isLight ? "#475569" : "#94a3b8",
+                        borderRadius: 10,
+                        padding: "1px 6px",
+                        fontSize: 10,
+                        fontWeight: 700,
+                      }}
+                    >
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Districts Grid (Cards) */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+              gap: 14,
+            }}
+          >
+            {filteredDistricts.map((d) => {
+              const deptsCount = (d.departments || []).length;
+              const totalHeads = (d.departments || []).reduce((acc, dept) => acc + (dept.headCodes || []).length, 0);
+              const isPilot = ["pune", "ahilyanagar", "nashik", "satara", "chhatrapati sambhajinagar"].includes(d.districtName.toLowerCase());
+
+              return (
+                <div
+                  key={d.districtId}
+                  className="glass-card"
+                  onClick={() => {
+                    setSelectedDistrictId(d.districtId);
+                    setViewLevel("departments");
+                  }}
+                  style={{
+                    padding: "16px 18px",
+                    cursor: "pointer",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    gap: 14,
+                    transition: "all 0.2s ease",
+                    border: isPilot ? "1px solid rgba(255, 51, 75, 0.35)" : isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
+                    position: "relative",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                    e.currentTarget.style.borderColor = "#ff334b";
+                    e.currentTarget.style.boxShadow = "0 8px 24px rgba(255, 51, 75, 0.15)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.borderColor = isPilot ? "rgba(255, 51, 75, 0.35)" : isLight ? "#e2e8f0" : "rgba(255, 255, 255, 0.08)";
+                    e.currentTarget.style.boxShadow = "none";
+                  }}
+                >
+                  <div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+                      <div>
+                        <div style={{ fontSize: 16, fontWeight: 700, color: isLight ? "#0f172a" : "#ffffff", display: "flex", alignItems: "center", gap: 7 }}>
+                          <Landmark size={16} color="#ff334b" />
+                          {d.districtName}
+                        </div>
+                        <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>
+                          {d.division}
+                        </div>
+                      </div>
+                      {isPilot && (
+                        <span
+                          style={{
+                            background: "rgba(255, 51, 75, 0.15)",
+                            color: "#ff334b",
+                            border: "1px solid rgba(255, 51, 75, 0.3)",
+                            fontSize: 9.5,
+                            fontWeight: 700,
+                            padding: "2px 7px",
+                            borderRadius: 4,
+                            textTransform: "uppercase",
+                            letterSpacing: "0.5px",
+                          }}
+                        >
+                          Pilot Config
+                        </span>
+                      )}
+                    </div>
+
+                    <div style={{ display: "flex", gap: 12, marginTop: 14, fontSize: 11.5, color: isLight ? "#475569" : "#cbd5e1" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                        <Building2 size={13} color="#3b82f6" />
+                        <span><strong>{deptsCount}</strong> Departments</span>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                        <Tag size={13} color="#10b981" />
+                        <span><strong>{totalHeads}</strong> Head Codes</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      paddingTop: 10,
+                      borderTop: isLight ? "1px solid #f1f5f9" : "1px solid rgba(255, 255, 255, 0.05)",
+                      fontSize: 11.5,
+                      color: "#ff334b",
+                      fontWeight: 600,
+                    }}
+                  >
+                    <span>View Department Workflows</span>
+                    <ArrowRight size={14} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          LEVEL 2: DEPARTMENT SELECTION CARDS (Inside Selected District)
+          ========================================================================= */}
+      {viewLevel === "departments" && activeDistrict && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {/* Top Action & Info Banner */}
+          <div
+            className="glass-card"
+            style={{
+              padding: "16px 20px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: 14,
+              borderLeft: "4px solid #ff334b",
+            }}
+          >
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <button
+                  onClick={() => {
+                    setViewLevel("districts");
+                    setSelectedDistrictId(null);
+                  }}
+                  className="btn-ghost"
+                  style={{ padding: "5px 10px", fontSize: 11.5, display: "inline-flex", alignItems: "center", gap: 5 }}
+                >
+                  <ArrowLeft size={13} /> All Districts
+                </button>
+                <h2 style={{ margin: 0, fontSize: 19, fontWeight: 800, color: isLight ? "#0f172a" : "#ffffff", display: "flex", alignItems: "center", gap: 8 }}>
+                  <Landmark size={20} color="#ff334b" />
+                  {activeDistrict.districtName} Zilla Parishad
+                </h2>
+                <span
+                  style={{
+                    background: isLight ? "#f1f5f9" : "rgba(255, 255, 255, 0.06)",
+                    border: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.1)",
+                    color: isLight ? "#475569" : "#cbd5e1",
+                    fontSize: 11,
+                    fontWeight: 600,
+                    padding: "2px 8px",
+                    borderRadius: 12,
+                  }}
+                >
+                  {activeDistrict.division}
+                </span>
+              </div>
+              <p style={{ margin: "6px 0 0 0", fontSize: 12.5, color: isLight ? "#64748b" : "#94a3b8" }}>
+                Select a department below to view its 8-step billing approval hierarchy, active officials, and headcode routing mappings.
+              </p>
+            </div>
+
+            <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+              <div style={{ position: "relative", width: 230 }}>
+                <Search
+                  size={14}
+                  style={{
+                    position: "absolute",
+                    left: 10,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    color: isLight ? "#64748b" : "#94a3b8",
+                  }}
+                />
+                <input
+                  type="text"
+                  className="input-base"
+                  value={deptSearch}
+                  onChange={(e) => setDeptSearch(e.target.value)}
+                  placeholder="Filter department..."
+                  style={{ paddingLeft: 30, fontSize: 12, height: 34 }}
+                />
+              </div>
+
+              {canEdit && (
+                <button
+                  className="btn-red-gradient"
+                  onClick={() => setModalState({ type: "add_dept", districtId: activeDistrict.districtId })}
+                  style={{ padding: "7px 14px", fontSize: 12, display: "inline-flex", alignItems: "center", gap: 6 }}
+                >
+                  <Plus size={14} /> Add Department
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Department Cards Grid */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))",
+              gap: 16,
+            }}
+          >
+            {filteredDepartments.map((dept) => {
+              const stagesCount = (dept.stages || []).length;
+              const totalOfficials = (dept.stages || []).reduce((sum, s) => sum + (s.officials || []).length, 0);
+              const hodStage = (dept.stages || []).find((s) => s.step === 3);
+              const hodName = hodStage?.officials?.[0]?.name || "Assigned HOD";
+
+              return (
+                <div
+                  key={dept.id}
+                  className="glass-card"
+                  onClick={() => {
+                    setSelectedDeptId(dept.id);
+                    setViewLevel("flow");
+                  }}
+                  style={{
+                    padding: "18px 20px",
+                    cursor: "pointer",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    gap: 16,
+                    transition: "all 0.2s ease",
+                    border: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                    e.currentTarget.style.borderColor = "#ff334b";
+                    e.currentTarget.style.boxShadow = "0 8px 24px rgba(255, 51, 75, 0.15)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.borderColor = isLight ? "#e2e8f0" : "rgba(255, 255, 255, 0.08)";
+                    e.currentTarget.style.boxShadow = "none";
+                  }}
+                >
+                  <div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <div
+                          style={{
+                            width: 36,
+                            height: 36,
+                            borderRadius: 8,
+                            background: "rgba(255, 51, 75, 0.12)",
+                            border: "1px solid rgba(255, 51, 75, 0.3)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            color: "#ff334b",
+                            fontWeight: 800,
+                            fontSize: 12,
+                          }}
+                        >
+                          {dept.code}
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 15, fontWeight: 700, color: isLight ? "#0f172a" : "#ffffff", lineHeight: 1.2 }}>
+                            {dept.name}
+                          </div>
+                          <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", marginTop: 3 }}>
+                            HOD: <strong>{hodName}</strong>
+                          </div>
+                        </div>
+                      </div>
+
+                      <span
+                        style={{
+                          background: "rgba(16, 185, 129, 0.12)",
+                          color: "#10b981",
+                          border: "1px solid rgba(16, 185, 129, 0.3)",
+                          fontSize: 10,
+                          fontWeight: 700,
+                          padding: "2px 8px",
+                          borderRadius: 12,
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        8 Steps
+                      </span>
+                    </div>
+
+                    {/* Head Codes Chips */}
+                    <div style={{ marginTop: 14 }}>
+                      <div style={{ fontSize: 10.5, fontWeight: 700, textTransform: "uppercase", color: isLight ? "#64748b" : "#94a3b8", marginBottom: 5 }}>
+                        Mapped Budget Head Codes:
+                      </div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+                        {(dept.headCodes || []).map((hc, idx) => (
+                          <span
+                            key={idx}
+                            style={{
+                              background: isLight ? "#f1f5f9" : "rgba(255, 255, 255, 0.05)",
+                              border: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.08)",
+                              color: isLight ? "#334155" : "#cbd5e1",
+                              fontSize: 10,
+                              fontWeight: 500,
+                              padding: "2px 7px",
+                              borderRadius: 4,
+                            }}
+                          >
+                            {hc}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Mini Flow Pipeline Preview */}
+                    <div
+                      style={{
+                        marginTop: 14,
+                        padding: "8px 10px",
+                        background: isLight ? "#f8fafc" : "rgba(0, 0, 0, 0.25)",
+                        borderRadius: 6,
+                        border: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.04)",
+                        fontSize: 10.5,
+                        color: isLight ? "#64748b" : "#94a3b8",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 4,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      <span style={{ color: "#ff334b", fontWeight: 700 }}>Flow:</span>
+                      <span>Maker ➔ Checker ➔ HOD ➔ Auditor ➔ AAO ➔ AO ➔ CAFO ➔ Cashier</span>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      paddingTop: 12,
+                      borderTop: isLight ? "1px solid #f1f5f9" : "1px solid rgba(255, 255, 255, 0.05)",
+                      fontSize: 11.5,
+                      color: "#ff334b",
+                      fontWeight: 600,
+                    }}
+                  >
+                    <span>{totalOfficials} Officials Mapped</span>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
+                      Open Flow Matrix <ArrowRight size={14} />
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          LEVEL 3: 8-STAGE INTERACTIVE WORKFLOW & STUCK ENTRY DIAGNOSTIC TOOL
+          ========================================================================= */}
+      {viewLevel === "flow" && activeDistrict && activeDepartment && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+          {/* Top Header & Department Info */}
+          <div
+            className="glass-card"
+            style={{
+              padding: "16px 20px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: 14,
+              borderLeft: "4px solid #ff334b",
+            }}
+          >
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <button
+                  onClick={() => {
+                    setViewLevel("departments");
+                    setSelectedDeptId(null);
+                    setHeadCodeQuery("");
+                  }}
+                  className="btn-ghost"
+                  style={{ padding: "5px 10px", fontSize: 11.5, display: "inline-flex", alignItems: "center", gap: 5 }}
+                >
+                  <ArrowLeft size={13} /> All Departments
+                </button>
+                <h2 style={{ margin: 0, fontSize: 19, fontWeight: 800, color: isLight ? "#0f172a" : "#ffffff", display: "flex", alignItems: "center", gap: 8 }}>
+                  <GitMerge size={20} color="#ff334b" />
+                  {activeDepartment.name}
+                </h2>
+                <span
+                  style={{
+                    background: "rgba(255, 51, 75, 0.15)",
+                    border: "1px solid rgba(255, 51, 75, 0.3)",
+                    color: "#ff334b",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    padding: "2px 8px",
+                    borderRadius: 6,
+                  }}
+                >
+                  {activeDepartment.code}
+                </span>
+              </div>
+              <div style={{ fontSize: 12, color: isLight ? "#64748b" : "#94a3b8", marginTop: 4 }}>
+                <strong>{activeDistrict.districtName} Zilla Parishad</strong> ({activeDistrict.division}) · Standard 8-Stage Sequential Approval Pipeline
+              </div>
+            </div>
+
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <span
+                style={{
+                  background: isLight ? "#f8fafc" : "rgba(255, 255, 255, 0.05)",
+                  border: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
+                  color: isLight ? "#475569" : "#cbd5e1",
+                  padding: "5px 10px",
+                  borderRadius: 6,
+                  fontSize: 11,
+                  fontWeight: 600,
+                }}
+              >
+                Updated: {activeDistrict.updatedAt || todayISO()}
+              </span>
+            </div>
+          </div>
+
+          {/* 🌟 STUCK ENTRY & HEADCODE DIAGNOSTIC TOOL */}
+          <div
+            className="glass-card"
+            style={{
+              padding: "16px 20px",
+              background: isLight
+                ? "linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%)"
+                : "linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(6, 78, 59, 0.15) 100%)",
+              border: isLight ? "1px solid #86efac" : "1px solid rgba(16, 185, 129, 0.35)",
+              borderRadius: 12,
+              display: "flex",
+              flexDirection: "column",
+              gap: 12,
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <Sparkles size={18} color="#10b981" />
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: isLight ? "#0f172a" : "#ffffff" }}>
+                    Stuck Entry & Head Code Route Tracer
+                  </div>
+                  <div style={{ fontSize: 11.5, color: isLight ? "#475569" : "#94a3b8" }}>
+                    Filter by Head Code (e.g. 2215, 2515, 3054) or official name to trace the exact file path and detect missing approvers.
+                  </div>
+                </div>
+              </div>
+
+              {headCodeQuery && (
+                <button
+                  className="btn-ghost"
+                  onClick={() => setHeadCodeQuery("")}
+                  style={{ padding: "4px 10px", fontSize: 11, color: "#ff334b" }}
+                >
+                  Reset Diagnostic Filter
+                </button>
+              )}
+            </div>
+
+            {/* Diagnostic Search Input & Preset Pills */}
+            <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+              <div style={{ position: "relative", flex: "1 1 320px" }}>
+                <Search
+                  size={15}
+                  style={{
+                    position: "absolute",
+                    left: 12,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    color: isLight ? "#64748b" : "#94a3b8",
+                  }}
+                />
+                <input
+                  type="text"
+                  className="input-base"
+                  value={headCodeQuery}
+                  onChange={(e) => setHeadCodeQuery(e.target.value)}
+                  placeholder="Type Head Code (e.g. 2215, 4215, 3054) or official name..."
+                  style={{
+                    paddingLeft: 36,
+                    height: 38,
+                    fontSize: 13,
+                    borderColor: headCodeQuery ? "#10b981" : undefined,
+                  }}
+                />
+              </div>
+
+              {/* Department Head Code Presets */}
+              <div style={{ display: "flex", gap: 5, flexWrap: "wrap", alignItems: "center" }}>
+                <span style={{ fontSize: 11, fontWeight: 600, color: isLight ? "#64748b" : "#94a3b8" }}>Presets:</span>
+                {(activeDepartment.headCodes || []).map((hc, idx) => {
+                  const codeNum = hc.split(" ")[0] || hc;
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => setHeadCodeQuery(codeNum)}
+                      style={{
+                        background: headCodeQuery === codeNum ? "#10b981" : isLight ? "#ffffff" : "rgba(255, 255, 255, 0.06)",
+                        border: headCodeQuery === codeNum ? "1px solid #10b981" : isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.1)",
+                        color: headCodeQuery === codeNum ? "#ffffff" : isLight ? "#334155" : "#f1f5f9",
+                        borderRadius: 14,
+                        padding: "3px 9px",
+                        fontSize: 11,
+                        cursor: "pointer",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {codeNum}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Diagnostic Results Summary & Alerts */}
+            {diagnosticResults && (
+              <div
+                style={{
+                  marginTop: 6,
+                  padding: "12px 14px",
+                  borderRadius: 8,
+                  background: isLight ? "#ffffff" : "rgba(0, 0, 0, 0.35)",
+                  border: diagnosticResults.missingSteps.length > 0
+                    ? "1px solid #f59e0b"
+                    : "1px solid #10b981",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 8,
+                }}
+              >
+                {diagnosticResults.missingSteps.length > 0 ? (
+                  <div style={{ display: "flex", alignItems: "flex-start", gap: 8, color: "#f59e0b", fontSize: 12 }}>
+                    <AlertTriangle size={16} style={{ flexShrink: 0, marginTop: 1 }} />
+                    <div>
+                      <strong>ROUTING GAP IDENTIFIED:</strong> Head Code query <strong>"{headCodeQuery}"</strong> is{" "}
+                      <span style={{ textDecoration: "underline" }}>unassigned</span> at{" "}
+                      <strong>
+                        {diagnosticResults.missingSteps.map((m) => `Step ${m.step} (${m.shortRole})`).join(", ")}
+                      </strong>.
+                      <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#cbd5e1", marginTop: 2 }}>
+                        If a voucher or bill under this head code is forwarded, it will stall and not appear in any approver's login inbox at these stages! Click "+ Add Official" below to map this head code.
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#10b981", fontSize: 12 }}>
+                    <CheckCircle2 size={16} style={{ flexShrink: 0 }} />
+                    <div>
+                      <strong>COMPLETE ROUTE VERIFIED:</strong> Head Code <strong>"{headCodeQuery}"</strong> has mapped approvers across all 8 sequential stages from Maker to Cashier!
+                    </div>
+                  </div>
+                )}
+
+                {/* Visual Route Pipeline Bar */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    overflowX: "auto",
+                    paddingTop: 4,
+                    fontSize: 11,
+                  }}
+                >
+                  {diagnosticResults.results.map((res, idx) => (
+                    <React.Fragment key={res.step}>
+                      <div
+                        style={{
+                          padding: "4px 8px",
+                          borderRadius: 6,
+                          background: res.hasMatch
+                            ? "rgba(16, 185, 129, 0.15)"
+                            : "rgba(239, 68, 68, 0.15)",
+                          border: res.hasMatch
+                            ? "1px solid rgba(16, 185, 129, 0.4)"
+                            : "1px solid rgba(239, 68, 68, 0.4)",
+                          color: res.hasMatch ? "#10b981" : "#ef4444",
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          minWidth: 90,
+                          textAlign: "center",
+                        }}
+                      >
+                        <span style={{ fontWeight: 700 }}>{res.step}. {res.shortRole}</span>
+                        <span style={{ fontSize: 9.5, opacity: 0.9 }}>
+                          {res.hasMatch ? res.matchingOfficials[0]?.name.split(" ")[1] || res.matchingOfficials[0]?.name : "UNMAPPED ⚠️"}
+                        </span>
+                      </div>
+                      {idx < diagnosticResults.results.length - 1 && (
+                        <ArrowRight size={11} color={isLight ? "#94a3b8" : "#64748b"} style={{ flexShrink: 0 }} />
+                      )}
+                    </React.Fragment>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Visual 8-Step Interactive Stepper Bar */}
+          <div
+            className="glass-card"
+            style={{
+              padding: "12px 16px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 8,
+              overflowX: "auto",
+            }}
+          >
+            {STANDARD_BILLING_STAGES.map((st, idx) => {
+              const isActive = activeStepFilter === st.step;
+              const officialCount = (activeDepartment.stages?.find((s) => s.step === st.step)?.officials || []).length;
+
+              return (
+                <React.Fragment key={st.step}>
+                  <button
+                    onClick={() => setActiveStepFilter(isActive ? null : st.step)}
+                    style={{
+                      background: isActive
+                        ? "linear-gradient(135deg, #ff334b 0%, #b91c1c 100%)"
+                        : isLight
+                        ? "#f8fafc"
+                        : "rgba(255, 255, 255, 0.04)",
+                      border: isActive
+                        ? "1px solid #ff334b"
+                        : isLight
+                        ? "1px solid #e2e8f0"
+                        : "1px solid rgba(255, 255, 255, 0.08)",
+                      color: isActive ? "#ffffff" : isLight ? "#0f172a" : "#f1f5f9",
+                      borderRadius: 8,
+                      padding: "8px 12px",
+                      cursor: "pointer",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: 2,
+                      minWidth: 105,
+                      flex: "1 1 0",
+                      transition: "all 0.15s ease",
+                    }}
+                  >
+                    <span style={{ fontSize: 9.5, opacity: 0.8, textTransform: "uppercase", fontWeight: 700 }}>
+                      Step {st.step}
+                    </span>
+                    <span style={{ fontSize: 12, fontWeight: 700, whiteSpace: "nowrap" }}>
+                      {st.shortRole}
+                    </span>
+                    <span style={{ fontSize: 10, opacity: 0.85 }}>
+                      {officialCount} {officialCount === 1 ? "Officer" : "Officers"}
+                    </span>
+                  </button>
+                  {idx < STANDARD_BILLING_STAGES.length - 1 && (
+                    <ArrowRight size={13} color={isLight ? "#cbd5e1" : "#475569"} style={{ flexShrink: 0 }} />
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </div>
+
+          {/* Stage by Stage Detailed Breakdown Cards (1 to 8) */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {(activeDepartment.stages || [])
+              .filter((st) => activeStepFilter === null || activeStepFilter === st.step)
+              .map((stage) => {
+                const officials = stage.officials || [];
+                const isMaker = stage.step === 1;
+                const isAuditor = stage.step === 4;
+
+                // Stage-specific troubleshooting tip
+                const troubleshootingTips = {
+                  1: "Maker Verification: Verify token status, Measurement Book (MB) entries, contractor GSTIN status, and fund availability.",
+                  2: "Checker Verification: Ensure technical rate verification, GST TDS, IT TDS, royalty deduction, and labor cess are checked.",
+                  3: "HOD Verification: Verify departmental technical sanction limit and check if Digital Signature Certificate (DSC) is active.",
+                  4: "FD Auditor Verification: In multi-auditor departments, verify that this bill's specific Head Code is mapped to this auditor's table.",
+                  5: "AAO Verification: Scrutinize treasury bill register entries (Namuna 9) and verify contract agreement compliance.",
+                  6: "AO / Dy. CAFO Verification: Review expenditure sanction compliance with Maharashtra Zilla Parishad Financial Rules.",
+                  7: "CAFO Verification: Confirm final drawing limits, Letter of Credit (LOC) allotment, and treasury drawal advice.",
+                  8: "Cashier Verification: Verify CMP portal batch generation, RTGS/NEFT transaction status, or physical cheque release.",
+                };
+
+                return (
+                  <div
+                    key={stage.step}
+                    className="glass-card"
+                    style={{
+                      padding: "18px 20px",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 14,
+                      borderLeft: `4px solid ${stage.step <= 3 ? "#3b82f6" : stage.step <= 6 ? "#f59e0b" : "#10b981"}`,
+                    }}
+                  >
+                    {/* Stage Header */}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 10 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <div
+                          style={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: 8,
+                            background: stage.step <= 3 ? "rgba(59, 130, 246, 0.15)" : stage.step <= 6 ? "rgba(245, 158, 11, 0.15)" : "rgba(16, 185, 129, 0.15)",
+                            color: stage.step <= 3 ? "#3b82f6" : stage.step <= 6 ? "#f59e0b" : "#10b981",
+                            border: `1px solid ${stage.step <= 3 ? "rgba(59, 130, 246, 0.3)" : stage.step <= 6 ? "rgba(245, 158, 11, 0.3)" : "rgba(16, 185, 129, 0.3)"}`,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontWeight: 800,
+                            fontSize: 14,
+                          }}
+                        >
+                          {stage.step}
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 16, fontWeight: 800, color: isLight ? "#0f172a" : "#ffffff", display: "flex", alignItems: "center", gap: 8 }}>
+                            {stage.roleName}
+                            <span style={{ fontSize: 11, fontWeight: 500, color: isLight ? "#64748b" : "#94a3b8" }}>
+                              ({stage.shortRole})
+                            </span>
+                          </div>
+                          <div style={{ fontSize: 12, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>
+                            {stage.levelDesc}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                        <span
+                          style={{
+                            fontSize: 11,
+                            fontWeight: 600,
+                            padding: "3px 8px",
+                            borderRadius: 12,
+                            background: isLight ? "#f1f5f9" : "rgba(255, 255, 255, 0.05)",
+                            color: isLight ? "#475569" : "#cbd5e1",
+                          }}
+                        >
+                          {officials.length} {officials.length === 1 ? "Official Mapped" : "Officials Mapped"}
+                        </span>
+                        {canEdit && (
+                          <button
+                            className="btn-ghost"
+                            onClick={() =>
+                              setModalState({
+                                type: "official",
+                                isAdd: true,
+                                step: stage.step,
+                                stageName: stage.roleName,
+                                deptHeadCodes: activeDepartment.headCodes || [],
+                              })
+                            }
+                            style={{ padding: "4px 10px", fontSize: 11.5, display: "inline-flex", alignItems: "center", gap: 4 }}
+                          >
+                            <Plus size={13} /> Add Official
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Officials Roster Cards for this Stage */}
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+                        gap: 12,
+                      }}
+                    >
+                      {officials.map((off) => {
+                        const isMatched =
+                          headCodeQuery &&
+                          ((off.headCodes || []).some((hc) => hc.toLowerCase().includes(activeHeadQueryClean) || hc.toLowerCase().includes("all head codes")) ||
+                            (off.name || "").toLowerCase().includes(activeHeadQueryClean));
+
+                        return (
+                          <div
+                            key={off.id}
+                            style={{
+                              padding: "14px 16px",
+                              borderRadius: 8,
+                              background: isMatched
+                                ? isLight
+                                  ? "rgba(16, 185, 129, 0.1)"
+                                  : "rgba(16, 185, 129, 0.12)"
+                                : isLight
+                                ? "#ffffff"
+                                : "rgba(255, 255, 255, 0.02)",
+                              border: isMatched
+                                ? "2px solid #10b981"
+                                : isLight
+                                ? "1px solid #e2e8f0"
+                                : "1px solid rgba(255, 255, 255, 0.06)",
+                              display: "flex",
+                              flexDirection: "column",
+                              justifyContent: "space-between",
+                              gap: 10,
+                              boxShadow: isMatched ? "0 0 14px rgba(16, 185, 129, 0.25)" : "none",
+                            }}
+                          >
+                            <div>
+                              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+                                <div>
+                                  <div style={{ fontSize: 14, fontWeight: 700, color: isLight ? "#0f172a" : "#ffffff", display: "flex", alignItems: "center", gap: 6 }}>
+                                    <UserCheck size={14} color={isMatched ? "#10b981" : "#ff334b"} />
+                                    {off.name}
+                                  </div>
+                                  <div style={{ fontSize: 11.5, color: isLight ? "#475569" : "#cbd5e1", fontWeight: 500, marginTop: 2 }}>
+                                    {off.designation}
+                                  </div>
+                                </div>
+
+                                {isMatched && (
+                                  <span
+                                    style={{
+                                      background: "#10b981",
+                                      color: "#ffffff",
+                                      fontSize: 9.5,
+                                      fontWeight: 700,
+                                      padding: "2px 7px",
+                                      borderRadius: 10,
+                                      display: "inline-flex",
+                                      alignItems: "center",
+                                      gap: 3,
+                                    }}
+                                  >
+                                    <CheckCircle size={10} /> Active Route
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Contact & Desk Details */}
+                              <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 8, fontSize: 11, color: isLight ? "#64748b" : "#94a3b8" }}>
+                                <div>
+                                  Login ID: <strong style={{ color: isLight ? "#0f172a" : "#f1f5f9" }}>{off.username}</strong>
+                                </div>
+                                {off.phone && (
+                                  <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                                    <Phone size={11} color="#10b981" />
+                                    <a
+                                      href={`tel:${off.phone}`}
+                                      style={{ color: isLight ? "#0f172a" : "#38bdf8", textDecoration: "none", fontWeight: 600 }}
+                                    >
+                                      {off.phone}
+                                    </a>
+                                  </div>
+                                )}
+                                {off.deskLocation && (
+                                  <div>
+                                    Desk: <strong>{off.deskLocation}</strong>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Mapped Head Codes */}
+                              <div style={{ marginTop: 10 }}>
+                                <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", color: isLight ? "#64748b" : "#94a3b8", marginBottom: 4 }}>
+                                  Assigned Head Codes:
+                                </div>
+                                <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                                  {(off.headCodes || []).map((hc, idx) => {
+                                    const hcMatches = headCodeQuery && (hc.toLowerCase().includes(activeHeadQueryClean) || hc.toLowerCase().includes("all head codes"));
+                                    return (
+                                      <span
+                                        key={idx}
+                                        style={{
+                                          background: hcMatches
+                                            ? "rgba(16, 185, 129, 0.25)"
+                                            : isLight
+                                            ? "#f1f5f9"
+                                            : "rgba(255, 255, 255, 0.05)",
+                                          border: hcMatches
+                                            ? "1px solid #10b981"
+                                            : isLight
+                                            ? "1px solid #cbd5e1"
+                                            : "1px solid rgba(255, 255, 255, 0.08)",
+                                          color: hcMatches ? "#10b981" : isLight ? "#334155" : "#cbd5e1",
+                                          fontSize: 9.5,
+                                          fontWeight: hcMatches ? 700 : 500,
+                                          padding: "2px 6px",
+                                          borderRadius: 4,
+                                        }}
+                                      >
+                                        {hc}
+                                      </span>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+
+                              {off.notes && (
+                                <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", marginTop: 8, fontStyle: "italic" }}>
+                                  "{off.notes}"
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Actions (If BA / Manager) */}
+                            {canEdit && (
+                              <div
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "flex-end",
+                                  gap: 6,
+                                  paddingTop: 8,
+                                  borderTop: isLight ? "1px solid #f1f5f9" : "1px solid rgba(255, 255, 255, 0.04)",
+                                }}
+                              >
+                                <button
+                                  className="btn-ghost"
+                                  onClick={() =>
+                                    setModalState({
+                                      type: "official",
+                                      isAdd: false,
+                                      step: stage.step,
+                                      stageName: stage.roleName,
+                                      official: off,
+                                      deptHeadCodes: activeDepartment.headCodes || [],
+                                    })
+                                  }
+                                  style={{ padding: "3px 8px", fontSize: 11, display: "inline-flex", alignItems: "center", gap: 3 }}
+                                >
+                                  <Pencil size={11} /> Edit
+                                </button>
+                                {officials.length > 1 && (
+                                  <button
+                                    className="btn-ghost"
+                                    onClick={() => handleRemoveOfficial(stage.step, off.id)}
+                                    style={{ padding: "3px 8px", fontSize: 11, color: "#ff334b", display: "inline-flex", alignItems: "center", gap: 3 }}
+                                  >
+                                    <Trash2 size={11} /> Remove
+                                  </button>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Troubleshooting Guide Box */}
+                    <div
+                      style={{
+                        padding: "10px 14px",
+                        borderRadius: 6,
+                        background: isLight ? "#f8fafc" : "rgba(255, 255, 255, 0.02)",
+                        border: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.05)",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        fontSize: 11.5,
+                        color: isLight ? "#475569" : "#94a3b8",
+                      }}
+                    >
+                      <HelpCircle size={15} color="#3b82f6" style={{ flexShrink: 0 }} />
+                      <div>
+                        <strong style={{ color: isLight ? "#0f172a" : "#f1f5f9" }}>Why might an entry stall at {stage.shortRole}?</strong>{" "}
+                        {troubleshootingTips[stage.step]}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+        </div>
+      )}
+
+      {/* MODALS */}
+      {modalState?.type === "official" && (
+        <Modal
+          title={modalState.isAdd ? `Add Official: ${modalState.stageName}` : `Edit Official: ${modalState.official?.name || "Official"}`}
+          icon={UserCheck}
+          onClose={() => setModalState(null)}
+        >
+          <FlowOfficialModal
+            initial={modalState.official}
+            stageName={modalState.stageName}
+            deptHeadCodes={modalState.deptHeadCodes}
+            onSave={handleSaveOfficial}
+            onCancel={() => setModalState(null)}
+            isLight={isLight}
+          />
+        </Modal>
+      )}
+
+      {modalState?.type === "add_dept" && (
+        <Modal
+          title={`Add Department Workflow: ${activeDistrict?.districtName || "District"}`}
+          icon={Building2}
+          onClose={() => setModalState(null)}
+        >
+          <AddDepartmentModal
+            onSave={handleSaveNewDepartment}
+            onCancel={() => setModalState(null)}
+            isLight={isLight}
+          />
+        </Modal>
+      )}
     </div>
   );
 }
