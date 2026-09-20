@@ -26,6 +26,9 @@ import {
   ArrowRight,
   Database,
   Bell,
+  BellRing,
+  Volume2,
+  VolumeX,
   LogOut,
   UserCheck,
   Lock,
@@ -223,6 +226,125 @@ function todayISO() {
 }
 function formatTimeNow() {
   return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+/* ---------------- Audio & Desktop Notification System ---------------- */
+let globalAudioCtx = null;
+
+function getAudioContext() {
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return null;
+    if (!globalAudioCtx || globalAudioCtx.state === "closed") {
+      globalAudioCtx = new AudioContextClass();
+    }
+    if (globalAudioCtx.state === "suspended") {
+      globalAudioCtx.resume().catch(() => {});
+    }
+    return globalAudioCtx;
+  } catch (e) {
+    return null;
+  }
+}
+
+// User-gesture audio unlocker so browsers allow sound
+if (typeof window !== "undefined") {
+  const unlockAudio = () => {
+    try {
+      const ctx = getAudioContext();
+      if (ctx && ctx.state === "suspended") {
+        ctx.resume().catch(() => {});
+      }
+    } catch (e) {}
+    window.removeEventListener("click", unlockAudio);
+    window.removeEventListener("keydown", unlockAudio);
+  };
+  window.addEventListener("click", unlockAudio, { passive: true });
+  window.addEventListener("keydown", unlockAudio, { passive: true });
+}
+
+export function playNotificationChime() {
+  try {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    if (ctx.state === "suspended") {
+      ctx.resume().catch(() => {});
+    }
+    const t0 = ctx.currentTime;
+
+    // Master volume node
+    const masterGain = ctx.createGain();
+    masterGain.gain.setValueAtTime(0.24, t0);
+    masterGain.connect(ctx.destination);
+
+    // Tone 1: 587.33 Hz (D5) - bright bell strike
+    const osc1 = ctx.createOscillator();
+    const gain1 = ctx.createGain();
+    osc1.type = "sine";
+    osc1.frequency.setValueAtTime(587.33, t0);
+    gain1.gain.setValueAtTime(0.2, t0);
+    gain1.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.28);
+    osc1.connect(gain1);
+    gain1.connect(masterGain);
+    osc1.start(t0);
+    osc1.stop(t0 + 0.3);
+
+    // Tone 2: 880 Hz (A5) - crisp harmonic chime
+    const osc2 = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+    osc2.type = "sine";
+    osc2.frequency.setValueAtTime(880.0, t0 + 0.09);
+    gain2.gain.setValueAtTime(0.0001, t0);
+    gain2.gain.setValueAtTime(0.26, t0 + 0.09);
+    gain2.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.65);
+    osc2.connect(gain2);
+    gain2.connect(masterGain);
+    osc2.start(t0 + 0.09);
+    osc2.stop(t0 + 0.7);
+
+    // Tone 3: 1174.66 Hz (D6) - subtle shimmering overtone
+    const osc3 = ctx.createOscillator();
+    const gain3 = ctx.createGain();
+    osc3.type = "triangle";
+    osc3.frequency.setValueAtTime(1174.66, t0 + 0.16);
+    gain3.gain.setValueAtTime(0.0001, t0);
+    gain3.gain.setValueAtTime(0.14, t0 + 0.16);
+    gain3.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.78);
+    osc3.connect(gain3);
+    gain3.connect(masterGain);
+    osc3.start(t0 + 0.16);
+    osc3.stop(t0 + 0.82);
+  } catch (err) {
+    console.warn("Audio chime could not play:", err);
+  }
+}
+
+export function sendDesktopNotification(title, options = {}) {
+  if (typeof window === "undefined" || !("Notification" in window)) {
+    return null;
+  }
+  if (Notification.permission === "granted") {
+    try {
+      const notif = new Notification(title, {
+        badge: "/favicon.ico",
+        icon: "/favicon.ico",
+        silent: true,
+        ...options,
+      });
+      if (options.onClick) {
+        notif.onclick = (e) => {
+          try {
+            window.focus();
+          } catch (err) {}
+          options.onClick(e);
+        };
+      }
+      return notif;
+    } catch (e) {
+      console.warn("Desktop notification display error:", e);
+    }
+  }
+  return null;
 }
 
 const DISTRICT_ALIASES = {
@@ -3664,6 +3786,113 @@ export default function App() {
     } catch (e) {}
   }, [theme]);
 
+  const [soundEnabled, setSoundEnabled] = useState(() => {
+    try {
+      const saved = localStorage.getItem("zpbdms_sound_enabled");
+      return saved !== null ? JSON.parse(saved) : true;
+    } catch (e) {
+      return true;
+    }
+  });
+
+  const [desktopNotifPerm, setDesktopNotifPerm] = useState(() => {
+    if (typeof window !== "undefined" && "Notification" in window) {
+      return Notification.permission;
+    }
+    return "unsupported";
+  });
+
+  const seenNotifIdsRef = useRef(new Set());
+  const isInitialNotifsLoadRef = useRef(true);
+
+  const toggleSound = () => {
+    setSoundEnabled((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("zpbdms_sound_enabled", JSON.stringify(next));
+      } catch (e) {}
+      if (next) playNotificationChime();
+      return next;
+    });
+  };
+
+  const requestDesktopNotificationPermission = async () => {
+    if (typeof window === "undefined" || !("Notification" in window)) {
+      alert("Desktop notifications are not supported in this browser environment.");
+      return "unsupported";
+    }
+    try {
+      const perm = await Notification.requestPermission();
+      setDesktopNotifPerm(perm);
+      if (perm === "granted") {
+        if (soundEnabled) playNotificationChime();
+        sendDesktopNotification("ZPBDMS Management Portal", {
+          body: "Desktop notifications enabled! You will receive alerts when tasks or QA test points are updated.",
+        });
+      }
+      return perm;
+    } catch (err) {
+      console.error("Error requesting desktop notification permission:", err);
+      return "denied";
+    }
+  };
+
+  // Sync desktop notification permission state
+  useEffect(() => {
+    if (typeof window !== "undefined" && "Notification" in window) {
+      setDesktopNotifPerm(Notification.permission);
+    }
+  }, []);
+
+  // When currentUser changes, seed the seen set so old historical alerts aren't triggered
+  useEffect(() => {
+    if (data?.notifications && Array.isArray(data.notifications)) {
+      data.notifications.forEach((n) => {
+        if (n && n.id) seenNotifIdsRef.current.add(n.id);
+      });
+    }
+  }, [currentUser?.id, currentUser?.name]);
+
+  // Real-time listener for incoming notifications
+  useEffect(() => {
+    if (!data?.notifications || !Array.isArray(data.notifications)) return;
+
+    if (isInitialNotifsLoadRef.current) {
+      data.notifications.forEach((n) => {
+        if (n && n.id) seenNotifIdsRef.current.add(n.id);
+      });
+      isInitialNotifsLoadRef.current = false;
+      return;
+    }
+
+    const freshNotifs = data.notifications.filter(
+      (n) => n && n.recipient === currentUser?.name && !n.read && !seenNotifIdsRef.current.has(n.id)
+    );
+
+    data.notifications.forEach((n) => {
+      if (n && n.id) seenNotifIdsRef.current.add(n.id);
+    });
+
+    if (freshNotifs.length > 0) {
+      if (soundEnabled) {
+        playNotificationChime();
+      }
+      if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
+        freshNotifs.forEach((n) => {
+          sendDesktopNotification(n.title || "ZPBDMS Management Alert", {
+            body: n.message || "New assignment or status update.",
+            tag: n.id,
+            onClick: () => {
+              if (n.type === "test_point") setTab("test_hub");
+              else if (n.type === "task" || n.type === "issue") setTab("my_desk");
+              markNotificationRead(n.id);
+            },
+          });
+        });
+      }
+    }
+  }, [data?.notifications, currentUser?.name, soundEnabled]);
+
   useEffect(() => {
     let mounted = true;
     let hasAutoMigratedDistricts = false;
@@ -5242,15 +5471,15 @@ export default function App() {
                     position: "absolute",
                     right: 0,
                     top: "120%",
-                    width: 360,
+                    width: 380,
                     zIndex: 100,
                     padding: 16,
                     borderTop: "2px solid #ff334b",
                     boxShadow: "0 20px 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(255, 51, 75, 0.15)",
                   }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                    <div style={{ fontWeight: 700, fontSize: 14, color: "#ffffff", display: "flex", alignItems: "center", gap: 6 }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: isLight ? "#0f172a" : "#ffffff", display: "flex", alignItems: "center", gap: 6 }}>
                       <Bell size={14} color="#ff334b" /> Notifications ({myNotifications.length})
                     </div>
                     <div style={{ display: "flex", gap: 8 }}>
@@ -5275,12 +5504,144 @@ export default function App() {
                           style={{
                             background: "transparent",
                             border: "none",
-                            color: "#94a3b8",
+                            color: isLight ? "#64748b" : "#94a3b8",
                             fontSize: 11,
                             cursor: "pointer",
                           }}
                         >
                           Clear
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Sound & Desktop Notification Quick Controls */}
+                  <div
+                    style={{
+                      padding: "8px 10px",
+                      marginBottom: 12,
+                      borderRadius: 8,
+                      background: isLight ? "rgba(0, 0, 0, 0.03)" : "rgba(255, 255, 255, 0.04)",
+                      border: isLight ? "1px solid rgba(0, 0, 0, 0.08)" : "1px solid rgba(255, 255, 255, 0.08)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: 6,
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    {/* Audio chime mute toggle + test */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                      <button
+                        onClick={toggleSound}
+                        title={soundEnabled ? "Click to mute chime sound" : "Click to unmute chime sound"}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 4,
+                          padding: "4px 8px",
+                          borderRadius: 6,
+                          background: soundEnabled ? "rgba(255, 51, 75, 0.14)" : "rgba(148, 163, 184, 0.12)",
+                          border: soundEnabled ? "1px solid rgba(255, 51, 75, 0.35)" : "1px solid rgba(148, 163, 184, 0.25)",
+                          color: soundEnabled ? "#ff4d63" : isLight ? "#64748b" : "#94a3b8",
+                          fontSize: 10.5,
+                          fontWeight: 700,
+                          cursor: "pointer",
+                          transition: "all 0.15s ease",
+                        }}
+                      >
+                        {soundEnabled ? <Volume2 size={12} /> : <VolumeX size={12} />}
+                        {soundEnabled ? "Sound ON" : "Muted"}
+                      </button>
+
+                      <button
+                        onClick={() => playNotificationChime()}
+                        title="Preview audio chime"
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 3,
+                          padding: "4px 7px",
+                          borderRadius: 6,
+                          background: "transparent",
+                          border: isLight ? "1px solid rgba(0, 0, 0, 0.12)" : "1px solid rgba(255, 255, 255, 0.12)",
+                          color: isLight ? "#64748b" : "#94a3b8",
+                          fontSize: 10.5,
+                          fontWeight: 500,
+                          cursor: "pointer",
+                        }}
+                      >
+                        Test Chime
+                      </button>
+                    </div>
+
+                    {/* Desktop Notification status / permission trigger */}
+                    <div>
+                      {desktopNotifPerm === "granted" ? (
+                        <button
+                          onClick={() => {
+                            sendDesktopNotification("ZPBDMS Notification Test", {
+                              body: "Desktop notification is active and working properly!",
+                            });
+                            playNotificationChime();
+                          }}
+                          title="Test desktop notification popup"
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 4,
+                            padding: "4px 8px",
+                            borderRadius: 6,
+                            background: "rgba(16, 185, 129, 0.12)",
+                            border: "1px solid rgba(16, 185, 129, 0.35)",
+                            color: "#10b981",
+                            fontSize: 10.5,
+                            fontWeight: 700,
+                            cursor: "pointer",
+                          }}
+                        >
+                          <CheckCircle2 size={11} />
+                          Desktop Alerts ON
+                        </button>
+                      ) : desktopNotifPerm === "denied" ? (
+                        <span
+                          title="Desktop notifications are blocked in your browser settings. Allow them to receive popups."
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 3,
+                            padding: "3px 6px",
+                            borderRadius: 6,
+                            background: "rgba(239, 68, 68, 0.1)",
+                            border: "1px solid rgba(239, 68, 68, 0.25)",
+                            color: "#f87171",
+                            fontSize: 10,
+                          }}
+                        >
+                          <AlertCircle size={11} />
+                          Alerts Blocked
+                        </span>
+                      ) : (
+                        <button
+                          onClick={requestDesktopNotificationPermission}
+                          title="Allow desktop notifications in your browser"
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 4,
+                            padding: "4px 8px",
+                            borderRadius: 6,
+                            background: "linear-gradient(135deg, #ff334b, #d90429)",
+                            border: "none",
+                            color: "#ffffff",
+                            fontSize: 10.5,
+                            fontWeight: 700,
+                            cursor: "pointer",
+                            boxShadow: "0 2px 8px rgba(255, 51, 75, 0.3)",
+                          }}
+                        >
+                          <BellRing size={11} />
+                          Enable Desktop Alerts
                         </button>
                       )}
                     </div>
