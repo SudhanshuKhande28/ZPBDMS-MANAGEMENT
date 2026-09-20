@@ -2139,7 +2139,7 @@ function DistrictBillForm({ initial, onSave, onCancel, isLight }) {
   );
 }
 
-function TestPointForm({ initial, users = TEAM_ROSTER, onSave, onCancel, isLight }) {
+function TestPointForm({ initial, users = TEAM_ROSTER, currentUser, onSave, onCancel, isLight }) {
   const userList = Array.isArray(users) && users.length > 0 ? users : TEAM_ROSTER;
   const devOptions = userList.map((u) => ({
     value: u.name,
@@ -2152,6 +2152,7 @@ function TestPointForm({ initial, users = TEAM_ROSTER, onSave, onCancel, isLight
       module: MODULES[0],
       scenario: "",
       assignedDate: todayISO(),
+      assignedBy: currentUser?.name || "Sudhanshu Khande",
       assignedDev: devOptions[1]?.value || devOptions[0]?.value || "Sankalp",
       devStatus: "Pending Dev Fix",
       tester: devOptions[2]?.value || devOptions[0]?.value || "Rutuja",
@@ -3933,40 +3934,104 @@ export default function App() {
   const saveIssue = (item) => {
     const isNew = !modal?.editing?.id;
     const targetId = modal?.editing?.id || uid();
-    const updatedIssues = addOrUpdate(data?.issues || [], item, modal?.editing?.id);
+    const itemWithReporter = {
+      ...item,
+      reportedBy: item.reportedBy || currentUser?.name || "Sudhanshu Khande",
+    };
+    const updatedIssues = addOrUpdate(data?.issues || [], itemWithReporter, modal?.editing?.id);
 
-    const newNotifications = [
-      ...notifyAssignee(
-        item.assignee,
-        isNew ? "New Issue Assignment" : "Issue Reassigned",
-        item.title,
-        "issue",
-        targetId
-      ),
-      ...(data.notifications || []),
-    ];
+    const newNotifications = [];
 
-    persist({ ...data, issues: updatedIssues, notifications: newNotifications });
+    // Notify assignee if someone else is assigned
+    if (item.assignee && item.assignee !== currentUser?.name) {
+      newNotifications.push({
+        id: uid(),
+        recipient: item.assignee,
+        sender: currentUser?.name || "Lead",
+        title: isNew ? "New Issue Assignment" : "Issue Reassigned",
+        message: `${currentUser?.name} assigned issue "${item.title}" to you (${item.priority} Priority).`,
+        type: "issue",
+        refId: targetId,
+        createdAt: formatTimeNow(),
+        read: false,
+      });
+    }
+
+    // If marked Resolved, notify the reporter/creator
+    if (item.status === "Resolved") {
+      const reporter = item.reportedBy || item.assignedBy || "Sudhanshu Khande";
+      if (reporter && reporter !== currentUser?.name) {
+        newNotifications.push({
+          id: uid(),
+          recipient: reporter,
+          sender: currentUser?.name || "Team Member",
+          title: `Issue Resolved: ${item.title}`,
+          message: `${currentUser?.name} marked this issue as Resolved.`,
+          type: "issue",
+          refId: targetId,
+          createdAt: formatTimeNow(),
+          read: false,
+        });
+      }
+    }
+
+    persist({
+      ...data,
+      issues: updatedIssues,
+      notifications: [...newNotifications, ...(data.notifications || [])].slice(0, 150),
+    });
     setModal(null);
   };
 
   const saveTask = (item) => {
     const isNew = !modal?.editing?.id;
     const targetId = modal?.editing?.id || uid();
-    const updatedTasks = addOrUpdate(data?.tasks || [], item, modal?.editing?.id);
+    const itemWithAssigner = {
+      ...item,
+      assignedBy: item.assignedBy || currentUser?.name || "Sudhanshu Khande",
+    };
+    const updatedTasks = addOrUpdate(data?.tasks || [], itemWithAssigner, modal?.editing?.id);
 
-    const newNotifications = [
-      ...notifyAssignee(
-        item.assignee,
-        isNew ? "New Directive Assigned" : "Directive Updated",
-        item.title,
-        "task",
-        targetId
-      ),
-      ...(data.notifications || []),
-    ];
+    const newNotifications = [];
 
-    persist({ ...data, tasks: updatedTasks, notifications: newNotifications });
+    // Notify assignee if someone else is assigned
+    if (item.assignee && item.assignee !== currentUser?.name) {
+      newNotifications.push({
+        id: uid(),
+        recipient: item.assignee,
+        sender: currentUser?.name || "Lead",
+        title: isNew ? "New Directive Assigned" : "Directive Updated",
+        message: `${currentUser?.name} assigned directive "${item.title}" to you. Target: ${item.dueDate || "Immediate"}.`,
+        type: "task",
+        refId: targetId,
+        createdAt: formatTimeNow(),
+        read: false,
+      });
+    }
+
+    // When task is marked Done, notify the one who assigned the task
+    if (item.status === "Done") {
+      const assigner = item.assignedBy || "Sudhanshu Khande";
+      if (assigner && assigner !== currentUser?.name) {
+        newNotifications.push({
+          id: uid(),
+          recipient: assigner,
+          sender: currentUser?.name || "Team Member",
+          title: `Task Completed: ${item.title}`,
+          message: `${currentUser?.name} marked task directive as Done.`,
+          type: "task",
+          refId: targetId,
+          createdAt: formatTimeNow(),
+          read: false,
+        });
+      }
+    }
+
+    persist({
+      ...data,
+      tasks: updatedTasks,
+      notifications: [...newNotifications, ...(data.notifications || [])].slice(0, 150),
+    });
     setModal(null);
   };
 
@@ -3998,14 +4063,71 @@ export default function App() {
 
   const saveTestPoint = (item) => {
     const isEdit = !!modal?.editing?.id;
-    const updatedTestPoints = addOrUpdate(data?.testPoints || [], item, modal?.editing?.id);
+    const targetId = modal?.editing?.id || uid();
+    const pointWithAssigner = {
+      ...item,
+      assignedBy: item.assignedBy || currentUser?.name || "Sudhanshu Khande",
+    };
+    const updatedTestPoints = addOrUpdate(data?.testPoints || [], pointWithAssigner, modal?.editing?.id);
+
+    const newNotifications = [];
+
+    // Notify Developer of assigned task
+    if (item.assignedDev && item.assignedDev !== currentUser?.name) {
+      newNotifications.push({
+        id: uid(),
+        recipient: item.assignedDev,
+        sender: currentUser?.name || "Lead",
+        title: `New Task Assigned: ${item.code || "Directive"}`,
+        message: `${currentUser?.name} (${currentUser?.role || "Lead"}) assigned ${item.code} (${item.module}) to you. Estimated: ${item.estimatedTime || "4 Hours"}.`,
+        type: "test_point",
+        refId: targetId,
+        createdAt: formatTimeNow(),
+        read: false,
+      });
+    }
+
+    // Also when tester assigns any task to Developers, notify/log for tester as requested!
+    const isTester = (currentUser?.role || "").toLowerCase().includes("tester") || currentUser?.name?.toLowerCase().includes("rutuja");
+    if (isTester) {
+      newNotifications.push({
+        id: uid(),
+        recipient: currentUser.name,
+        sender: "System",
+        title: `Directive Dispatched to Developer`,
+        message: `You assigned ${item.code || "Test Point"} (${item.module}) to developer ${item.assignedDev || "Developer"}.`,
+        type: "test_point",
+        refId: targetId,
+        createdAt: formatTimeNow(),
+        read: false,
+      });
+    } else if (item.tester && item.tester !== currentUser?.name) {
+      // Notify assigned QA tester
+      newNotifications.push({
+        id: uid(),
+        recipient: item.tester,
+        sender: currentUser?.name || "BA",
+        title: `Assigned QA Tester: ${item.code || "Directive"}`,
+        message: `${currentUser?.name} assigned you as QA Tester for ${item.code}. Developer: ${item.assignedDev || "None"}.`,
+        type: "test_point",
+        refId: targetId,
+        createdAt: formatTimeNow(),
+        read: false,
+      });
+    }
+
     const nextLogs = logActivity(
       isEdit ? "UPDATE" : "CREATE",
       "Dev-Test Matrix Point",
       item.code || item.scenario,
       `Assigned Dev: ${item.assignedDev || "None"} · Dev Status: ${item.devStatus || "Pending"} · Tester: ${item.tester || "None"} · Status: ${item.status || "Untested"}`
     );
-    persist({ ...data, testPoints: updatedTestPoints, auditLogs: nextLogs });
+    persist({
+      ...data,
+      testPoints: updatedTestPoints,
+      notifications: [...newNotifications, ...(data.notifications || [])].slice(0, 150),
+      auditLogs: nextLogs,
+    });
     setModal(null);
   };
 
@@ -4156,19 +4278,140 @@ export default function App() {
 
   const cycleIssueStatus = (item) => {
     const next = ISSUE_STATUSES[(ISSUE_STATUSES.indexOf(item.status) + 1) % ISSUE_STATUSES.length];
-    persist({ ...data, issues: (data?.issues || []).map((x) => (x.id === item.id ? { ...x, status: next } : x)) });
+    const newNotifications = [];
+    if (next === "Resolved") {
+      const reporter = item.reportedBy || item.assignedBy || "Sudhanshu Khande";
+      if (reporter && reporter !== currentUser?.name) {
+        newNotifications.push({
+          id: uid(),
+          recipient: reporter,
+          sender: currentUser?.name || "Team Member",
+          title: `Issue Resolved: ${item.title}`,
+          message: `${currentUser?.name} marked this issue as Resolved.`,
+          type: "issue",
+          refId: item.id,
+          createdAt: formatTimeNow(),
+          read: false,
+        });
+      }
+    }
+    persist({
+      ...data,
+      issues: (data?.issues || []).map((x) => (x.id === item.id ? { ...x, status: next } : x)),
+      notifications: [...newNotifications, ...(data.notifications || [])].slice(0, 150),
+    });
   };
+
   const cycleTaskStatus = (item) => {
     const next = TASK_STATUSES[(TASK_STATUSES.indexOf(item.status) + 1) % TASK_STATUSES.length];
-    persist({ ...data, tasks: (data?.tasks || []).map((x) => (x.id === item.id ? { ...x, status: next } : x)) });
+    const newNotifications = [];
+    if (next === "Done") {
+      const assigner = item.assignedBy || "Sudhanshu Khande";
+      if (assigner && assigner !== currentUser?.name) {
+        newNotifications.push({
+          id: uid(),
+          recipient: assigner,
+          sender: currentUser?.name || "Team Member",
+          title: `Task Completed: ${item.title}`,
+          message: `${currentUser?.name} marked task directive as Done.`,
+          type: "task",
+          refId: item.id,
+          createdAt: formatTimeNow(),
+          read: false,
+        });
+      }
+    }
+    persist({
+      ...data,
+      tasks: (data?.tasks || []).map((x) => (x.id === item.id ? { ...x, status: next } : x)),
+      notifications: [...newNotifications, ...(data.notifications || [])].slice(0, 150),
+    });
   };
 
   const cycleTestPointStatus = (tp) => {
     const next = TEST_STATUSES[(TEST_STATUSES.indexOf(tp.status) + 1) % TEST_STATUSES.length];
     const nextLogs = logActivity("UPDATE", "Dev-Test Matrix Point", tp.code || tp.scenario, `Cycled test status to ${next}`);
+    const newNotifications = [];
+
+    // If marked Failed or Retest:
+    if (next === "Failed" || next === "Retest") {
+      // 1. Notify Developer that fix / retest is required
+      if (tp.assignedDev && tp.assignedDev !== currentUser?.name) {
+        newNotifications.push({
+          id: uid(),
+          recipient: tp.assignedDev,
+          sender: currentUser?.name || "Tester",
+          title: `QA Retest Required: ${tp.code}`,
+          message: `${currentUser?.name} marked test point as "${next}". Retest remarks: ${tp.actualResult || tp.finalRetestRemarks || "Verification failed, please inspect."}`,
+          type: "test_point",
+          refId: tp.id,
+          createdAt: formatTimeNow(),
+          read: false,
+        });
+      }
+      // 2. Confirmation shown to tester as requested
+      newNotifications.push({
+        id: uid(),
+        recipient: currentUser?.name,
+        sender: "System",
+        title: `Retest Directive Sent: ${tp.code}`,
+        message: `Status marked as "${next}". Retest defect alert sent to developer ${tp.assignedDev || "Developer"}.`,
+        type: "test_point",
+        refId: tp.id,
+        createdAt: formatTimeNow(),
+        read: false,
+      });
+      // 3. Notify Assigner (BA)
+      const assigner = tp.assignedBy || "Sudhanshu Khande";
+      if (assigner && assigner !== currentUser?.name && assigner !== tp.assignedDev) {
+        newNotifications.push({
+          id: uid(),
+          recipient: assigner,
+          sender: currentUser?.name || "Tester",
+          title: `Defect Flagged on Matrix: ${tp.code}`,
+          message: `${currentUser?.name} marked "${next}" on ${tp.code} (Dev: ${tp.assignedDev || "Unassigned"}).`,
+          type: "test_point",
+          refId: tp.id,
+          createdAt: formatTimeNow(),
+          read: false,
+        });
+      }
+    } else if (next === "Passed") {
+      // 1. Notify Developer
+      if (tp.assignedDev && tp.assignedDev !== currentUser?.name) {
+        newNotifications.push({
+          id: uid(),
+          recipient: tp.assignedDev,
+          sender: currentUser?.name || "Tester",
+          title: `QA Verified & Passed: ${tp.code}`,
+          message: `Great job! ${currentUser?.name} verified and marked ${tp.code} as PASSED.`,
+          type: "test_point",
+          refId: tp.id,
+          createdAt: formatTimeNow(),
+          read: false,
+        });
+      }
+      // 2. Notify Assigner (BA)
+      const assigner = tp.assignedBy || "Sudhanshu Khande";
+      if (assigner && assigner !== currentUser?.name) {
+        newNotifications.push({
+          id: uid(),
+          recipient: assigner,
+          sender: currentUser?.name || "Tester",
+          title: `Point Passed Verification: ${tp.code}`,
+          message: `${currentUser?.name} verified and passed ${tp.code}.`,
+          type: "test_point",
+          refId: tp.id,
+          createdAt: formatTimeNow(),
+          read: false,
+        });
+      }
+    }
+
     persist({
       ...data,
       testPoints: (data?.testPoints || []).map((t) => (t.id === tp.id ? { ...t, status: next, updatedAt: todayISO() } : t)),
+      notifications: [...newNotifications, ...(data.notifications || [])].slice(0, 150),
       auditLogs: nextLogs,
     });
   };
@@ -4178,24 +4421,53 @@ export default function App() {
     const updatedPoints = (data?.testPoints || []).map((t) =>
       t.id === id ? { ...t, ...resolution, updatedAt: todayISO() } : t
     );
+    const assignerName = target?.assignedBy || "Sudhanshu Khande";
     const testerName = target?.tester || "Rutuja";
-    const newNotifications = [
-      ...notifyAssignee(
-        testerName,
-        `QA Point Resolved: ${target?.code || "Test Point"}`,
-        `${currentUser.name} marked "${resolution.devStatus}": ${resolution.devRemark || "No remark provided."}`,
-        "test_point",
-        id
-      ),
-      ...(data.notifications || []),
-    ];
+
+    const newNotifications = [];
+
+    // 1. Notify the one who assigned the task (BA / Assigner)
+    if (assignerName && assignerName !== currentUser?.name) {
+      newNotifications.push({
+        id: uid(),
+        recipient: assignerName,
+        sender: currentUser?.name || "Developer",
+        title: `Task Resolved by Developer: ${target?.code || "Test Point"}`,
+        message: `${currentUser?.name} marked "${resolution.devStatus || "Resolved / Ready for Retest"}": ${resolution.devRemark || "Ready for QA retest and verification."}`,
+        type: "test_point",
+        refId: id,
+        createdAt: formatTimeNow(),
+        read: false,
+      });
+    }
+
+    // 2. Notify the assigned tester that task is ready for retest
+    if (testerName && testerName !== currentUser?.name && testerName !== assignerName) {
+      newNotifications.push({
+        id: uid(),
+        recipient: testerName,
+        sender: currentUser?.name || "Developer",
+        title: `Ready for Retest: ${target?.code || "Test Point"}`,
+        message: `${currentUser?.name} resolved this directive. Ready for QA verification: ${resolution.devRemark || "Please verify on staging."}`,
+        type: "test_point",
+        refId: id,
+        createdAt: formatTimeNow(),
+        read: false,
+      });
+    }
+
     const nextLogs = logActivity(
       "UPDATE",
       "Dev-Test Matrix Point",
       target?.code || "Test Point",
       `Status updated to: ${resolution.devStatus || "Updated"}. Remarks: ${resolution.devRemark || ""}`
     );
-    persist({ ...data, testPoints: updatedPoints, notifications: newNotifications, auditLogs: nextLogs });
+    persist({
+      ...data,
+      testPoints: updatedPoints,
+      notifications: [...newNotifications, ...(data.notifications || [])].slice(0, 150),
+      auditLogs: nextLogs,
+    });
     setModal(null);
   };
 
@@ -5026,6 +5298,7 @@ export default function App() {
                           onClick={() => {
                             markNotificationRead(n.id);
                             if (n.type === "issue" || n.type === "task") setTab("my_desk");
+                            if (n.type === "test_point") setTab("test_hub");
                             setShowNotifications(false);
                           }}
                           style={{
@@ -5378,8 +5651,10 @@ export default function App() {
           <TestPointForm
             initial={modal.editing}
             users={data?.users || TEAM_ROSTER}
+            currentUser={currentUser}
             onSave={saveTestPoint}
             onCancel={() => setModal(null)}
+            isLight={isLight}
           />
         </Modal>
       )}
