@@ -2973,7 +2973,7 @@ function LoginScreen({ onLogin, theme = "dark", toggleTheme, users }) {
         }}
       >
         <Sparkles size={13} color="#ff334b" />
-        <span>Developed by <strong style={{ color: isLight ? "#0f172a" : "#ffffff" }}>Sudhanshu Khande</strong></span>
+        <span>Developed and Architecture by <strong style={{ color: isLight ? "#0f172a" : "#ffffff" }}>Sudhanshu Khande</strong></span>
       </div>
 
       <div
@@ -3483,7 +3483,7 @@ function DynamicCyberLanding({ user, onEnter }) {
                 marginBottom: 16,
               }}
             >
-              <Sparkles size={14} color="#ff334b" /> SYSTEM ARCHITECT & MASTER LEAD
+              <Landmark size={14} color="#ff334b" /> MAHARASHTRA ZILLA PARISHAD BDMS
             </div>
 
             {/* Massive Glowing Title */}
@@ -3491,28 +3491,29 @@ function DynamicCyberLanding({ user, onEnter }) {
               className="holographic-text"
               style={{
                 fontFamily: "'Outfit', sans-serif",
-                fontSize: 42,
+                fontSize: 36,
                 fontWeight: 900,
-                letterSpacing: "1.5px",
+                letterSpacing: "1px",
                 margin: "0 0 10px 0",
                 textTransform: "uppercase",
                 filter: "drop-shadow(0 0 25px rgba(255, 51, 75, 0.7))",
               }}
             >
-              DEVELOPED BY SUDHANSHU KHANDE
+              WELCOME TO ZPBDMS MANAGEMENT PORTAL
             </h1>
 
-            {/* Sub-banner with dynamic role and project name */}
+            {/* Sub-banner with smaller architecture credit */}
             <div
               style={{
-                fontSize: 16,
-                color: "#f8fafc",
-                fontWeight: 600,
-                letterSpacing: "0.8px",
-                marginBottom: 24,
+                fontSize: 13.5,
+                color: "#94a3b8",
+                fontWeight: 500,
+                letterSpacing: "0.5px",
+                marginBottom: 22,
               }}
             >
-              Main Admin / Business Analyst · <span style={{ color: "#ff6479" }}>ZPBDMS Management Tool</span>
+              Developed and Architecture by{" "}
+              <strong style={{ color: "#ffffff", fontWeight: 700 }}>Sudhanshu Khande</strong>
             </div>
 
             {/* Equalizer Audio / Data Pulsing Bars */}
@@ -4804,10 +4805,10 @@ export default function App() {
             }}
           >
             <div style={{ fontSize: 9, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.8px", fontWeight: 700 }}>
-              System Architect
+              Architecture & Development
             </div>
-            <div style={{ fontSize: 11.5, fontWeight: 700, color: "#ffffff", marginTop: 2 }}>
-              Developed by <span style={{ color: "#ff334b" }}>Sudhanshu Khande</span>
+            <div style={{ fontSize: 11, fontWeight: 600, color: "#cbd5e1", marginTop: 2 }}>
+              Sudhanshu Khande
             </div>
           </div>
         </div>
@@ -5321,7 +5322,7 @@ export default function App() {
           <div>Maharashtra Zilla Parishad BDMS · Operations & Governance</div>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <Sparkles size={13} color="#ff334b" />
-            Developed by <strong style={{ color: isLight ? "#0f172a" : "#ffffff" }}>Sudhanshu Khande</strong>
+            Developed and Architecture by <strong style={{ color: isLight ? "#0f172a" : "#ffffff" }}>Sudhanshu Khande</strong>
           </div>
         </footer>
       </main>
