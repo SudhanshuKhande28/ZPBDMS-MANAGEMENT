@@ -97,6 +97,59 @@ import {
    Red & White Fusion · High Graphics · Developed by Sudhanshu Khande
 ----------------------------------------------------------------*/
 
+const THEME_PROFILES = [
+  {
+    key: "dark",
+    name: "Cyber Obsidian",
+    badge: "Signature Dark",
+    desc: "Cyberpunk obsidian black & crimson command center.",
+    color: "#ff334b",
+    bg: "#08090d",
+  },
+  {
+    key: "light",
+    name: "Executive Clarity",
+    badge: "Daylight Mode",
+    desc: "Clean executive slate & white for bright daylight office desks.",
+    color: "#d97706",
+    bg: "#f1f5f9",
+  },
+  {
+    key: "emerald",
+    name: "Secretariat Emerald",
+    badge: "Gov-Tech State",
+    desc: "Prestige Maharashtra Government Mantralaya forest green & gold.",
+    color: "#10b981",
+    bg: "#03140e",
+  },
+  {
+    key: "oled",
+    name: "Midnight OLED",
+    badge: "True Black 0%",
+    desc: "Pure pitch black (#000000) for zero battery drain on OLED screens.",
+    color: "#ff1a35",
+    bg: "#000000",
+  },
+];
+
+const getThemeProfile = (themeKey) => {
+  return THEME_PROFILES.find((p) => p.key === themeKey) || THEME_PROFILES[0];
+};
+
+const renderThemeIcon = (themeKey, size = 14) => {
+  switch (themeKey) {
+    case "light":
+      return <Sun size={size} color="#f59e0b" />;
+    case "emerald":
+      return <ShieldCheck size={size} color="#10b981" />;
+    case "oled":
+      return <Sparkles size={size} color="#ff334b" />;
+    case "dark":
+    default:
+      return <Moon size={size} color="#fbbf24" />;
+  }
+};
+
 const TEAM_ROSTER = [
   {
     id: "u1",
@@ -870,6 +923,57 @@ const MAHARASHTRA_DIVISIONS = {
   ],
   "Amravati Division": ["Amravati", "Akola", "Buldhana", "Yavatmal", "Washim"],
   "Nagpur Division": ["Nagpur", "Wardha", "Bhandara", "Gondia", "Chandrapur", "Gadchiroli"],
+};
+
+const DIVISION_CONFIG = {
+  "Pune Division": {
+    marathi: "पुणे विभाग",
+    color: "#3b82f6",
+    border: "rgba(59, 130, 246, 0.35)",
+    bgSubtle: "rgba(59, 130, 246, 0.08)",
+    badgeBg: "rgba(59, 130, 246, 0.15)",
+    desc: "Western Maharashtra · Sahyadri & Krishna Basin (5 ZPs)",
+  },
+  "Konkan Division": {
+    marathi: "कोकण विभाग",
+    color: "#14b8a6",
+    border: "rgba(20, 184, 166, 0.35)",
+    bgSubtle: "rgba(20, 184, 166, 0.08)",
+    badgeBg: "rgba(20, 184, 166, 0.15)",
+    desc: "Coastal Arabian Littoral · Mumbai Metropolitan Fringe (5 ZPs)",
+  },
+  "Nashik Division": {
+    marathi: "नाशिक विभाग",
+    color: "#f59e0b",
+    border: "rgba(245, 158, 11, 0.35)",
+    bgSubtle: "rgba(245, 158, 11, 0.08)",
+    badgeBg: "rgba(245, 158, 11, 0.15)",
+    desc: "Khandesh & Northern Plateau · Godavari Headwaters (5 ZPs)",
+  },
+  "Chhatrapati Sambhajinagar Division": {
+    marathi: "छत्रपती संभाजीनगर विभाग",
+    color: "#10b981",
+    border: "rgba(16, 185, 129, 0.35)",
+    bgSubtle: "rgba(16, 185, 129, 0.08)",
+    badgeBg: "rgba(16, 185, 129, 0.15)",
+    desc: "Marathwada Central · Godavari & Purna River Valleys (8 ZPs)",
+  },
+  "Amravati Division": {
+    marathi: "अमरावती विभाग",
+    color: "#a855f7",
+    border: "rgba(168, 85, 247, 0.35)",
+    bgSubtle: "rgba(168, 85, 247, 0.08)",
+    badgeBg: "rgba(168, 85, 247, 0.15)",
+    desc: "Western Vidarbha · Satpura Foothills & Cotton Belt (5 ZPs)",
+  },
+  "Nagpur Division": {
+    marathi: "नागपूर विभाग",
+    color: "#f43f5e",
+    border: "rgba(244, 63, 94, 0.35)",
+    bgSubtle: "rgba(244, 63, 94, 0.08)",
+    badgeBg: "rgba(244, 63, 94, 0.15)",
+    desc: "Eastern Vidarbha · Wainganga Basin & Mineral Forests (6 ZPs)",
+  },
 };
 
 function getDistrictDivision(districtName) {
@@ -3909,6 +4013,7 @@ function SettingsModal({
   isAppInstalled,
   onTriggerInstall,
   onOpenIOSGuide,
+  onSelectTheme,
 }) {
   const [activeTab, setActiveTab] = useState("notifications"); // "notifications" | "display" | "security" | "backup" | "telemetry" | "mobile"
 
@@ -4259,38 +4364,93 @@ function SettingsModal({
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               <div
                 style={{
-                  padding: "14px 16px",
-                  borderRadius: 10,
+                  padding: "16px",
+                  borderRadius: 12,
                   background: isLight ? "#f8fafc" : "rgba(255, 255, 255, 0.03)",
                   border: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
                   display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
+                  flexDirection: "column",
+                  gap: 12,
                 }}
               >
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: 13.5, color: isLight ? "#0f172a" : "#ffffff", display: "flex", alignItems: "center", gap: 6 }}>
-                    {isLight ? <Sun size={15} color="#f59e0b" /> : <Moon size={15} color="#fbbf24" />} Portal Interface Theme
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: 13.5, color: isLight ? "#0f172a" : "#ffffff", display: "flex", alignItems: "center", gap: 6 }}>
+                      <Sparkles size={15} color="#ff334b" /> Curated Portal Interface Themes
+                    </div>
+                    <div style={{ fontSize: 12, color: isLight ? "#64748b" : "#94a3b8", marginTop: 3 }}>
+                      Choose your preferred aesthetic. Preserves 100% data fidelity across all 34 ZP modules.
+                    </div>
                   </div>
-                  <div style={{ fontSize: 12, color: isLight ? "#64748b" : "#94a3b8", marginTop: 3 }}>
-                    Toggle between Cyberpunk Obsidian Dark and Executive Clarity Light modes.
-                  </div>
+                  <button
+                    type="button"
+                    onClick={toggleTheme}
+                    className="btn-ghost-dark"
+                    style={{
+                      padding: "6px 12px",
+                      fontSize: 11.5,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                    }}
+                  >
+                    <RefreshCw size={13} />
+                    <span>Cycle Theme</span>
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={toggleTheme}
-                  className="btn-ghost-dark"
-                  style={{
-                    padding: "7px 14px",
-                    fontSize: 12,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                  }}
-                >
-                  {isLight ? <Moon size={14} /> : <Sun size={14} />}
-                  <span>{isLight ? "Switch to Dark" : "Switch to Light"}</span>
-                </button>
+
+                {/* 4 Theme Cards */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 10, marginTop: 4 }}>
+                  {THEME_PROFILES.map((tp) => {
+                    const isSelected = theme === tp.key;
+                    return (
+                      <div
+                        key={tp.key}
+                        onClick={() => onSelectTheme && onSelectTheme(tp.key)}
+                        style={{
+                          background: tp.bg,
+                          borderRadius: 10,
+                          padding: "12px 14px",
+                          border: isSelected ? `2px solid ${tp.color}` : "1px solid rgba(255, 255, 255, 0.12)",
+                          cursor: "pointer",
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 6,
+                          position: "relative",
+                          boxShadow: isSelected ? `0 0 16px ${tp.color}44` : "none",
+                          transition: "all 0.2s ease",
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: tp.key === "light" ? "#0f172a" : "#ffffff" }}>
+                            {tp.name}
+                          </span>
+                          {isSelected && (
+                            <span
+                              style={{
+                                background: tp.color,
+                                color: "#ffffff",
+                                fontSize: 9.5,
+                                fontWeight: 800,
+                                padding: "2px 7px",
+                                borderRadius: 10,
+                                textTransform: "uppercase",
+                              }}
+                            >
+                              Active
+                            </span>
+                          )}
+                        </div>
+                        <div style={{ fontSize: 10.5, fontWeight: 600, color: tp.color }}>
+                          {tp.badge}
+                        </div>
+                        <div style={{ fontSize: 11, color: tp.key === "light" ? "#475569" : "#94a3b8", lineHeight: 1.35 }}>
+                          {tp.desc}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
 
               <div
@@ -4986,10 +5146,10 @@ function LoginScreen({ onLogin, theme = "dark", toggleTheme, users, onDispatchAd
             boxShadow: "0 4px 14px rgba(0, 0, 0, 0.08)",
             transition: "all 0.15s ease",
           }}
-          title={isLight ? "Switch to Dark Mode" : "Switch to Light Mode"}
+          title={`Active: ${getThemeProfile(theme).name} — Tap to switch theme`}
         >
-          {isLight ? <Moon size={15} color="#475569" /> : <Sun size={15} color="#fbbf24" />}
-          <span>{isLight ? "Light Theme" : "Dark Theme"}</span>
+          {renderThemeIcon(theme, 15)}
+          <span>{getThemeProfile(theme).name}</span>
         </button>
       )}
 
@@ -5723,7 +5883,9 @@ export default function App() {
 
   const toggleTheme = () => {
     setTheme((prev) => {
-      const next = prev === "dark" ? "light" : "dark";
+      const themes = ["dark", "light", "emerald", "oled"];
+      const currentIndex = themes.indexOf(prev);
+      const next = themes[(currentIndex + 1) % themes.length] || "dark";
       try {
         localStorage.setItem("zpbdms_theme", next);
       } catch (e) {}
@@ -5731,8 +5893,18 @@ export default function App() {
     });
   };
 
+  const selectTheme = (newTheme) => {
+    const validThemes = ["dark", "light", "emerald", "oled"];
+    if (!validThemes.includes(newTheme)) return;
+    setTheme(newTheme);
+    try {
+      localStorage.setItem("zpbdms_theme", newTheme);
+    } catch (e) {}
+  };
+
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
+    document.documentElement.className = `theme-${theme}`;
     try {
       localStorage.setItem("zpbdms_theme", theme);
     } catch (e) {}
@@ -5874,8 +6046,8 @@ export default function App() {
 
   // Keep native Android status bar background and icons in sync with active theme
   useEffect(() => {
-    setupStatusBar(isLight);
-  }, [isLight]);
+    setupStatusBar(theme);
+  }, [theme]);
 
   // Native Android hardware back-button hierarchical navigation listener
   useEffect(() => {
@@ -7775,11 +7947,11 @@ export default function App() {
                 boxShadow: isLight ? "0 2px 8px rgba(0, 0, 0, 0.04)" : "none",
                 transition: "all 0.15s ease",
               }}
-              title={isLight ? "Switch to Dark Theme" : "Switch to Light Theme"}
+              title={`Active: ${getThemeProfile(theme).name} — Tap to switch theme`}
             >
-              {isLight ? <Moon size={14} color="#475569" /> : <Sun size={14} color="#fbbf24" />}
+              {renderThemeIcon(theme, 14)}
               <span className="header-btn-label" style={{ color: isLight ? "#475569" : "#cbd5e1" }}>
-                {isLight ? "Light Mode" : "Dark Mode"}
+                {getThemeProfile(theme).name}
               </span>
             </button>
 
@@ -8601,9 +8773,10 @@ export default function App() {
                     justifyContent: "center",
                     gap: 7,
                   }}
+                  title={`Active: ${getThemeProfile(theme).name} — Tap to switch theme`}
                 >
-                  {isLight ? <Moon size={14} color="#475569" /> : <Sun size={14} color="#fbbf24" />}
-                  {isLight ? "Dark Mode" : "Light Mode"}
+                  {renderThemeIcon(theme, 14)}
+                  <span>{getThemeProfile(theme).name}</span>
                 </button>
               </div>
 
@@ -8858,6 +9031,7 @@ export default function App() {
           isAppInstalled={isAppInstalled}
           onTriggerInstall={handleTriggerInstall}
           onOpenIOSGuide={() => setShowIOSGuide(true)}
+          onSelectTheme={selectTheme}
         />
       )}
 
@@ -13039,6 +13213,7 @@ function AddDepartmentModal({ onSave, onCancel, isLight }) {
 
 function DistrictFlowsView({ flows = [], onSaveFlows, currentUser, isSudhanshu, isManager, isCEO, isLight }) {
   const [viewLevel, setViewLevel] = useState("districts"); // "districts" | "departments" | "flow"
+  const [viewMode, setViewMode] = useState("map"); // "map" | "grid"
   const [selectedDistrictId, setSelectedDistrictId] = useState(null);
   const [selectedDeptId, setSelectedDeptId] = useState(null);
 
@@ -13338,37 +13513,95 @@ function DistrictFlowsView({ flows = [], onSaveFlows, currentUser, isSudhanshu, 
               gap: 12,
             }}
           >
-            <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-              <div style={{ position: "relative", flex: "1 1 280px" }}>
-                <Search
-                  size={15}
-                  style={{
-                    position: "absolute",
-                    left: 12,
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    color: isLight ? "#64748b" : "#94a3b8",
-                  }}
-                />
-                <input
-                  type="text"
-                  className="input-base"
-                  value={districtSearch}
-                  onChange={(e) => setDistrictSearch(e.target.value)}
-                  placeholder="Search district name (e.g. Pune, Ahilyanagar, Nashik, Satara)..."
-                  style={{ paddingLeft: 36 }}
-                />
+            <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", justifyContent: "space-between" }}>
+              <div style={{ display: "flex", gap: 10, alignItems: "center", flex: "1 1 280px" }}>
+                <div style={{ position: "relative", flex: 1, maxWidth: 460 }}>
+                  <Search
+                    size={15}
+                    style={{
+                      position: "absolute",
+                      left: 12,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      color: isLight ? "#64748b" : "#94a3b8",
+                    }}
+                  />
+                  <input
+                    type="text"
+                    className="input-base"
+                    value={districtSearch}
+                    onChange={(e) => setDistrictSearch(e.target.value)}
+                    placeholder="Search district name (e.g. Pune, Ahilyanagar, Nashik, Satara)..."
+                    style={{ paddingLeft: 36 }}
+                  />
+                </div>
+
+                {districtSearch && (
+                  <button
+                    className="btn-ghost"
+                    onClick={() => setDistrictSearch("")}
+                    style={{ padding: "6px 12px", fontSize: 12 }}
+                  >
+                    Clear
+                  </button>
+                )}
               </div>
 
-              {districtSearch && (
+              {/* View Mode Switcher */}
+              <div
+                style={{
+                  display: "inline-flex",
+                  background: isLight ? "#f1f5f9" : "rgba(255, 255, 255, 0.05)",
+                  padding: 3,
+                  borderRadius: 8,
+                  border: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
+                }}
+              >
                 <button
-                  className="btn-ghost"
-                  onClick={() => setDistrictSearch("")}
-                  style={{ padding: "6px 12px", fontSize: 12 }}
+                  type="button"
+                  onClick={() => setViewMode("map")}
+                  style={{
+                    border: "none",
+                    background: viewMode === "map" ? (isLight ? "#ffffff" : "rgba(255, 51, 75, 0.25)") : "transparent",
+                    color: viewMode === "map" ? (isLight ? "#0f172a" : "#ffffff") : (isLight ? "#64748b" : "#94a3b8"),
+                    padding: "6px 13px",
+                    borderRadius: 6,
+                    fontSize: 12,
+                    fontWeight: viewMode === "map" ? 700 : 500,
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    boxShadow: viewMode === "map" ? (isLight ? "0 1px 4px rgba(0,0,0,0.1)" : "0 0 12px rgba(255,51,75,0.3)") : "none",
+                    transition: "all 0.15s ease",
+                  }}
                 >
-                  Clear Search
+                  <MapPin size={13} color={viewMode === "map" ? "#ff334b" : undefined} />
+                  <span>Regional Heatmap</span>
                 </button>
-              )}
+                <button
+                  type="button"
+                  onClick={() => setViewMode("grid")}
+                  style={{
+                    border: "none",
+                    background: viewMode === "grid" ? (isLight ? "#ffffff" : "rgba(255, 51, 75, 0.25)") : "transparent",
+                    color: viewMode === "grid" ? (isLight ? "#0f172a" : "#ffffff") : (isLight ? "#64748b" : "#94a3b8"),
+                    padding: "6px 13px",
+                    borderRadius: 6,
+                    fontSize: 12,
+                    fontWeight: viewMode === "grid" ? 700 : 500,
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    boxShadow: viewMode === "grid" ? (isLight ? "0 1px 4px rgba(0,0,0,0.1)" : "0 0 12px rgba(255,51,75,0.3)") : "none",
+                    transition: "all 0.15s ease",
+                  }}
+                >
+                  <LayoutGrid size={13} color={viewMode === "grid" ? "#ff334b" : undefined} />
+                  <span>District Grid</span>
+                </button>
+              </div>
             </div>
 
             {/* Division Pills */}
@@ -13425,110 +13658,375 @@ function DistrictFlowsView({ flows = [], onSaveFlows, currentUser, isSudhanshu, 
             </div>
           </div>
 
-          {/* Districts Grid (Cards) */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-              gap: 14,
-            }}
-          >
-            {filteredDistricts.map((d) => {
-              const deptsCount = (d.departments || []).length;
-              const totalHeads = (d.departments || []).reduce((acc, dept) => acc + (dept.headCodes || []).length, 0);
-              const isPilot = ["pune", "ahilyanagar", "nashik", "satara", "chhatrapati sambhajinagar"].includes(d.districtName.toLowerCase());
+          {/* Main Level 1 View: Regional Visual Heatmap OR Card Grid */}
+          {viewMode === "map" ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+              {Object.keys(MAHARASHTRA_DIVISIONS).map((divKey) => {
+                if (divisionFilter !== "All" && divisionFilter !== divKey) return null;
+                const divConfig = DIVISION_CONFIG[divKey] || {
+                  marathi: divKey,
+                  color: "#ff334b",
+                  border: "rgba(255, 51, 75, 0.35)",
+                  bgSubtle: "rgba(255, 51, 75, 0.08)",
+                  badgeBg: "rgba(255, 51, 75, 0.15)",
+                  desc: "Administrative Division",
+                };
+                const divDistricts = filteredDistricts.filter((d) => d.division === divKey);
+                if (divDistricts.length === 0) return null;
 
-              return (
-                <div
-                  key={d.districtId}
-                  className="glass-card"
-                  onClick={() => {
-                    setSelectedDistrictId(d.districtId);
-                    setViewLevel("departments");
-                  }}
-                  style={{
-                    padding: "16px 18px",
-                    cursor: "pointer",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "space-between",
-                    gap: 14,
-                    transition: "all 0.2s ease",
-                    border: isPilot ? "1px solid rgba(255, 51, 75, 0.35)" : isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
-                    position: "relative",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = "translateY(-2px)";
-                    e.currentTarget.style.borderColor = "#ff334b";
-                    e.currentTarget.style.boxShadow = "0 8px 24px rgba(255, 51, 75, 0.15)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = "translateY(0)";
-                    e.currentTarget.style.borderColor = isPilot ? "rgba(255, 51, 75, 0.35)" : isLight ? "#e2e8f0" : "rgba(255, 255, 255, 0.08)";
-                    e.currentTarget.style.boxShadow = "none";
-                  }}
-                >
-                  <div>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
-                      <div>
-                        <div style={{ fontSize: 16, fontWeight: 700, color: isLight ? "#0f172a" : "#ffffff", display: "flex", alignItems: "center", gap: 7 }}>
-                          <Landmark size={16} color="#ff334b" />
-                          {d.districtName}
-                        </div>
-                        <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>
-                          {d.division}
-                        </div>
-                      </div>
-                      {isPilot && (
-                        <span
-                          style={{
-                            background: "rgba(255, 51, 75, 0.15)",
-                            color: "#ff334b",
-                            border: "1px solid rgba(255, 51, 75, 0.3)",
-                            fontSize: 9.5,
-                            fontWeight: 700,
-                            padding: "2px 7px",
-                            borderRadius: 4,
-                            textTransform: "uppercase",
-                            letterSpacing: "0.5px",
-                          }}
-                        >
-                          Pilot Config
-                        </span>
-                      )}
-                    </div>
+                const allInDiv = flows.filter((d) => d.division === divKey);
+                const totalDivDepts = allInDiv.reduce((acc, d) => acc + (d.departments || []).length, 0);
+                const totalDivHeads = allInDiv.reduce(
+                  (acc, d) => acc + (d.departments || []).reduce((a, dept) => a + (dept.headCodes || []).length, 0),
+                  0
+                );
 
-                    <div style={{ display: "flex", gap: 12, marginTop: 14, fontSize: 11.5, color: isLight ? "#475569" : "#cbd5e1" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                        <Building2 size={13} color="#3b82f6" />
-                        <span><strong>{deptsCount}</strong> Departments</span>
-                      </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                        <Tag size={13} color="#10b981" />
-                        <span><strong>{totalHeads}</strong> Head Codes</span>
-                      </div>
-                    </div>
-                  </div>
-
+                return (
                   <div
+                    key={divKey}
+                    className="glass-card"
                     style={{
+                      padding: "18px 20px",
+                      borderRadius: 14,
+                      border: `1px solid ${divConfig.border}`,
+                      background: isLight ? "#ffffff" : undefined,
                       display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      paddingTop: 10,
-                      borderTop: isLight ? "1px solid #f1f5f9" : "1px solid rgba(255, 255, 255, 0.05)",
-                      fontSize: 11.5,
-                      color: "#ff334b",
-                      fontWeight: 600,
+                      flexDirection: "column",
+                      gap: 14,
+                      position: "relative",
+                      overflow: "hidden",
                     }}
                   >
-                    <span>View Department Workflows</span>
-                    <ArrowRight size={14} />
+                    {/* Division Top Color Stripe */}
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: 3,
+                        background: divConfig.color,
+                      }}
+                    />
+
+                    {/* Division Header Banner */}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        flexWrap: "wrap",
+                        gap: 10,
+                        paddingBottom: 12,
+                        borderBottom: isLight ? "1px solid #f1f5f9" : "1px solid rgba(255, 255, 255, 0.06)",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <div
+                          style={{
+                            width: 38,
+                            height: 38,
+                            borderRadius: 10,
+                            background: divConfig.badgeBg,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            border: `1px solid ${divConfig.color}44`,
+                          }}
+                        >
+                          <Landmark size={18} color={divConfig.color} />
+                        </div>
+                        <div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: isLight ? "#0f172a" : "#ffffff" }}>
+                              {divKey}
+                            </h3>
+                            <span
+                              style={{
+                                fontSize: 12,
+                                fontWeight: 600,
+                                color: divConfig.color,
+                                background: divConfig.badgeBg,
+                                padding: "2px 8px",
+                                borderRadius: 6,
+                              }}
+                            >
+                              {divConfig.marathi}
+                            </span>
+                          </div>
+                          <div style={{ fontSize: 11.5, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>
+                            {divConfig.desc}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Division Stats Badges */}
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                        <span
+                          style={{
+                            fontSize: 11,
+                            fontWeight: 700,
+                            padding: "4px 10px",
+                            borderRadius: 20,
+                            background: isLight ? "#f1f5f9" : "rgba(255, 255, 255, 0.05)",
+                            color: isLight ? "#334155" : "#cbd5e1",
+                            border: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
+                          }}
+                        >
+                          {allInDiv.length} ZP Jurisdictions
+                        </span>
+                        <span
+                          style={{
+                            fontSize: 11,
+                            fontWeight: 700,
+                            padding: "4px 10px",
+                            borderRadius: 20,
+                            background: isLight ? "#f1f5f9" : "rgba(255, 255, 255, 0.05)",
+                            color: isLight ? "#334155" : "#cbd5e1",
+                            border: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
+                          }}
+                        >
+                          {totalDivDepts} Depts · {totalDivHeads} Headcodes
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Interactive District Heatmap Nodes in this Division */}
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+                        gap: 12,
+                      }}
+                    >
+                      {divDistricts.map((d) => {
+                        const deptsCount = (d.departments || []).length;
+                        const totalHeads = (d.departments || []).reduce((acc, dept) => acc + (dept.headCodes || []).length, 0);
+                        const isPilot = ["pune", "ahilyanagar", "nashik", "satara", "chhatrapati sambhajinagar"].includes(d.districtName.toLowerCase());
+
+                        return (
+                          <div
+                            key={d.districtId}
+                            onClick={() => {
+                              setSelectedDistrictId(d.districtId);
+                              setViewLevel("departments");
+                            }}
+                            style={{
+                              background: isLight ? "#f8fafc" : "rgba(255, 255, 255, 0.03)",
+                              border: isPilot
+                                ? `1.5px solid ${divConfig.color}`
+                                : isLight
+                                ? "1px solid #e2e8f0"
+                                : "1px solid rgba(255, 255, 255, 0.07)",
+                              borderRadius: 10,
+                              padding: "14px 16px",
+                              cursor: "pointer",
+                              display: "flex",
+                              flexDirection: "column",
+                              justifyContent: "space-between",
+                              gap: 12,
+                              position: "relative",
+                              transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                              boxShadow: isPilot ? `0 0 12px ${divConfig.color}22` : "none",
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.transform = "translateY(-3px)";
+                              e.currentTarget.style.borderColor = divConfig.color;
+                              e.currentTarget.style.boxShadow = `0 8px 24px ${divConfig.color}33`;
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.transform = "translateY(0)";
+                              e.currentTarget.style.borderColor = isPilot
+                                ? divConfig.color
+                                : isLight
+                                ? "#e2e8f0"
+                                : "rgba(255, 255, 255, 0.07)";
+                              e.currentTarget.style.boxShadow = isPilot ? `0 0 12px ${divConfig.color}22` : "none";
+                            }}
+                          >
+                            <div>
+                              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
+                                <div style={{ fontWeight: 800, fontSize: 14.5, color: isLight ? "#0f172a" : "#ffffff" }}>
+                                  {d.districtName}
+                                </div>
+                                {isPilot && (
+                                  <span
+                                    style={{
+                                      background: "rgba(255, 51, 75, 0.15)",
+                                      color: "#ff334b",
+                                      border: "1px solid rgba(255, 51, 75, 0.35)",
+                                      fontSize: 9,
+                                      fontWeight: 800,
+                                      padding: "2px 6px",
+                                      borderRadius: 4,
+                                      textTransform: "uppercase",
+                                      letterSpacing: "0.5px",
+                                    }}
+                                  >
+                                    Pilot ZP
+                                  </span>
+                                )}
+                              </div>
+                              <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>
+                                Zilla Parishad {d.districtName}
+                              </div>
+                            </div>
+
+                            {/* Sequential Desk Flow Visual (8 Desks) */}
+                            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                              <span style={{ fontSize: 9.5, fontWeight: 700, color: isLight ? "#64748b" : "#94a3b8", marginRight: 4 }}>
+                                8 Desks:
+                              </span>
+                              {STANDARD_BILLING_STAGES.map((st) => (
+                                <span
+                                  key={st.step}
+                                  title={`Stage ${st.step}: ${st.shortRole}`}
+                                  style={{
+                                    width: 7,
+                                    height: 7,
+                                    borderRadius: "50%",
+                                    background: divConfig.color,
+                                    opacity: 0.4 + (st.step / 8) * 0.6,
+                                  }}
+                                />
+                              ))}
+                            </div>
+
+                            {/* Bottom row */}
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                paddingTop: 8,
+                                borderTop: isLight ? "1px solid #f1f5f9" : "1px solid rgba(255, 255, 255, 0.05)",
+                                fontSize: 11,
+                              }}
+                            >
+                              <div style={{ display: "flex", gap: 8, color: isLight ? "#475569" : "#cbd5e1" }}>
+                                <span><strong>{deptsCount}</strong> Depts</span>
+                                <span>•</span>
+                                <span><strong>{totalHeads}</strong> Heads</span>
+                              </div>
+                              <div style={{ color: divConfig.color, fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
+                                <span>Zoom</span>
+                                <ArrowRight size={12} />
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          ) : (
+            /* Districts Grid (Cards) */
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+                gap: 14,
+              }}
+            >
+              {filteredDistricts.map((d) => {
+                const deptsCount = (d.departments || []).length;
+                const totalHeads = (d.departments || []).reduce((acc, dept) => acc + (dept.headCodes || []).length, 0);
+                const isPilot = ["pune", "ahilyanagar", "nashik", "satara", "chhatrapati sambhajinagar"].includes(d.districtName.toLowerCase());
+
+                return (
+                  <div
+                    key={d.districtId}
+                    className="glass-card"
+                    onClick={() => {
+                      setSelectedDistrictId(d.districtId);
+                      setViewLevel("departments");
+                    }}
+                    style={{
+                      padding: "16px 18px",
+                      cursor: "pointer",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "space-between",
+                      gap: 14,
+                      transition: "all 0.2s ease",
+                      border: isPilot ? "1px solid rgba(255, 51, 75, 0.35)" : isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
+                      position: "relative",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = "translateY(-2px)";
+                      e.currentTarget.style.borderColor = "#ff334b";
+                      e.currentTarget.style.boxShadow = "0 8px 24px rgba(255, 51, 75, 0.15)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = "translateY(0)";
+                      e.currentTarget.style.borderColor = isPilot ? "rgba(255, 51, 75, 0.35)" : isLight ? "#e2e8f0" : "rgba(255, 255, 255, 0.08)";
+                      e.currentTarget.style.boxShadow = "none";
+                    }}
+                  >
+                    <div>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+                        <div>
+                          <div style={{ fontSize: 16, fontWeight: 700, color: isLight ? "#0f172a" : "#ffffff", display: "flex", alignItems: "center", gap: 7 }}>
+                            <Landmark size={16} color="#ff334b" />
+                            {d.districtName}
+                          </div>
+                          <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>
+                            {d.division}
+                          </div>
+                        </div>
+                        {isPilot && (
+                          <span
+                            style={{
+                              background: "rgba(255, 51, 75, 0.15)",
+                              color: "#ff334b",
+                              border: "1px solid rgba(255, 51, 75, 0.3)",
+                              fontSize: 9.5,
+                              fontWeight: 700,
+                              padding: "2px 7px",
+                              borderRadius: 4,
+                              textTransform: "uppercase",
+                              letterSpacing: "0.5px",
+                            }}
+                          >
+                            Pilot Config
+                          </span>
+                        )}
+                      </div>
+
+                      <div style={{ display: "flex", gap: 12, marginTop: 14, fontSize: 11.5, color: isLight ? "#475569" : "#cbd5e1" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                          <Building2 size={13} color="#3b82f6" />
+                          <span><strong>{deptsCount}</strong> Departments</span>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                          <Tag size={13} color="#10b981" />
+                          <span><strong>{totalHeads}</strong> Head Codes</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        paddingTop: 10,
+                        borderTop: isLight ? "1px solid #f1f5f9" : "1px solid rgba(255, 255, 255, 0.05)",
+                        fontSize: 11.5,
+                        color: "#ff334b",
+                        fontWeight: 600,
+                      }}
+                    >
+                      <span>View Department Workflows</span>
+                      <ArrowRight size={14} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 

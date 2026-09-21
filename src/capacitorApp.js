@@ -46,12 +46,16 @@ export const isStandaloneIOS = () => {
 /**
  * Configure native mobile Android status bar to blend seamlessly with theme
  */
-export const setupStatusBar = async (isLight = false) => {
+export const setupStatusBar = async (theme = "dark") => {
   if (!isNativePlatform()) return;
+  const isLight = theme === "light";
+  let color = "#08090d";
+  if (theme === "light") color = "#f1f5f9";
+  else if (theme === "emerald") color = "#03140e";
+  else if (theme === "oled") color = "#000000";
+
   try {
-    await StatusBar.setBackgroundColor({
-      color: isLight ? "#f1f5f9" : "#08090d",
-    });
+    await StatusBar.setBackgroundColor({ color });
     await StatusBar.setStyle({
       style: isLight ? Style.Light : Style.Dark,
     });
