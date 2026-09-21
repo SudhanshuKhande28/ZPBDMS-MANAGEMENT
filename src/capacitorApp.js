@@ -25,6 +25,25 @@ export const isAndroid = () => {
 };
 
 /**
+ * Detects if client is running on Apple iPhone, iPad, or iPod
+ */
+export const isIOS = () => {
+  if (typeof window === "undefined") return false;
+  return (
+    /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+  );
+};
+
+/**
+ * Detects if running as installed standalone Web App on iOS
+ */
+export const isStandaloneIOS = () => {
+  if (typeof window === "undefined") return false;
+  return window.navigator.standalone === true;
+};
+
+/**
  * Configure native mobile Android status bar to blend seamlessly with theme
  */
 export const setupStatusBar = async (isLight = false) => {

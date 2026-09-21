@@ -85,6 +85,8 @@ import {
 import {
   isNativePlatform,
   isAndroid,
+  isIOS,
+  isStandaloneIOS,
   setupStatusBar,
   registerBackButtonHandler,
   exitNativeApp,
@@ -3601,6 +3603,289 @@ function ForgotPasswordModal({ onClose, users = [], isLight = false, onDispatchA
   );
 }
 
+/* ---------------------------- iOS Safari Installation Helper Modal ---------------------------- */
+
+function IOSInstallModal({ onClose, isLight }) {
+  const isInstalled = typeof window !== "undefined" && window.navigator?.standalone === true;
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        backgroundColor: "rgba(0, 0, 0, 0.78)",
+        backdropFilter: "blur(10px)",
+        WebkitBackdropFilter: "blur(10px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 9999,
+        padding: 16,
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 440,
+          background: isLight ? "#ffffff" : "#0d101a",
+          border: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.1)",
+          borderRadius: 20,
+          overflow: "hidden",
+          boxShadow: isLight
+            ? "0 25px 60px rgba(0,0,0,0.15)"
+            : "0 25px 60px rgba(0,0,0,0.9), 0 0 35px rgba(255, 51, 75, 0.15)",
+          borderTop: "3px solid #ff334b",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div
+          style={{
+            padding: "20px 22px 16px 22px",
+            borderBottom: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 10,
+                background: "linear-gradient(135deg, #ff334b 0%, #b91c1c 100%)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#ffffff",
+                boxShadow: "0 0 16px rgba(255, 51, 75, 0.4)",
+              }}
+            >
+              <Smartphone size={22} />
+            </div>
+            <div>
+              <div style={{ fontWeight: 800, fontSize: 17, color: isLight ? "#0f172a" : "#ffffff" }}>
+                Install on iPhone & iPad
+              </div>
+              <div style={{ fontSize: 11.5, color: isLight ? "#64748b" : "#94a3b8" }}>
+                100% Free • No App Store Account Needed
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              background: "transparent",
+              border: "none",
+              color: isLight ? "#64748b" : "#94a3b8",
+              cursor: "pointer",
+              padding: 4,
+            }}
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div style={{ padding: "18px 22px" }}>
+          {isInstalled ? (
+            <div
+              style={{
+                padding: 16,
+                borderRadius: 12,
+                background: "rgba(34, 197, 94, 0.12)",
+                border: "1px solid rgba(34, 197, 94, 0.3)",
+                color: "#16a34a",
+                textAlign: "center",
+                fontSize: 13,
+                fontWeight: 600,
+              }}
+            >
+              🎉 You are currently running ZPBDMS as an installed iOS app on your Home Screen!
+            </div>
+          ) : (
+            <>
+              <p
+                style={{
+                  fontSize: 12.5,
+                  color: isLight ? "#475569" : "#cbd5e1",
+                  margin: "0 0 16px 0",
+                  lineHeight: 1.5,
+                }}
+              >
+                Apple requires a paid developer fee for the App Store, but you can run ZPBDMS{" "}
+                <strong>completely free</strong> on any iPhone in full-screen mode by adding it to your Home Screen:
+              </p>
+
+              {/* 3 Step Visual Guide */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {/* Step 1 */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: 12,
+                    padding: 12,
+                    borderRadius: 12,
+                    background: isLight ? "#f8fafc" : "rgba(255, 255, 255, 0.03)",
+                    border: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.06)",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: 14,
+                      background: "rgba(255, 51, 75, 0.15)",
+                      color: "#ff334b",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: 800,
+                      fontSize: 13,
+                      flexShrink: 0,
+                    }}
+                  >
+                    1
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: isLight ? "#0f172a" : "#ffffff" }}>
+                      Tap the Share button in Safari
+                    </div>
+                    <div style={{ fontSize: 11.5, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>
+                      Look for the square icon with an up arrow (
+                      <Share2 size={12} style={{ display: "inline", verticalAlign: "middle" }} />
+                      ) at the bottom of Safari.
+                    </div>
+                  </div>
+                </div>
+
+                {/* Step 2 */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: 12,
+                    padding: 12,
+                    borderRadius: 12,
+                    background: isLight ? "#f8fafc" : "rgba(255, 255, 255, 0.03)",
+                    border: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.06)",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: 14,
+                      background: "rgba(255, 51, 75, 0.15)",
+                      color: "#ff334b",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: 800,
+                      fontSize: 13,
+                      flexShrink: 0,
+                    }}
+                  >
+                    2
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: isLight ? "#0f172a" : "#ffffff" }}>
+                      Select &quot;Add to Home Screen&quot;
+                    </div>
+                    <div style={{ fontSize: 11.5, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>
+                      Scroll down the Safari sharing list and tap the <strong>&quot;Add to Home Screen&quot;</strong> option (with a <strong>+</strong> icon).
+                    </div>
+                  </div>
+                </div>
+
+                {/* Step 3 */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: 12,
+                    padding: 12,
+                    borderRadius: 12,
+                    background: isLight ? "#f8fafc" : "rgba(255, 255, 255, 0.03)",
+                    border: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.06)",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: 14,
+                      background: "rgba(255, 51, 75, 0.15)",
+                      color: "#ff334b",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: 800,
+                      fontSize: 13,
+                      flexShrink: 0,
+                    }}
+                  >
+                    3
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: isLight ? "#0f172a" : "#ffffff" }}>
+                      Tap &quot;Add&quot; in Top-Right
+                    </div>
+                    <div style={{ fontSize: 11.5, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>
+                      Tap <strong>Add</strong>. The official ZPBDMS crimson icon will appear directly on your iPhone home screen!
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Perks Callout */}
+              <div
+                style={{
+                  marginTop: 14,
+                  padding: 12,
+                  borderRadius: 10,
+                  background: "rgba(255, 51, 75, 0.06)",
+                  border: "1px solid rgba(255, 51, 75, 0.2)",
+                  fontSize: 11.5,
+                  color: isLight ? "#475569" : "#cbd5e1",
+                  lineHeight: 1.5,
+                }}
+              >
+                <div>✨ <strong>Full Screen:</strong> Zero Safari browser address bars or navigation tabs.</div>
+                <div>✨ <strong>Permanent:</strong> Never expires, no 7-day reinstall limits.</div>
+                <div>✨ <strong>Offline & Fast:</strong> Local asset caching with live Firestore websocket sync.</div>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div
+          style={{
+            padding: "12px 22px",
+            borderTop: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
+            display: "flex",
+            justifyContent: "flex-end",
+            background: isLight ? "rgba(0, 0, 0, 0.02)" : "rgba(255, 255, 255, 0.01)",
+          }}
+        >
+          <button
+            type="button"
+            className="btn-red-gradient"
+            style={{ padding: "8px 22px", fontSize: 12.5, borderRadius: 8 }}
+            onClick={onClose}
+          >
+            Got It
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ---------------------------- Global System Settings Modal ---------------------------- */
 
 function SettingsModal({
@@ -3623,6 +3908,7 @@ function SettingsModal({
   deferredInstallPrompt,
   isAppInstalled,
   onTriggerInstall,
+  onOpenIOSGuide,
 }) {
   const [activeTab, setActiveTab] = useState("notifications"); // "notifications" | "display" | "security" | "backup" | "telemetry" | "mobile"
 
@@ -4395,6 +4681,89 @@ function SettingsModal({
                     Install ZPBDMS on Android Home Screen
                   </button>
                 )}
+              </div>
+
+              {/* Apple iPhone & iPad (Free Web App) */}
+              <div
+                style={{
+                  padding: 16,
+                  borderRadius: 12,
+                  background: isLight ? "#f8fafc" : "rgba(255, 255, 255, 0.03)",
+                  border: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
+                  marginBottom: 16,
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div
+                      style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: 8,
+                        background: "linear-gradient(135deg, #0284c7 0%, #0369a1 100%)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "#ffffff",
+                      }}
+                    >
+                      <Smartphone size={18} />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: isLight ? "#0f172a" : "#ffffff" }}>
+                        Apple iPhone & iPad (Free Web App)
+                      </div>
+                      <div style={{ fontSize: 11.5, color: isLight ? "#64748b" : "#94a3b8" }}>
+                        Zero Cost • No $99/yr Fee • Full Screen Standalone
+                      </div>
+                    </div>
+                  </div>
+                  <span
+                    style={{
+                      background: isStandaloneIOS()
+                        ? "rgba(34, 197, 94, 0.15)"
+                        : "rgba(2, 132, 199, 0.15)",
+                      color: isStandaloneIOS() ? "#22c55e" : "#38bdf8",
+                      border: `1px solid ${
+                        isStandaloneIOS()
+                          ? "rgba(34, 197, 94, 0.3)"
+                          : "rgba(2, 132, 199, 0.3)"
+                      }`,
+                      padding: "3px 9px",
+                      borderRadius: 12,
+                      fontSize: 11,
+                      fontWeight: 700,
+                    }}
+                  >
+                    {isStandaloneIOS() ? "● Installed on iPhone" : "● Free for iPhone"}
+                  </span>
+                </div>
+
+                <div style={{ fontSize: 12, color: isLight ? "#475569" : "#94a3b8", lineHeight: 1.6, marginBottom: 12 }}>
+                  Apple charges $99/year for App Store publishing, but iOS allows you to install ZPBDMS <strong>100% free</strong> directly to your iPhone Home Screen via Safari. Once added, it runs without Safari browser tabs, supports touch navigation, and launches instantly like a native app.
+                </div>
+
+                <button
+                  type="button"
+                  onClick={onOpenIOSGuide}
+                  className="btn-ghost-dark"
+                  style={{
+                    width: "100%",
+                    padding: "9px 14px",
+                    borderRadius: 8,
+                    fontSize: 12.5,
+                    fontWeight: 700,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 8,
+                    border: "1px solid rgba(255, 51, 75, 0.3)",
+                    color: isLight ? "#0f172a" : "#ffffff",
+                  }}
+                >
+                  <Share2 size={14} color="#ff334b" />
+                  View 3-Step iPhone Installation Guide
+                </button>
               </div>
 
               {/* Native Android APK Details */}
@@ -5459,6 +5828,7 @@ export default function App() {
   };
 
   const [showSettings, setShowSettings] = useState(false);
+  const [showIOSGuide, setShowIOSGuide] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [deferredInstallPrompt, setDeferredInstallPrompt] = useState(null);
   const [isAppInstalled, setIsAppInstalled] = useState(false);
@@ -5518,6 +5888,10 @@ export default function App() {
         setShowSettings(false);
         return;
       }
+      if (showIOSGuide) {
+        setShowIOSGuide(false);
+        return;
+      }
       if (confirmDelete) {
         setConfirmDelete(null);
         return;
@@ -5536,7 +5910,7 @@ export default function App() {
     return () => {
       unregister();
     };
-  }, [modal, showSettings, confirmDelete, mobileDrawerOpen, tab]);
+  }, [modal, showSettings, showIOSGuide, confirmDelete, mobileDrawerOpen, tab]);
 
   const handleForgotPassAlert = (username, reason) => {
     const alertItem = {
@@ -8257,6 +8631,33 @@ export default function App() {
                 </button>
               )}
 
+              {/* iPhone / iPad Install Helper */}
+              {!isStandaloneIOS() && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowIOSGuide(true);
+                    setMobileDrawerOpen(false);
+                  }}
+                  className="btn-ghost-dark"
+                  style={{
+                    padding: "9px 12px",
+                    borderRadius: 10,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 7,
+                    border: "1px solid rgba(2, 132, 199, 0.4)",
+                    color: isLight ? "#0284c7" : "#38bdf8",
+                  }}
+                >
+                  <Smartphone size={14} color="#38bdf8" />
+                  Install on iPhone / iPad (Free Web App)
+                </button>
+              )}
+
               <button
                 type="button"
                 onClick={handleLogout}
@@ -8456,6 +8857,14 @@ export default function App() {
           deferredInstallPrompt={deferredInstallPrompt}
           isAppInstalled={isAppInstalled}
           onTriggerInstall={handleTriggerInstall}
+          onOpenIOSGuide={() => setShowIOSGuide(true)}
+        />
+      )}
+
+      {showIOSGuide && (
+        <IOSInstallModal
+          onClose={() => setShowIOSGuide(false)}
+          isLight={isLight}
         />
       )}
     </div>
