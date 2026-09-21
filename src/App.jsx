@@ -4420,7 +4420,7 @@ function SettingsModal({
 
                 <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap" }}>
                   <a
-                    href="https://github.com/sudhanshukhande/zpbdms-team-register/actions"
+                    href="https://github.com/SudhanshuKhande28/ZPBDMS-MANAGEMENT/actions"
                     target="_blank"
                     rel="noreferrer"
                     className="btn-ghost-dark"
