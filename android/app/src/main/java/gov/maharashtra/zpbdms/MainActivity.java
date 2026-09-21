@@ -1,0 +1,5 @@
+package gov.maharashtra.zpbdms;
+
+import com.getcapacitor.BridgeActivity;
+
+public class MainActivity extends BridgeActivity {}

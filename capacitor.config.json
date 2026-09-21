@@ -1,0 +1,26 @@
+{
+  "appId": "gov.maharashtra.zpbdms",
+  "appName": "ZPBDMS Management",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "backgroundColor": "#08090d",
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1500,
+      "launchAutoHide": true,
+      "backgroundColor": "#08090d",
+      "androidSplashResourceName": "splash",
+      "androidScaleType": "CENTER_CROP",
+      "showSpinner": false
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#08090d"
+    }
+  },
+  "android": {
+    "allowMixedContent": true,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": true
+  }
+}

@@ -79,7 +79,16 @@ import {
   Building,
   HelpCircle,
   Tag,
+  Smartphone,
+  Menu,
 } from "lucide-react";
+import {
+  isNativePlatform,
+  isAndroid,
+  setupStatusBar,
+  registerBackButtonHandler,
+  exitNativeApp,
+} from "./capacitorApp.js";
 
 /* ---------------------------------------------------------------
    Management Portal — ZPBDMS Operations & Command System
@@ -3611,8 +3620,11 @@ function SettingsModal({
   data,
   onUpdatePassword,
   isLight,
+  deferredInstallPrompt,
+  isAppInstalled,
+  onTriggerInstall,
 }) {
-  const [activeTab, setActiveTab] = useState("notifications"); // "notifications" | "display" | "security" | "backup" | "telemetry"
+  const [activeTab, setActiveTab] = useState("notifications"); // "notifications" | "display" | "security" | "backup" | "telemetry" | "mobile"
 
   // Security Form State
   const [currentPass, setCurrentPass] = useState("");
@@ -3793,6 +3805,7 @@ function SettingsModal({
             { key: "security", label: "Security & Password", icon: Lock },
             { key: "backup", label: "Database Backup", icon: Database },
             { key: "telemetry", label: "System Telemetry", icon: Sparkles },
+            { key: "mobile", label: "Mobile App (Android)", icon: Smartphone },
           ].map(({ key, label, icon: TabIcon }) => {
             const active = activeTab === key;
             return (
@@ -4282,6 +4295,171 @@ function SettingsModal({
                 <div style={{ marginTop: 8, paddingTop: 8, borderTop: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)" }}>
                   <strong>Architected & Developed by:</strong> <span style={{ color: isLight ? "#0f172a" : "#ffffff", fontWeight: 600 }}>Sudhanshu Khande</span>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Tab: Mobile App & Android */}
+          {activeTab === "mobile" && (
+            <div>
+              <h3 style={{ fontSize: 15, fontWeight: 700, margin: "0 0 4px 0", color: isLight ? "#0f172a" : "#ffffff" }}>
+                Android Native App & Mobile Access
+              </h3>
+              <p style={{ fontSize: 12.5, color: isLight ? "#64748b" : "#94a3b8", margin: "0 0 18px 0" }}>
+                ZPBDMS Android APK packaging, hardware back-button acceleration, and PWA WebAPK installation.
+              </p>
+
+              {/* Platform Status Card */}
+              <div
+                style={{
+                  padding: 16,
+                  borderRadius: 12,
+                  background: isLight ? "#f8fafc" : "rgba(255, 255, 255, 0.03)",
+                  border: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
+                  marginBottom: 16,
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div
+                      style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: 8,
+                        background: "linear-gradient(135deg, #22c55e 0%, #15803d 100%)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "#ffffff",
+                      }}
+                    >
+                      <Smartphone size={18} />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: isLight ? "#0f172a" : "#ffffff" }}>
+                        Active Client Platform
+                      </div>
+                      <div style={{ fontSize: 11.5, color: isLight ? "#64748b" : "#94a3b8" }}>
+                        {isNativePlatform()
+                          ? "Native Capacitor Android Container (Installed APK)"
+                          : isAppInstalled
+                          ? "Installed WebAPK / Progressive Web App"
+                          : "Standard Web Browser (Installable)"}
+                      </div>
+                    </div>
+                  </div>
+                  <span
+                    style={{
+                      background: isNativePlatform()
+                        ? "rgba(34, 197, 94, 0.15)"
+                        : isAppInstalled
+                        ? "rgba(56, 189, 248, 0.15)"
+                        : "rgba(251, 191, 36, 0.15)",
+                      color: isNativePlatform() ? "#22c55e" : isAppInstalled ? "#38bdf8" : "#fbbf24",
+                      border: `1px solid ${
+                        isNativePlatform()
+                          ? "rgba(34, 197, 94, 0.3)"
+                          : isAppInstalled
+                          ? "rgba(56, 189, 248, 0.3)"
+                          : "rgba(251, 191, 36, 0.3)"
+                      }`,
+                      padding: "3px 9px",
+                      borderRadius: 12,
+                      fontSize: 11,
+                      fontWeight: 700,
+                    }}
+                  >
+                    {isNativePlatform() ? "● Native APK" : isAppInstalled ? "● Installed PWA" : "● Browser"}
+                  </span>
+                </div>
+
+                {deferredInstallPrompt && !isAppInstalled && !isNativePlatform() && (
+                  <button
+                    type="button"
+                    onClick={onTriggerInstall}
+                    className="btn-red-gradient"
+                    style={{
+                      width: "100%",
+                      padding: "10px 16px",
+                      fontSize: 13,
+                      fontWeight: 700,
+                      borderRadius: 8,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 8,
+                      marginTop: 10,
+                    }}
+                  >
+                    <Download size={15} />
+                    Install ZPBDMS on Android Home Screen
+                  </button>
+                )}
+              </div>
+
+              {/* Native Android APK Details */}
+              <div
+                style={{
+                  padding: 16,
+                  borderRadius: 12,
+                  background: isLight ? "#f8fafc" : "rgba(255, 255, 255, 0.03)",
+                  border: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
+                  marginBottom: 16,
+                }}
+              >
+                <div style={{ fontSize: 13, fontWeight: 700, color: isLight ? "#0f172a" : "#ffffff", marginBottom: 6 }}>
+                  Native Android Package (Capacitor)
+                </div>
+                <div style={{ fontSize: 12, color: isLight ? "#475569" : "#94a3b8", lineHeight: 1.6 }}>
+                  <div><strong>Package ID:</strong> gov.maharashtra.zpbdms</div>
+                  <div><strong>App Name:</strong> ZPBDMS Management</div>
+                  <div><strong>Minimum Android SDK:</strong> 22 (Android 5.1 Lollipop+)</div>
+                  <div><strong>Target Android SDK:</strong> 34 (Android 14)</div>
+                  <div><strong>Cloud CI/CD:</strong> GitHub Actions automated APK workflow builds <code style={{ color: "#ff334b" }}>app-debug.apk</code> on push</div>
+                </div>
+
+                <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <a
+                    href="https://github.com/sudhanshukhande/zpbdms-team-register/actions"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn-ghost-dark"
+                    style={{
+                      padding: "7px 14px",
+                      fontSize: 12,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 6,
+                      textDecoration: "none",
+                      color: isLight ? "#0f172a" : "#ffffff",
+                    }}
+                  >
+                    <ExternalLink size={13} color="#ff334b" />
+                    Download APK from GitHub Actions
+                  </a>
+                </div>
+              </div>
+
+              {/* Mobile Features List */}
+              <div
+                style={{
+                  padding: 14,
+                  borderRadius: 10,
+                  background: "rgba(255, 51, 75, 0.05)",
+                  border: "1px solid rgba(255, 51, 75, 0.2)",
+                  fontSize: 12,
+                  color: isLight ? "#475569" : "#cbd5e1",
+                  lineHeight: 1.6,
+                }}
+              >
+                <div style={{ fontWeight: 700, color: "#ff334b", marginBottom: 4 }}>
+                  Mobile Architecture Features
+                </div>
+                <div>✔ Hardware Back Button listener (dismisses modals, returns to My Desk, exits safely)</div>
+                <div>✔ Dynamic Status Bar color syncing with dark / light theme</div>
+                <div>✔ Responsive Bottom Navigation Bar with touch feedback</div>
+                <div>✔ Fast in-memory SLA timers without battery drain or Firebase bandwidth overload</div>
+                <div>✔ Offline service worker caching for shell assets and manifest support</div>
               </div>
             </div>
           )}
@@ -5281,6 +5459,84 @@ export default function App() {
   };
 
   const [showSettings, setShowSettings] = useState(false);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [deferredInstallPrompt, setDeferredInstallPrompt] = useState(null);
+  const [isAppInstalled, setIsAppInstalled] = useState(false);
+
+  // Capture PWA install prompt on supported mobile/desktop browsers
+  useEffect(() => {
+    const handlePrompt = (e) => {
+      e.preventDefault();
+      setDeferredInstallPrompt(e);
+    };
+    window.addEventListener("beforeinstallprompt", handlePrompt);
+
+    const handleInstalled = () => {
+      setIsAppInstalled(true);
+      setDeferredInstallPrompt(null);
+    };
+    window.addEventListener("appinstalled", handleInstalled);
+
+    if (typeof window !== "undefined" && window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) {
+      setIsAppInstalled(true);
+    }
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handlePrompt);
+      window.removeEventListener("appinstalled", handleInstalled);
+    };
+  }, []);
+
+  const handleTriggerInstall = async () => {
+    if (deferredInstallPrompt) {
+      try {
+        deferredInstallPrompt.prompt();
+        const choice = await deferredInstallPrompt.userChoice;
+        if (choice?.outcome === "accepted") {
+          setIsAppInstalled(true);
+        }
+      } catch (err) {
+        console.warn("Installation prompt error:", err);
+      }
+      setDeferredInstallPrompt(null);
+    }
+  };
+
+  // Keep native Android status bar background and icons in sync with active theme
+  useEffect(() => {
+    setupStatusBar(isLight);
+  }, [isLight]);
+
+  // Native Android hardware back-button hierarchical navigation listener
+  useEffect(() => {
+    const unregister = registerBackButtonHandler(() => {
+      if (modal) {
+        setModal(null);
+        return;
+      }
+      if (showSettings) {
+        setShowSettings(false);
+        return;
+      }
+      if (confirmDelete) {
+        setConfirmDelete(null);
+        return;
+      }
+      if (mobileDrawerOpen) {
+        setMobileDrawerOpen(false);
+        return;
+      }
+      if (tab !== "my_desk") {
+        setTab("my_desk");
+        return;
+      }
+      exitNativeApp();
+    });
+
+    return () => {
+      unregister();
+    };
+  }, [modal, showSettings, confirmDelete, mobileDrawerOpen, tab]);
 
   const handleForgotPassAlert = (username, reason) => {
     const alertItem = {
@@ -6519,6 +6775,7 @@ export default function App() {
 
       {/* Futuristic Command Sidebar */}
       <aside
+        className="desktop-sidebar"
         style={{
           width: sidebarCollapsed ? 68 : 250,
           flexShrink: 0,
@@ -6999,6 +7256,7 @@ export default function App() {
 
       {/* Main Command Operations Viewport */}
       <main
+        className="main-viewport"
         style={{
           flex: 1,
           padding: "26px 36px",
@@ -7012,6 +7270,7 @@ export default function App() {
       >
         {/* Top Control Bar */}
         <header
+          className="app-header"
           style={{
             display: "flex",
             alignItems: "center",
@@ -7022,8 +7281,28 @@ export default function App() {
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            {/* Mobile Brand Logo Icon */}
+            <div className="mobile-only-logo" style={{ display: "none" }}>
+              <div
+                style={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: 9,
+                  background: "linear-gradient(135deg, #ff334b 0%, #b91c1c 100%)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#ffffff",
+                  boxShadow: "0 0 12px rgba(255, 51, 75, 0.4)",
+                }}
+              >
+                <Landmark size={18} />
+              </div>
+            </div>
+
             <button
               type="button"
+              className="desktop-only-toggle"
               onClick={toggleSidebar}
               style={{
                 background: isLight ? "#ffffff" : "rgba(255, 255, 255, 0.04)",
@@ -7044,6 +7323,7 @@ export default function App() {
             </button>
             <div>
               <h1
+                className="app-header-title"
                 style={{
                   fontFamily: "'Outfit', sans-serif",
                   fontSize: 26,
@@ -7097,10 +7377,10 @@ export default function App() {
                 boxShadow: isLight ? "0 2px 8px rgba(0, 0, 0, 0.04)" : "none",
                 transition: "all 0.15s ease",
               }}
-              title="System Settings: Audio Chimes, Security, Password, JSON Database Backup, and Telemetry"
+              title="System Settings: Mobile App, Audio Chimes, Security, Password, JSON Database Backup, and Telemetry"
             >
               <Settings size={14} color="#ff334b" />
-              <span>Settings</span>
+              <span className="header-btn-label">Settings</span>
             </button>
 
             {/* Theme Switcher Toggle Button */}
@@ -7124,13 +7404,14 @@ export default function App() {
               title={isLight ? "Switch to Dark Theme" : "Switch to Light Theme"}
             >
               {isLight ? <Moon size={14} color="#475569" /> : <Sun size={14} color="#fbbf24" />}
-              <span style={{ color: isLight ? "#475569" : "#cbd5e1" }}>
+              <span className="header-btn-label" style={{ color: isLight ? "#475569" : "#cbd5e1" }}>
                 {isLight ? "Light Mode" : "Dark Mode"}
               </span>
             </button>
 
             {/* Live Firestore Sync State Indicator */}
             <div
+              className="desktop-only-toggle"
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -7689,6 +7970,319 @@ export default function App() {
         </footer>
       </main>
 
+      {/* Mobile Bottom Navigation Bar (Visible on mobile <= 768px) */}
+      <nav className="mobile-bottom-nav" aria-label="Mobile Navigation">
+        <button
+          type="button"
+          onClick={() => {
+            setTab("my_desk");
+            setMobileDrawerOpen(false);
+          }}
+          className={`mobile-nav-btn ${tab === "my_desk" && !mobileDrawerOpen ? "active" : ""}`}
+          title="My Desk"
+        >
+          <UserCheck size={20} />
+          <span className="mobile-nav-label">My Desk</span>
+          {(myOpenIssues + myPendingTasks) > 0 && (
+            <span className="mobile-nav-badge">{myOpenIssues + myPendingTasks}</span>
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setTab("test_hub");
+            setMobileDrawerOpen(false);
+          }}
+          className={`mobile-nav-btn ${tab === "test_hub" && !mobileDrawerOpen ? "active" : ""}`}
+          title="Test Hub"
+        >
+          <FileSpreadsheet size={20} />
+          <span className="mobile-nav-label">Test Hub</span>
+          {failedTestPointsCount > 0 && (
+            <span className="mobile-nav-badge">{failedTestPointsCount}</span>
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setTab(canAccessMOM ? "mom" : "issues");
+            setMobileDrawerOpen(false);
+          }}
+          className={`mobile-nav-btn ${(canAccessMOM ? tab === "mom" : tab === "issues") && !mobileDrawerOpen ? "active" : ""}`}
+          title={canAccessMOM ? "MOM" : "Issues"}
+        >
+          {canAccessMOM ? <ClipboardList size={20} /> : <AlertTriangle size={20} />}
+          <span className="mobile-nav-label">{canAccessMOM ? "MOM" : "Issues"}</span>
+          {canAccessMOM && (data?.moms || []).length > 0 && (
+            <span className="mobile-nav-badge" style={{ background: "#38bdf8" }}>
+              {(data?.moms || []).length}
+            </span>
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setTab("district_flows");
+            setMobileDrawerOpen(false);
+          }}
+          className={`mobile-nav-btn ${tab === "district_flows" && !mobileDrawerOpen ? "active" : ""}`}
+          title="Districts"
+        >
+          <GitMerge size={20} />
+          <span className="mobile-nav-label">Districts</span>
+          <span className="mobile-nav-badge" style={{ background: "#a855f7" }}>34</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setMobileDrawerOpen(!mobileDrawerOpen)}
+          className={`mobile-nav-btn ${mobileDrawerOpen ? "active" : ""}`}
+          title="All Modules & Settings"
+        >
+          <Menu size={20} />
+          <span className="mobile-nav-label">More</span>
+        </button>
+      </nav>
+
+      {/* Mobile Slide-Up Drawer Menu */}
+      {mobileDrawerOpen && (
+        <>
+          <div
+            className="mobile-drawer-overlay"
+            onClick={() => setMobileDrawerOpen(false)}
+          />
+          <div className="mobile-drawer-sheet">
+            {/* Drawer Header */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 9,
+                    background: "linear-gradient(135deg, #ff334b 0%, #b91c1c 100%)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#ffffff",
+                    boxShadow: "0 0 14px rgba(255, 51, 75, 0.4)",
+                  }}
+                >
+                  <Landmark size={18} />
+                </div>
+                <div>
+                  <div style={{ fontWeight: 800, fontSize: 16, color: isLight ? "#0f172a" : "#ffffff" }}>
+                    ZPBDMS Modules
+                  </div>
+                  <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8" }}>
+                    Logged in as {currentUser?.name} ({currentUser?.role})
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMobileDrawerOpen(false)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: isLight ? "#64748b" : "#94a3b8",
+                  padding: 6,
+                  cursor: "pointer",
+                }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Grid of Navigation Items */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(2, 1fr)",
+                gap: 10,
+                marginBottom: 16,
+              }}
+            >
+              {[
+                { key: "bill_tracker", label: "Bill Tracker", icon: Receipt, badge: totalBillsCount, color: "#10b981" },
+                { key: "dashboard", label: "Operations Deck", icon: LayoutGrid, color: "#38bdf8" },
+                { key: "issues", label: "Issues Matrix", icon: AlertTriangle, badge: openIssues, color: "#ef4444" },
+                { key: "tasks", label: "Task Directives", icon: ListChecks, badge: pendingTasks, color: "#fbbf24" },
+                { key: "districts", label: "ZP Deployments", icon: MapPin, color: "#818cf8" },
+                ...(isSudhanshu
+                  ? [
+                      { key: "master_module", label: "Master Control", icon: Users, color: "#f43f5e" },
+                      { key: "audit_logs", label: "Activity Logs", icon: History, color: "#a855f7" },
+                    ]
+                  : []),
+              ].map(({ key, label, icon: ModIcon, badge, color }) => {
+                const active = tab === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => {
+                      setTab(key);
+                      setMobileDrawerOpen(false);
+                    }}
+                    style={{
+                      background: active
+                        ? "rgba(255, 51, 75, 0.12)"
+                        : isLight
+                        ? "#f8fafc"
+                        : "rgba(255, 255, 255, 0.03)",
+                      border: active
+                        ? "1px solid rgba(255, 51, 75, 0.4)"
+                        : isLight
+                        ? "1px solid #e2e8f0"
+                        : "1px solid rgba(255, 255, 255, 0.06)",
+                      borderRadius: 12,
+                      padding: "12px 14px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      cursor: "pointer",
+                      textAlign: "left",
+                      width: "100%",
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+                      <ModIcon size={16} color={color || "#ff334b"} />
+                      <span
+                        style={{
+                          fontSize: 12.5,
+                          fontWeight: active ? 700 : 500,
+                          color: active ? "#ff334b" : isLight ? "#0f172a" : "#ffffff",
+                        }}
+                      >
+                        {label}
+                      </span>
+                    </div>
+                    {badge !== undefined && badge > 0 && (
+                      <span
+                        style={{
+                          fontSize: 10,
+                          fontWeight: 700,
+                          padding: "2px 6px",
+                          borderRadius: 8,
+                          background: "rgba(239, 68, 68, 0.2)",
+                          color: "#ef4444",
+                        }}
+                      >
+                        {badge}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Quick Actions in Drawer */}
+            <div
+              style={{
+                borderTop: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.08)",
+                paddingTop: 14,
+                display: "flex",
+                flexDirection: "column",
+                gap: 8,
+              }}
+            >
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowSettings(true);
+                    setMobileDrawerOpen(false);
+                  }}
+                  className="btn-ghost-dark"
+                  style={{
+                    padding: "9px 12px",
+                    borderRadius: 10,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 7,
+                  }}
+                >
+                  <Settings size={14} color="#ff334b" />
+                  Settings
+                </button>
+
+                <button
+                  type="button"
+                  onClick={toggleTheme}
+                  className="btn-ghost-dark"
+                  style={{
+                    padding: "9px 12px",
+                    borderRadius: 10,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 7,
+                  }}
+                >
+                  {isLight ? <Moon size={14} color="#475569" /> : <Sun size={14} color="#fbbf24" />}
+                  {isLight ? "Dark Mode" : "Light Mode"}
+                </button>
+              </div>
+
+              {deferredInstallPrompt && !isAppInstalled && !isNativePlatform() && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleTriggerInstall();
+                    setMobileDrawerOpen(false);
+                  }}
+                  className="btn-red-gradient"
+                  style={{
+                    padding: "10px 14px",
+                    borderRadius: 10,
+                    fontSize: 12.5,
+                    fontWeight: 700,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 7,
+                  }}
+                >
+                  <Download size={14} />
+                  Install App on Android Home Screen
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={handleLogout}
+                style={{
+                  padding: "9px 12px",
+                  borderRadius: 10,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  background: "rgba(239, 68, 68, 0.08)",
+                  border: "1px solid rgba(239, 68, 68, 0.2)",
+                  color: "#ef4444",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 7,
+                }}
+              >
+                <LogOut size={14} />
+                Sign Out ({currentUser?.name?.split(" ")[0]})
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
       {/* Modern High-Graphic Modals */}
       {modal?.type === "issue" && (
         <Modal
@@ -7859,6 +8453,9 @@ export default function App() {
           data={data}
           onUpdatePassword={handleUpdateUserPassword}
           isLight={isLight}
+          deferredInstallPrompt={deferredInstallPrompt}
+          isAppInstalled={isAppInstalled}
+          onTriggerInstall={handleTriggerInstall}
         />
       )}
     </div>
