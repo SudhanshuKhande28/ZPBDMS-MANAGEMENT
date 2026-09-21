@@ -1,4 +1,4 @@
-const CACHE_NAME = "zpbdms-v2-cache";
+const CACHE_NAME = "zpbdms-v3-cache";
 const STATIC_ASSETS = [
   "/",
   "/index.html",
@@ -44,12 +44,10 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // Network-First with Cache Fallback for seamless live development and zero stale cache
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(event.request).then((networkResponse) => {
+    fetch(event.request)
+      .then((networkResponse) => {
         if (
           networkResponse &&
           networkResponse.status === 200 &&
@@ -61,9 +59,12 @@ self.addEventListener("fetch", (event) => {
           });
         }
         return networkResponse;
-      }).catch(() => {
-        return caches.match("/");
-      });
-    })
+      })
+      .catch(() => {
+        return caches.match(event.request).then((cached) => {
+          if (cached) return cached;
+          return caches.match("/");
+        });
+      })
   );
 });
