@@ -907,6 +907,131 @@ function seedMOMs() {
   ];
 }
 
+function seedBACriticalPoints() {
+  return [
+    {
+      id: "bacp_1",
+      code: "CRIT-01",
+      title: "Maker-Checker Multi-Tier Digital Authorization & OTP Sign-off",
+      module: "Maker-Checker & Approvals",
+      criticality: "Blocker / Showstopper",
+      description: "Bill disbursements exceeding ₹5,00,000 strictly enforce dual authorization with biometric/OTP handshake between CAFO and Addl. CEO before payment voucher dispatch.",
+      assignedDev: "Sankalp",
+      assignedTester: "Rutuja",
+      baOwner: "Sudhanshu Khande",
+      targetLiveDate: "2026-09-22",
+      testingStatus: "QA Passed",
+      testerRemarks: "Full dual-sign cycle validated on staging test gateway with dummy CAFO and Addl. CEO credentials. Zero bypass vulnerability.",
+      testedBy: "Rutuja",
+      testedDate: "2026-09-21",
+      liveStatus: "Live (Uploaded to Production)",
+      isLive: true,
+      liveUploadedAt: "2026-09-21",
+      liveUploadedBy: "Sudhanshu Khande",
+      liveVersion: "v2.4.0",
+      liveRemarks: "Deployed to production cluster; verified operational on live Pune and Satara ZP pilots.",
+      createdAt: todayISO(),
+      updatedAt: todayISO(),
+    },
+    {
+      id: "bacp_2",
+      code: "CRIT-02",
+      title: "State Infrastructure 2% CESS Auto-Computation & Whole-Rupee Rounding",
+      module: "Taxation & CESS",
+      criticality: "Core Business Rule",
+      description: "Automatic computation of 2% state infrastructure CESS surcharge on all rural and commercial property assessments, rounded UP to the nearest whole rupee pursuant to GoM Gazette rule 14B.",
+      assignedDev: "Ram",
+      assignedTester: "Rutuja",
+      baOwner: "Sudhanshu Khande",
+      targetLiveDate: "2026-09-23",
+      testingStatus: "QA Passed",
+      testerRemarks: "Rounding edge cases tested (₹0.01 to ₹0.99 roundup verified across 50 simulated property assessments).",
+      testedBy: "Rutuja",
+      testedDate: "2026-09-22",
+      liveStatus: "Live (Uploaded to Production)",
+      isLive: true,
+      liveUploadedAt: "2026-09-23",
+      liveUploadedBy: "Sudhanshu Khande",
+      liveVersion: "v2.4.1",
+      liveRemarks: "Live patch applied to billing engine; tax calculation verified on live assessments.",
+      createdAt: todayISO(),
+      updatedAt: todayISO(),
+    },
+    {
+      id: "bacp_3",
+      code: "CRIT-03",
+      title: "Treasury Settlement Bank UTR Auto-Reconciliation Daemon",
+      module: "Treasury & Payments",
+      criticality: "Blocker / Showstopper",
+      description: "Real-time background reconciliation daemon polling state bank treasury clearing service for 16-character UTR numbers. Automatic ledger reconciliation and instant failure notification.",
+      assignedDev: "Shoaib",
+      assignedTester: "Rutuja",
+      baOwner: "Sudhanshu Khande",
+      targetLiveDate: "2026-09-28",
+      testingStatus: "Testing In Progress",
+      testerRemarks: "Testing webhook timeout handling and simulated network drops during UTR batch processing.",
+      testedBy: "Rutuja",
+      testedDate: "2026-09-24",
+      liveStatus: "Ready for Live",
+      isLive: false,
+      liveUploadedAt: "",
+      liveUploadedBy: "",
+      liveVersion: "v2.5.0-rc1",
+      liveRemarks: "Code review complete, waiting for final QA pass before deploying to production.",
+      createdAt: todayISO(),
+      updatedAt: todayISO(),
+    },
+    {
+      id: "bacp_4",
+      code: "CRIT-04",
+      title: "Bilingual Namuna 9 Ledger PDF Generation with UTF-8 Devanagari Encoding",
+      module: "Namuna Reports & Audit",
+      criticality: "High Critical",
+      description: "Generate official government Namuna 9 ledger reports with bilingual Marathi/English headers, embedded digital signature block, and zero font corruption in generated PDF downloads.",
+      assignedDev: "Sankalp",
+      assignedTester: "Rutuja",
+      baOwner: "Sudhanshu Khande",
+      targetLiveDate: "2026-09-30",
+      testingStatus: "Untested",
+      testerRemarks: "Awaiting build deployment on staging server.",
+      testedBy: "",
+      testedDate: "",
+      liveStatus: "Not on Live",
+      isLive: false,
+      liveUploadedAt: "",
+      liveUploadedBy: "",
+      liveVersion: "",
+      liveRemarks: "In active development; Dev PR submitted.",
+      createdAt: todayISO(),
+      updatedAt: todayISO(),
+    },
+    {
+      id: "bacp_5",
+      code: "CRIT-05",
+      title: "Dev-Test Execution Matrix Assignment-Based Status Permission Locks",
+      module: "Security & Governance",
+      criticality: "High Critical",
+      description: "Strict RBAC locks ensuring only the assigned developer or tester can alter their respective matrix point status, while granting BA and admin full overriding control.",
+      assignedDev: "Ram",
+      assignedTester: "Rutuja",
+      baOwner: "Sudhanshu Khande",
+      targetLiveDate: "2026-09-25",
+      testingStatus: "QA Passed",
+      testerRemarks: "Verified that Ram cannot edit Shoaib's points and vice versa. Verified BA override operates without restriction.",
+      testedBy: "Rutuja",
+      testedDate: "2026-09-25",
+      liveStatus: "Live (Uploaded to Production)",
+      isLive: true,
+      liveUploadedAt: "2026-09-25",
+      liveUploadedBy: "Sudhanshu Khande",
+      liveVersion: "v2.4.2",
+      liveRemarks: "Live in master branch and mobile bundle.",
+      createdAt: todayISO(),
+      updatedAt: todayISO(),
+    },
+  ];
+}
+
 const MAHARASHTRA_DIVISIONS = {
   "Pune Division": ["Pune", "Satara", "Solapur", "Kolhapur", "Sangli"],
   "Konkan Division": ["Thane", "Palghar", "Raigad", "Ratnagiri", "Sindhudurg"],
@@ -1347,6 +1472,7 @@ function seedData() {
     auditLogs: [],
     moms: seedMOMs(),
     districtFlows: seedDistrictFlows(),
+    baCriticalPoints: seedBACriticalPoints(),
   };
 }
 
@@ -1470,7 +1596,78 @@ function StatusChip({ value, interactive = false }) {
   );
 }
 
-function TestStatusChip({ value, interactive = false, onClick, compact = false }) {
+// --- Role & Assignment Permission System for Dev-Test Matrix ---
+export const isUserBA = (user) => {
+  if (!user) return false;
+  const username = (user.username || "").trim().toLowerCase();
+  const name = (user.name || "").trim().toLowerCase();
+  const role = (user.role || "").trim().toLowerCase();
+
+  return (
+    username === "sudhanshu" ||
+    name.includes("sudhanshu") ||
+    role.includes("analyst") ||
+    role.includes("admin") ||
+    role.includes("manager") ||
+    role.includes("ceo") ||
+    role === "ba"
+  );
+};
+
+export const isAssignedDev = (tp, user) => {
+  if (!tp || !user) return false;
+  const assigned = (tp.assignedDev || "").trim().toLowerCase();
+  if (!assigned || assigned === "unassigned") return false;
+  const uname = (user.name || "").trim().toLowerCase();
+  const uuser = (user.username || "").trim().toLowerCase();
+  if (assigned === uname || assigned === uuser) return true;
+  const aFirst = assigned.split(" ")[0];
+  const uFirst = uname.split(" ")[0];
+  if (aFirst && uFirst && aFirst === uFirst) return true;
+  return false;
+};
+
+export const isAssignedTester = (tp, user) => {
+  if (!tp || !user) return false;
+  const assigned = (tp.tester || "").trim().toLowerCase();
+  if (!assigned || assigned === "unassigned") {
+    // If not assigned to a specific tester, any QA Tester can test
+    const role = (user.role || "").trim().toLowerCase();
+    return role.includes("tester") || role.includes("qa");
+  }
+  const uname = (user.name || "").trim().toLowerCase();
+  const uuser = (user.username || "").trim().toLowerCase();
+  if (assigned === uname || assigned === uuser) return true;
+  const aFirst = assigned.split(" ")[0];
+  const uFirst = uname.split(" ")[0];
+  if (aFirst && uFirst && aFirst === uFirst) return true;
+  return false;
+};
+
+export const canUserModifyDevStatus = (tp, user) => {
+  if (!user) return false;
+  if (isUserBA(user)) return true;
+  return isAssignedDev(tp, user);
+};
+
+export const canUserModifyTestStatus = (tp, user) => {
+  if (!user) return false;
+  if (isUserBA(user)) return true;
+  return isAssignedTester(tp, user);
+};
+
+export const canUserEditPoint = (tp, user) => {
+  if (!user) return false;
+  if (isUserBA(user)) return true;
+  return isAssignedDev(tp, user) || isAssignedTester(tp, user);
+};
+
+export const canUserDeletePoint = (user) => {
+  if (!user) return false;
+  return isUserBA(user);
+};
+
+function TestStatusChip({ value, interactive = false, onClick, compact = false, disabled = false, title: customTitle, assignedTo = "" }) {
   const map = {
     Passed: {
       bg: "rgba(34, 197, 94, 0.16)",
@@ -1510,10 +1707,14 @@ function TestStatusChip({ value, interactive = false, onClick, compact = false }
   };
   const s = map[value] || map.Untested;
 
+  const tooltip = customTitle || (disabled
+    ? (assignedTo ? `🔒 Assigned to QA (${assignedTo}) — Only assigned tester or Business Analyst can cycle status` : `🔒 Status locked (QA only)`)
+    : (interactive ? `${value || "Untested"} (Click to cycle status)` : (value || "Untested")));
+
   return (
     <span
       onClick={onClick}
-      title={interactive ? `${value || "Untested"} (Click to cycle status)` : (value || "Untested")}
+      title={tooltip}
       style={{
         display: "inline-flex",
         alignItems: "center",
@@ -1531,11 +1732,13 @@ function TestStatusChip({ value, interactive = false, onClick, compact = false }
         letterSpacing: "0.2px",
         maxWidth: "100%",
         boxSizing: "border-box",
-        cursor: interactive ? "pointer" : "default",
+        cursor: disabled ? "not-allowed" : (interactive ? "pointer" : "default"),
+        opacity: disabled ? 0.75 : 1,
         userSelect: "none",
         transition: "all 0.18s ease",
       }}
     >
+      {disabled && <Lock size={compact ? 9 : 10} style={{ opacity: 0.8, marginRight: -2 }} />}
       <span
         style={{
           width: compact ? 5 : 6,
@@ -1553,7 +1756,7 @@ function TestStatusChip({ value, interactive = false, onClick, compact = false }
   );
 }
 
-function DevStatusChip({ value, onClick, compact = false }) {
+function DevStatusChip({ value, onClick, compact = false, disabled = false, title: customTitle, assignedTo = "" }) {
   const map = {
     "Resolved / Ready for Retest": {
       bg: "rgba(34, 197, 94, 0.16)",
@@ -1591,10 +1794,14 @@ function DevStatusChip({ value, onClick, compact = false }) {
   const s = map[value] || map["Pending Dev Fix"];
   const displayLabel = compact ? (s.short || value) : (value || "Pending Dev Fix");
 
+  const tooltip = customTitle || (disabled
+    ? (assignedTo ? `🔒 Assigned to ${assignedTo} — Only ${assignedTo} or a Business Analyst can update resolution` : `🔒 Dev status locked`)
+    : `${value || "Pending Dev Fix"} (Click to update resolution)`);
+
   return (
     <span
       onClick={onClick}
-      title={`${value || "Pending Dev Fix"} (Click to update resolution)`}
+      title={tooltip}
       style={{
         display: "inline-flex",
         alignItems: "center",
@@ -1610,20 +1817,25 @@ function DevStatusChip({ value, onClick, compact = false }) {
         borderRadius: 20,
         maxWidth: "100%",
         boxSizing: "border-box",
-        cursor: onClick ? "pointer" : "default",
+        cursor: disabled ? "not-allowed" : (onClick ? "pointer" : "default"),
+        opacity: disabled ? 0.75 : 1,
         userSelect: "none",
         transition: "all 0.18s ease",
       }}
     >
-      <span
-        style={{
-          width: 5,
-          height: 5,
-          borderRadius: "50%",
-          backgroundColor: s.dot,
-          flexShrink: 0,
-        }}
-      />
+      {disabled ? (
+        <Lock size={compact ? 9 : 10} style={{ opacity: 0.8, flexShrink: 0 }} />
+      ) : (
+        <span
+          style={{
+            width: 5,
+            height: 5,
+            borderRadius: "50%",
+            backgroundColor: s.dot,
+            flexShrink: 0,
+          }}
+        />
+      )}
       <span
         style={{
           overflow: "hidden",
@@ -1633,6 +1845,135 @@ function DevStatusChip({ value, onClick, compact = false }) {
       >
         {displayLabel}
       </span>
+    </span>
+  );
+}
+
+function BALiveStatusChip({ value, onClick, compact = false, interactive = false, title: customTitle, isLight = false }) {
+  const isLive = value === "Live (Uploaded to Production)" || value === "Live";
+  const isVerified = value === "Live Verified";
+
+  const map = {
+    "Live (Uploaded to Production)": {
+      bg: "rgba(16, 185, 129, 0.16)",
+      fg: isLight ? "#047857" : "#34d399",
+      border: "rgba(16, 185, 129, 0.45)",
+      glow: "0 0 10px rgba(16, 185, 129, 0.25)",
+      dot: "#10b981",
+      label: compact ? "Live on Prod" : "Live (Uploaded to Production)",
+    },
+    "Live Verified": {
+      bg: "rgba(6, 182, 212, 0.16)",
+      fg: isLight ? "#0e7490" : "#22d3ee",
+      border: "rgba(6, 182, 212, 0.45)",
+      glow: "0 0 10px rgba(6, 182, 212, 0.25)",
+      dot: "#06b6d4",
+      label: compact ? "Live Verified" : "Live Verified (Production Cleared)",
+    },
+    "Ready for Live": {
+      bg: "rgba(56, 189, 248, 0.15)",
+      fg: isLight ? "#0284c7" : "#38bdf8",
+      border: "rgba(56, 189, 248, 0.4)",
+      glow: "0 0 8px rgba(56, 189, 248, 0.18)",
+      dot: "#0ea5e9",
+      label: compact ? "Ready for Live" : "Ready for Live Deployment",
+    },
+    "Not on Live": {
+      bg: "rgba(239, 68, 68, 0.14)",
+      fg: isLight ? "#b91c1c" : "#f87171",
+      border: "rgba(239, 68, 68, 0.35)",
+      glow: "none",
+      dot: "#ef4444",
+      label: compact ? "Not on Live" : "Not on Live (In Dev / Staging)",
+    },
+  };
+
+  const s = map[value] || map["Not on Live"];
+  const displayLabel = s.label;
+
+  return (
+    <span
+      onClick={onClick}
+      title={customTitle || `${value || "Not on Live"} ${interactive ? "(Click to toggle Live status)" : ""}`}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: compact ? 4 : 6,
+        background: s.bg,
+        color: s.fg,
+        border: `1px solid ${s.border}`,
+        boxShadow: s.glow,
+        fontFamily: "'Inter', sans-serif",
+        fontSize: compact ? 10.5 : 11.5,
+        fontWeight: 700,
+        padding: compact ? "2px 8px" : "3px 10px",
+        borderRadius: 20,
+        whiteSpace: "nowrap",
+        letterSpacing: "0.2px",
+        cursor: interactive ? "pointer" : "default",
+        userSelect: "none",
+        transition: "all 0.18s ease",
+      }}
+    >
+      <span
+        style={{
+          width: compact ? 6 : 7,
+          height: compact ? 6 : 7,
+          borderRadius: "50%",
+          backgroundColor: s.dot,
+          boxShadow: isLive || isVerified ? `0 0 8px ${s.dot}` : "none",
+          flexShrink: 0,
+        }}
+      />
+      <span>{displayLabel}</span>
+    </span>
+  );
+}
+
+function BACriticalityBadge({ value, compact = false, isLight = false }) {
+  const isBlocker = value === "Blocker / Showstopper" || value === "Blocker";
+  const isHigh = value === "High Critical" || value === "High";
+
+  const config = isBlocker
+    ? {
+        bg: "rgba(239, 68, 68, 0.18)",
+        fg: isLight ? "#b91c1c" : "#ff6479",
+        border: "rgba(239, 68, 68, 0.45)",
+        label: "Blocker",
+      }
+    : isHigh
+    ? {
+        bg: "rgba(245, 158, 11, 0.16)",
+        fg: isLight ? "#b45309" : "#fbbf24",
+        border: "rgba(245, 158, 11, 0.4)",
+        label: "High Critical",
+      }
+    : {
+        bg: "rgba(168, 85, 247, 0.15)",
+        fg: isLight ? "#7e22ce" : "#c084fc",
+        border: "rgba(168, 85, 247, 0.35)",
+        label: "Core Rule",
+      };
+
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 3,
+        fontSize: compact ? 9.5 : 10.5,
+        fontWeight: 700,
+        padding: compact ? "1px 6px" : "2px 8px",
+        borderRadius: 4,
+        background: config.bg,
+        color: config.fg,
+        border: `1px solid ${config.border}`,
+        whiteSpace: "nowrap",
+      }}
+      title={value || "Criticality"}
+    >
+      {isBlocker && "⚡ "}
+      {compact ? config.label : (value || "Core Business Rule")}
     </span>
   );
 }
@@ -1751,12 +2092,13 @@ function IconButton({ onClick, title, children, variant = "default" }) {
   );
 }
 
-function SelectInput({ value, onChange, options, style }) {
+function SelectInput({ value, onChange, options, style, disabled = false }) {
   return (
-    <div style={{ position: "relative", ...style }}>
+    <div style={{ position: "relative", opacity: disabled ? 0.6 : 1, ...style }}>
       <select
+        disabled={disabled}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => !disabled && onChange && onChange(e.target.value)}
         style={{
           width: "100%",
           appearance: "none",
@@ -1767,11 +2109,12 @@ function SelectInput({ value, onChange, options, style }) {
           border: "1px solid var(--border-card)",
           background: "var(--bg-input)",
           color: "var(--text-main)",
-          cursor: "pointer",
+          cursor: disabled ? "not-allowed" : "pointer",
           outline: "none",
           transition: "border 0.2s ease, box-shadow 0.2s ease",
         }}
         onFocus={(e) => {
+          if (disabled) return;
           e.target.style.borderColor = "rgba(255, 51, 75, 0.6)";
           e.target.style.boxShadow = "0 0 0 3px rgba(255, 51, 75, 0.15)";
         }}
@@ -2612,6 +2955,17 @@ function TestPointForm({ initial, users = TEAM_ROSTER, currentUser, onSave, onCa
     label: `${u.name} (${u.role})`,
   }));
 
+  const isEdit = !!initial?.id;
+  const userIsBA = isUserBA(currentUser);
+  const isDev = isAssignedDev(initial, currentUser);
+  const isTester = isAssignedTester(initial, currentUser);
+  const canEdit = !isEdit || userIsBA || isDev || isTester;
+
+  // Specific field permissions
+  const canEditBASpec = !isEdit || userIsBA;
+  const canEditDevFields = !isEdit || userIsBA || isDev;
+  const canEditQAFields = !isEdit || userIsBA || isTester;
+
   const [f, setF] = useState(
     initial || {
       code: `TP-${Math.floor(10 + Math.random() * 90)}`,
@@ -2635,9 +2989,82 @@ function TestPointForm({ initial, users = TEAM_ROSTER, currentUser, onSave, onCa
 
   return (
     <div>
+      {/* Role & Permission Context Banner */}
+      {isEdit && (
+        <div
+          style={{
+            padding: "9px 12px",
+            borderRadius: 8,
+            marginBottom: 14,
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            fontSize: 12,
+            background: !canEdit
+              ? "rgba(239, 68, 68, 0.15)"
+              : userIsBA
+              ? "rgba(168, 85, 247, 0.15)"
+              : isDev
+              ? "rgba(56, 189, 248, 0.15)"
+              : "rgba(34, 197, 94, 0.15)",
+            border: !canEdit
+              ? "1px solid rgba(239, 68, 68, 0.35)"
+              : userIsBA
+              ? "1px solid rgba(168, 85, 247, 0.35)"
+              : isDev
+              ? "1px solid rgba(56, 189, 248, 0.35)"
+              : "1px solid rgba(34, 197, 94, 0.35)",
+            color: !canEdit
+              ? "#fca5a5"
+              : userIsBA
+              ? "#d8b4fe"
+              : isDev
+              ? "#7dd3fc"
+              : "#86efac",
+          }}
+        >
+          {!canEdit ? (
+            <>
+              <Lock size={15} style={{ flexShrink: 0 }} />
+              <span>
+                <strong>View Only Mode:</strong> You are not assigned to this directive (Dev: <strong>{initial?.assignedDev || "None"}</strong>, QA: <strong>{initial?.tester || "None"}</strong>). Only the assigned developer, tester, or a Business Analyst can make changes.
+              </span>
+            </>
+          ) : userIsBA ? (
+            <>
+              <ShieldCheck size={15} style={{ flexShrink: 0 }} />
+              <span>
+                <strong>BA / Admin Full Access:</strong> You have unrestricted authority to edit, reassign, and update all fields on this directive.
+              </span>
+            </>
+          ) : isDev ? (
+            <>
+              <Code2 size={15} style={{ flexShrink: 0 }} />
+              <span>
+                <strong>Assigned Developer ({currentUser?.name}):</strong> You can update Dev Status, Dev Remarks, and Estimated Duration. Directive specification and QA verification fields are locked.
+              </span>
+            </>
+          ) : (
+            <>
+              <CheckCircle size={15} style={{ flexShrink: 0 }} />
+              <span>
+                <strong>Assigned QA Tester ({currentUser?.name}):</strong> You can update QA Verification Status, Defect Notes, and Final Retest Remarks. Developer resolution fields are locked.
+              </span>
+            </>
+          )}
+        </div>
+      )}
+
       <FormField label="1. Point / Directive Description (BA Specification)">
         <textarea
-          style={{ ...darkInputStyle, minHeight: 65, resize: "vertical" }}
+          disabled={!canEditBASpec}
+          style={{
+            ...darkInputStyle,
+            minHeight: 65,
+            resize: "vertical",
+            opacity: canEditBASpec ? 1 : 0.6,
+            cursor: canEditBASpec ? "text" : "not-allowed",
+          }}
           value={f.scenario}
           onChange={(e) => setF({ ...f, scenario: e.target.value })}
           placeholder="Enter the core business requirement, verification directive, or point..."
@@ -2648,7 +3075,12 @@ function TestPointForm({ initial, users = TEAM_ROSTER, currentUser, onSave, onCa
         <FormField label="2. Date Assigned (Auto-calculated)">
           <input
             type="date"
-            style={darkInputStyle}
+            disabled={!canEditBASpec}
+            style={{
+              ...darkInputStyle,
+              opacity: canEditBASpec ? 1 : 0.6,
+              cursor: canEditBASpec ? "text" : "not-allowed",
+            }}
             value={f.assignedDate || todayISO()}
             onChange={(e) => setF({ ...f, assignedDate: e.target.value })}
           />
@@ -2656,12 +3088,19 @@ function TestPointForm({ initial, users = TEAM_ROSTER, currentUser, onSave, onCa
         <FormField label="Code & Module">
           <div style={{ display: "flex", gap: 8 }}>
             <input
-              style={{ ...darkInputStyle, width: "45%" }}
+              disabled={!canEditBASpec}
+              style={{
+                ...darkInputStyle,
+                width: "45%",
+                opacity: canEditBASpec ? 1 : 0.6,
+                cursor: canEditBASpec ? "text" : "not-allowed",
+              }}
               value={f.code}
               onChange={(e) => setF({ ...f, code: e.target.value })}
               placeholder="Code"
             />
             <SelectInput
+              disabled={!canEditBASpec}
               value={f.module}
               onChange={(v) => setF({ ...f, module: v })}
               options={MODULES}
@@ -2673,6 +3112,7 @@ function TestPointForm({ initial, users = TEAM_ROSTER, currentUser, onSave, onCa
       <div style={{ display: "grid", gridTemplateColumns: "1.2fr 0.8fr", gap: 12 }}>
         <FormField label="3. Assigned Developer (BA Initial Assignment)">
           <SelectInput
+            disabled={!canEditBASpec}
             value={f.assignedDev}
             onChange={(v) => setF({ ...f, assignedDev: v })}
             options={devOptions}
@@ -2681,40 +3121,49 @@ function TestPointForm({ initial, users = TEAM_ROSTER, currentUser, onSave, onCa
         <FormField label="Estimated Dev Duration / Timer">
           <div style={{ position: "relative" }}>
             <input
-              style={{ ...darkInputStyle, paddingLeft: 28, fontSize: 12.5 }}
+              disabled={!canEditDevFields}
+              style={{
+                ...darkInputStyle,
+                paddingLeft: 28,
+                fontSize: 12.5,
+                opacity: canEditDevFields ? 1 : 0.6,
+                cursor: canEditDevFields ? "text" : "not-allowed",
+              }}
               value={f.estimatedTime || ""}
               onChange={(e) => setF({ ...f, estimatedTime: e.target.value })}
               placeholder="e.g. 4 Hours, 2 Days"
             />
             <Clock size={13} style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)", color: "#38bdf8" }} />
           </div>
-          <div style={{ display: "flex", gap: 4, marginTop: 4, flexWrap: "wrap" }}>
-            {durationPresets.map((preset) => (
-              <button
-                key={preset}
-                type="button"
-                onClick={() => {
-                  const ms = parseDurationToMs(preset);
-                  setF({
-                    ...f,
-                    estimatedTime: preset,
-                    timerDeadline: ms ? Date.now() + ms : null,
-                  });
-                }}
-                style={{
-                  padding: "1px 6px",
-                  fontSize: 10,
-                  borderRadius: 3,
-                  border: f.estimatedTime === preset ? "1px solid #38bdf8" : "1px solid rgba(255,255,255,0.1)",
-                  background: f.estimatedTime === preset ? "rgba(56, 189, 248, 0.2)" : "rgba(255,255,255,0.04)",
-                  color: f.estimatedTime === preset ? "#38bdf8" : (isLight ? "#475569" : "#94a3b8"),
-                  cursor: "pointer",
-                }}
-              >
-                {preset}
-              </button>
-            ))}
-          </div>
+          {canEditDevFields && (
+            <div style={{ display: "flex", gap: 4, marginTop: 4, flexWrap: "wrap" }}>
+              {durationPresets.map((preset) => (
+                <button
+                  key={preset}
+                  type="button"
+                  onClick={() => {
+                    const ms = parseDurationToMs(preset);
+                    setF({
+                      ...f,
+                      estimatedTime: preset,
+                      timerDeadline: ms ? Date.now() + ms : null,
+                    });
+                  }}
+                  style={{
+                    padding: "1px 6px",
+                    fontSize: 10,
+                    borderRadius: 3,
+                    border: f.estimatedTime === preset ? "1px solid #38bdf8" : "1px solid rgba(255,255,255,0.1)",
+                    background: f.estimatedTime === preset ? "rgba(56, 189, 248, 0.2)" : "rgba(255,255,255,0.04)",
+                    color: f.estimatedTime === preset ? "#38bdf8" : (isLight ? "#475569" : "#94a3b8"),
+                    cursor: "pointer",
+                  }}
+                >
+                  {preset}
+                </button>
+              ))}
+            </div>
+          )}
           {f.timerDeadline && (
             <div style={{ marginTop: 6, display: "flex", alignItems: "center", gap: 6 }}>
               <span style={{ fontSize: 10, color: "#94a3b8" }}>Active Countdown:</span>
@@ -2727,6 +3176,7 @@ function TestPointForm({ initial, users = TEAM_ROSTER, currentUser, onSave, onCa
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         <FormField label="4. Dev Completion Status">
           <SelectInput
+            disabled={!canEditDevFields}
             value={f.devStatus}
             onChange={(v) => setF({ ...f, devStatus: v })}
             options={DEV_STATUSES}
@@ -2734,6 +3184,7 @@ function TestPointForm({ initial, users = TEAM_ROSTER, currentUser, onSave, onCa
         </FormField>
         <FormField label="5. Assigned Tester (Testing Lead Assignment)">
           <SelectInput
+            disabled={!canEditBASpec}
             value={f.tester}
             onChange={(v) => setF({ ...f, tester: v })}
             options={devOptions}
@@ -2744,6 +3195,7 @@ function TestPointForm({ initial, users = TEAM_ROSTER, currentUser, onSave, onCa
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         <FormField label="6. Tester Verification Status">
           <SelectInput
+            disabled={!canEditQAFields}
             value={f.status}
             onChange={(v) => setF({ ...f, status: v })}
             options={TEST_STATUSES}
@@ -2751,6 +3203,7 @@ function TestPointForm({ initial, users = TEAM_ROSTER, currentUser, onSave, onCa
         </FormField>
         <FormField label="Defect Severity Level">
           <SelectInput
+            disabled={!canEditQAFields}
             value={f.severity || "Major"}
             onChange={(v) => setF({ ...f, severity: v })}
             options={["Minor", "Major", "Critical"]}
@@ -2760,7 +3213,14 @@ function TestPointForm({ initial, users = TEAM_ROSTER, currentUser, onSave, onCa
 
       <FormField label="Tester Status / Verification Remarks">
         <textarea
-          style={{ ...darkInputStyle, minHeight: 48, resize: "vertical" }}
+          disabled={!canEditQAFields}
+          style={{
+            ...darkInputStyle,
+            minHeight: 48,
+            resize: "vertical",
+            opacity: canEditQAFields ? 1 : 0.6,
+            cursor: canEditQAFields ? "text" : "not-allowed",
+          }}
           value={f.actualResult}
           onChange={(e) => setF({ ...f, actualResult: e.target.value })}
           placeholder="Tester observations, bug specifics, or verification observations..."
@@ -2769,7 +3229,14 @@ function TestPointForm({ initial, users = TEAM_ROSTER, currentUser, onSave, onCa
 
       <FormField label="7. Developer Reassigned Remarks (Fix / Rework Notes)">
         <textarea
-          style={{ ...darkInputStyle, minHeight: 48, resize: "vertical" }}
+          disabled={!canEditDevFields}
+          style={{
+            ...darkInputStyle,
+            minHeight: 48,
+            resize: "vertical",
+            opacity: canEditDevFields ? 1 : 0.6,
+            cursor: canEditDevFields ? "text" : "not-allowed",
+          }}
           value={f.devRemark}
           onChange={(e) => setF({ ...f, devRemark: e.target.value })}
           placeholder="Developer notes if issue occurred and needs to be retested..."
@@ -2778,7 +3245,14 @@ function TestPointForm({ initial, users = TEAM_ROSTER, currentUser, onSave, onCa
 
       <FormField label="8. Final Retest Remarks">
         <textarea
-          style={{ ...darkInputStyle, minHeight: 48, resize: "vertical" }}
+          disabled={!canEditQAFields}
+          style={{
+            ...darkInputStyle,
+            minHeight: 48,
+            resize: "vertical",
+            opacity: canEditQAFields ? 1 : 0.6,
+            cursor: canEditQAFields ? "text" : "not-allowed",
+          }}
           value={f.finalRetestRemarks || ""}
           onChange={(e) => setF({ ...f, finalRetestRemarks: e.target.value })}
           placeholder="Final QA retest sign-off remarks..."
@@ -2791,21 +3265,27 @@ function TestPointForm({ initial, users = TEAM_ROSTER, currentUser, onSave, onCa
           style={{ padding: "9px 18px", fontSize: 13, fontWeight: 500 }}
           onClick={onCancel}
         >
-          Cancel
+          {canEdit ? "Cancel" : "Close"}
         </button>
-        <button
-          className="btn-red-gradient"
-          style={{ padding: "9px 20px", fontSize: 13 }}
-          onClick={() => f.scenario.trim() && onSave(f)}
-        >
-          Save Matrix Point
-        </button>
+        {canEdit && (
+          <button
+            className="btn-red-gradient"
+            style={{ padding: "9px 20px", fontSize: 13 }}
+            onClick={() => f.scenario.trim() && onSave(f)}
+          >
+            Save Matrix Point
+          </button>
+        )}
       </div>
     </div>
   );
 }
 
-function DevResolveForm({ initial, users = TEAM_ROSTER, onSave, onCancel, isLight }) {
+function DevResolveForm({ initial, users = TEAM_ROSTER, currentUser, onSave, onCancel, isLight }) {
+  const userIsBA = isUserBA(currentUser);
+  const isDev = isAssignedDev(initial, currentUser);
+  const canModifyDev = userIsBA || isDev;
+
   const [devStatus, setDevStatus] = useState(initial?.devStatus || "Resolved / Ready for Retest");
   const [devRemark, setDevRemark] = useState(initial?.devRemark || "");
   const [estimatedTime, setEstimatedTime] = useState(initial?.estimatedTime || "4 Hours");
@@ -2821,6 +3301,28 @@ function DevResolveForm({ initial, users = TEAM_ROSTER, onSave, onCancel, isLigh
 
   return (
     <div>
+      {!canModifyDev && (
+        <div
+          style={{
+            padding: "10px 14px",
+            borderRadius: 8,
+            background: "rgba(239, 68, 68, 0.15)",
+            border: "1px solid rgba(239, 68, 68, 0.4)",
+            marginBottom: 16,
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            color: "#fca5a5",
+            fontSize: 12,
+          }}
+        >
+          <Lock size={15} color="#ef4444" style={{ flexShrink: 0 }} />
+          <span>
+            <strong>Access Restricted:</strong> This directive is assigned to developer <strong>"{initial?.assignedDev || "another developer"}"</strong>. Only {initial?.assignedDev || "the assigned developer"} or a Business Analyst (BA) can submit resolution.
+          </span>
+        </div>
+      )}
+
       <div
         style={{
           padding: "12px 14px",
@@ -2845,48 +3347,73 @@ function DevResolveForm({ initial, users = TEAM_ROSTER, onSave, onCancel, isLigh
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         <FormField label="Developer Status">
-          <SelectInput value={devStatus} onChange={(v) => setDevStatus(v)} options={DEV_STATUSES} />
+          <SelectInput
+            disabled={!canModifyDev}
+            value={devStatus}
+            onChange={(v) => setDevStatus(v)}
+            options={DEV_STATUSES}
+          />
         </FormField>
         <FormField label="Resolving Engineer">
-          <SelectInput value={assignedDev} onChange={(v) => setAssignedDev(v)} options={teamOptions} />
+          <SelectInput
+            disabled={!userIsBA}
+            value={assignedDev}
+            onChange={(v) => setAssignedDev(v)}
+            options={teamOptions}
+          />
         </FormField>
       </div>
 
       <FormField label="Developer Estimated Duration / Time Taken">
         <div style={{ position: "relative" }}>
           <input
-            style={{ ...darkInputStyle, paddingLeft: 28 }}
+            disabled={!canModifyDev}
+            style={{
+              ...darkInputStyle,
+              paddingLeft: 28,
+              opacity: canModifyDev ? 1 : 0.6,
+              cursor: canModifyDev ? "text" : "not-allowed",
+            }}
             value={estimatedTime}
             onChange={(e) => setEstimatedTime(e.target.value)}
             placeholder="e.g. 4 Hours, 1 Day"
           />
           <Clock size={13} style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)", color: "#38bdf8" }} />
         </div>
-        <div style={{ display: "flex", gap: 4, marginTop: 4, flexWrap: "wrap" }}>
-          {durationPresets.map((preset) => (
-            <button
-              key={preset}
-              type="button"
-              onClick={() => setEstimatedTime(preset)}
-              style={{
-                padding: "1px 6px",
-                fontSize: 10,
-                borderRadius: 3,
-                border: estimatedTime === preset ? "1px solid #38bdf8" : "1px solid rgba(255,255,255,0.1)",
-                background: estimatedTime === preset ? "rgba(56, 189, 248, 0.2)" : "rgba(255,255,255,0.04)",
-                color: estimatedTime === preset ? "#38bdf8" : (isLight ? "#475569" : "#94a3b8"),
-                cursor: "pointer",
-              }}
-            >
-              {preset}
-            </button>
-          ))}
-        </div>
+        {canModifyDev && (
+          <div style={{ display: "flex", gap: 4, marginTop: 4, flexWrap: "wrap" }}>
+            {durationPresets.map((preset) => (
+              <button
+                key={preset}
+                type="button"
+                onClick={() => setEstimatedTime(preset)}
+                style={{
+                  padding: "1px 6px",
+                  fontSize: 10,
+                  borderRadius: 3,
+                  border: estimatedTime === preset ? "1px solid #38bdf8" : "1px solid rgba(255,255,255,0.1)",
+                  background: estimatedTime === preset ? "rgba(56, 189, 248, 0.2)" : "rgba(255,255,255,0.04)",
+                  color: estimatedTime === preset ? "#38bdf8" : (isLight ? "#475569" : "#94a3b8"),
+                  cursor: "pointer",
+                }}
+              >
+                {preset}
+              </button>
+            ))}
+          </div>
+        )}
       </FormField>
 
       <FormField label="Developer Fix Remarks & Notes">
         <textarea
-          style={{ ...darkInputStyle, minHeight: 80, resize: "vertical" }}
+          disabled={!canModifyDev}
+          style={{
+            ...darkInputStyle,
+            minHeight: 80,
+            resize: "vertical",
+            opacity: canModifyDev ? 1 : 0.6,
+            cursor: canModifyDev ? "text" : "not-allowed",
+          }}
           value={devRemark}
           onChange={(e) => setDevRemark(e.target.value)}
           placeholder="Explain the root cause fix, commit hash, build patch version, or re-testing steps..."
@@ -2901,13 +3428,23 @@ function DevResolveForm({ initial, users = TEAM_ROSTER, onSave, onCancel, isLigh
         >
           Cancel
         </button>
-        <button
-          className="btn-red-gradient"
-          style={{ padding: "9px 20px", fontSize: 13 }}
-          onClick={() => onSave({ devStatus, devRemark, assignedDev, estimatedTime })}
-        >
-          Submit Resolution & Notify Tester
-        </button>
+        {canModifyDev ? (
+          <button
+            className="btn-red-gradient"
+            style={{ padding: "9px 20px", fontSize: 13 }}
+            onClick={() => onSave({ devStatus, devRemark, assignedDev, estimatedTime })}
+          >
+            Submit Resolution & Notify Tester
+          </button>
+        ) : (
+          <button
+            className="btn-ghost-dark"
+            disabled
+            style={{ padding: "9px 20px", fontSize: 13, opacity: 0.5, cursor: "not-allowed", display: "inline-flex", alignItems: "center", gap: 6 }}
+          >
+            <Lock size={13} /> Resolution Locked
+          </button>
+        )}
       </div>
     </div>
   );
@@ -3358,6 +3895,317 @@ function MOMForm({ initial, users = TEAM_ROSTER, currentUser, onSave, onCancel, 
           style={{ padding: "9px 24px", fontSize: 13, display: "flex", alignItems: "center", gap: 6 }}
         >
           <ClipboardList size={14} /> Save Meeting Minutes (MOM)
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function BACriticalPointForm({ initial, users = TEAM_ROSTER, currentUser, onSave, onCancel, isLight }) {
+  const userList = Array.isArray(users) && users.length > 0 ? users : TEAM_ROSTER;
+  const devUsers = userList.filter((u) => u.role?.toLowerCase().includes("dev") || !u.role?.toLowerCase().includes("test"));
+  const testerUsers = userList.filter((u) => u.role?.toLowerCase().includes("test") || u.role?.toLowerCase().includes("qa"));
+
+  const [code, setCode] = useState(initial?.code || `CRIT-${String(Math.floor(10 + Math.random() * 90))}`);
+  const [title, setTitle] = useState(initial?.title || "");
+  const [module, setModule] = useState(initial?.module || "Maker-Checker & Approvals");
+  const [criticality, setCriticality] = useState(initial?.criticality || "Blocker / Showstopper");
+  const [description, setDescription] = useState(initial?.description || "");
+  const [assignedDev, setAssignedDev] = useState(initial?.assignedDev || (devUsers[0]?.name || "Sankalp"));
+  const [assignedTester, setAssignedTester] = useState(initial?.assignedTester || (testerUsers[0]?.name || "Rutuja"));
+  const [baOwner, setBaOwner] = useState(initial?.baOwner || currentUser?.name || "Sudhanshu Khande");
+  const [targetLiveDate, setTargetLiveDate] = useState(initial?.targetLiveDate || todayISO());
+  
+  // Testing status
+  const [testingStatus, setTestingStatus] = useState(initial?.testingStatus || "Untested");
+  const [testerRemarks, setTesterRemarks] = useState(initial?.testerRemarks || "");
+  
+  // Live status
+  const [liveStatus, setLiveStatus] = useState(initial?.liveStatus || "Not on Live");
+  const [liveVersion, setLiveVersion] = useState(initial?.liveVersion || "v2.4.2");
+  const [liveRemarks, setLiveRemarks] = useState(initial?.liveRemarks || "");
+  const [liveUploadedAt, setLiveUploadedAt] = useState(initial?.liveUploadedAt || "");
+  const [error, setError] = useState("");
+
+  const MODULES = [
+    "Maker-Checker & Approvals",
+    "Treasury & Payments",
+    "Taxation & CESS",
+    "Namuna Reports & Audit",
+    "Billing & Invoicing",
+    "Security & Governance",
+    "District Pilot Setup",
+    "Gram Panchayat Ledgers",
+    "Other Core Function",
+  ];
+
+  const CRITICALITIES = [
+    "Blocker / Showstopper",
+    "High Critical",
+    "Core Business Rule",
+  ];
+
+  const TESTING_STATUSES = [
+    "Untested",
+    "Testing In Progress",
+    "QA Passed",
+    "QA Failed / Blocked",
+    "Retest Required",
+  ];
+
+  const LIVE_STATUSES = [
+    "Not on Live",
+    "Ready for Live",
+    "Live (Uploaded to Production)",
+    "Live Verified",
+  ];
+
+  const handleLiveStatusChange = (newVal) => {
+    setLiveStatus(newVal);
+    if ((newVal === "Live (Uploaded to Production)" || newVal === "Live Verified") && !liveUploadedAt) {
+      setLiveUploadedAt(todayISO());
+    }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!title.trim()) {
+      setError("Please provide a title for the critical directive.");
+      return;
+    }
+
+    const isLive = liveStatus === "Live (Uploaded to Production)" || liveStatus === "Live Verified";
+    const uploadedAt = isLive ? (liveUploadedAt || todayISO()) : "";
+
+    const payload = {
+      ...(initial || {}),
+      id: initial?.id || `bacp_${uid()}`,
+      code: code.trim() || `CRIT-${Math.floor(10 + Math.random() * 90)}`,
+      title: title.trim(),
+      module,
+      criticality,
+      description: description.trim(),
+      assignedDev,
+      assignedTester,
+      baOwner,
+      targetLiveDate,
+      testingStatus,
+      testerRemarks: testerRemarks.trim(),
+      testedBy: testingStatus === "QA Passed" ? (initial?.testedBy || assignedTester) : (initial?.testedBy || ""),
+      testedDate: testingStatus === "QA Passed" ? (initial?.testedDate || todayISO()) : (initial?.testedDate || ""),
+      liveStatus,
+      isLive,
+      liveVersion: isLive ? (liveVersion.trim() || "v2.4.2") : (liveVersion.trim() || ""),
+      liveUploadedAt: uploadedAt,
+      liveUploadedBy: isLive ? (initial?.liveUploadedBy || currentUser?.name || "Sudhanshu Khande") : "",
+      liveRemarks: liveRemarks.trim(),
+      createdAt: initial?.createdAt || todayISO(),
+      updatedAt: todayISO(),
+    };
+
+    onSave(payload);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      {error && (
+        <div style={{ padding: "8px 12px", borderRadius: 6, background: "rgba(239, 68, 68, 0.15)", border: "1px solid rgba(239, 68, 68, 0.4)", color: "#ff6479", fontSize: 12 }}>
+          {error}
+        </div>
+      )}
+
+      {/* BA Exclusive Security Badge Banner */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          padding: "8px 12px",
+          borderRadius: 8,
+          background: "linear-gradient(90deg, rgba(255, 51, 75, 0.12) 0%, rgba(255, 51, 75, 0.03) 100%)",
+          border: "1px solid rgba(255, 51, 75, 0.3)",
+          fontSize: 11.5,
+          color: isLight ? "#0f172a" : "#f1f5f9",
+        }}
+      >
+        <ShieldCheck size={16} color="#ff334b" />
+        <span>
+          <strong>BA Exclusive Control:</strong> Logged as <strong>{currentUser?.name || "Sudhanshu Khande"}</strong>. Directives registered here track production compliance and live deployment state.
+        </span>
+      </div>
+
+      {/* Section 1: Core Directive Information */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 12 }}>
+        <FormField label="Directive Code (Auto or Custom)">
+          <input
+            style={{ ...darkInputStyle, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700 }}
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            placeholder="e.g. CRIT-01"
+            required
+          />
+        </FormField>
+        <FormField label="Major Critical Directive Title">
+          <input
+            style={darkInputStyle}
+            value={title}
+            onChange={(e) => {
+              setTitle(e.target.value);
+              if (error) setError("");
+            }}
+            placeholder="e.g. Dual Biometric CAFO Sign-off for High-Value Vouchers"
+            required
+          />
+        </FormField>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 12 }}>
+        <FormField label="Functional Subsystem / Module">
+          <SelectInput
+            value={module}
+            onChange={setModule}
+            options={MODULES}
+          />
+        </FormField>
+        <FormField label="Criticality / Severity Level">
+          <SelectInput
+            value={criticality}
+            onChange={setCriticality}
+            options={CRITICALITIES}
+          />
+        </FormField>
+      </div>
+
+      <FormField label="Detailed Directive Scenario & BA Acceptance Criteria">
+        <textarea
+          style={{ ...darkInputStyle, minHeight: 75, resize: "vertical", lineHeight: 1.4 }}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Specify exact business rules, execution steps, and verification checkpoints..."
+        />
+      </FormField>
+
+      {/* Section 2: Assignment & Dates */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+        <FormField label="Assigned Developer">
+          <SelectInput
+            value={assignedDev}
+            onChange={setAssignedDev}
+            options={userList.map((u) => u.name)}
+          />
+        </FormField>
+        <FormField label="Assigned QA Tester">
+          <SelectInput
+            value={assignedTester}
+            onChange={setAssignedTester}
+            options={userList.map((u) => u.name)}
+          />
+        </FormField>
+        <FormField label="Target Live Deployment Date">
+          <input
+            type="date"
+            style={darkInputStyle}
+            value={targetLiveDate}
+            onChange={(e) => setTargetLiveDate(e.target.value)}
+          />
+        </FormField>
+      </div>
+
+      {/* Section 3: Dual Status Panel (Testing Status & Live Production Status) */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 14,
+          padding: 14,
+          borderRadius: 10,
+          background: isLight ? "#f8fafc" : "rgba(255, 255, 255, 0.02)",
+          border: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.08)",
+        }}
+      >
+        {/* Left Column: QA Testing Status */}
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 800, color: "#38bdf8", marginBottom: 10, display: "flex", alignItems: "center", gap: 5 }}>
+            <FileSpreadsheet size={14} /> 1. QA Testing Status
+          </div>
+          <FormField label="Current Verification State">
+            <SelectInput
+              value={testingStatus}
+              onChange={setTestingStatus}
+              options={TESTING_STATUSES}
+            />
+          </FormField>
+          <div style={{ marginTop: 8 }}>
+            <FormField label="QA Tester Verification Remarks">
+              <textarea
+                style={{ ...darkInputStyle, minHeight: 60, resize: "vertical", fontSize: 12 }}
+                value={testerRemarks}
+                onChange={(e) => setTesterRemarks(e.target.value)}
+                placeholder="Notes on staging test results, pass/fail evidence, or blockers..."
+              />
+            </FormField>
+          </div>
+        </div>
+
+        {/* Right Column: Live Production Deployment Status */}
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 800, color: "#22c55e", marginBottom: 10, display: "flex", alignItems: "center", gap: 5 }}>
+            <CheckCircle2 size={14} /> 2. Live Production Status
+          </div>
+          <FormField label="Uploaded to Live / Production?">
+            <SelectInput
+              value={liveStatus}
+              onChange={handleLiveStatusChange}
+              options={LIVE_STATUSES}
+            />
+          </FormField>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 8 }}>
+            <FormField label="Live Version / Patch">
+              <input
+                style={{ ...darkInputStyle, padding: "7px 10px", fontSize: 12 }}
+                value={liveVersion}
+                onChange={(e) => setLiveVersion(e.target.value)}
+                placeholder="e.g. v2.4.2"
+              />
+            </FormField>
+            <FormField label="Upload Date">
+              <input
+                type="date"
+                style={{ ...darkInputStyle, padding: "7px 8px", fontSize: 11 }}
+                value={liveUploadedAt || todayISO()}
+                onChange={(e) => setLiveUploadedAt(e.target.value)}
+              />
+            </FormField>
+          </div>
+          <div style={{ marginTop: 8 }}>
+            <FormField label="Live Production Deployment Remarks">
+              <input
+                style={{ ...darkInputStyle, padding: "7px 10px", fontSize: 12 }}
+                value={liveRemarks}
+                onChange={(e) => setLiveRemarks(e.target.value)}
+                placeholder="e.g. Deployed to production cluster; verified in Pune pilot ZP"
+              />
+            </FormField>
+          </div>
+        </div>
+      </div>
+
+      {/* Buttons */}
+      <div style={{ display: "flex", gap: 10, marginTop: 12, justifyContent: "flex-end" }}>
+        <button
+          type="button"
+          className="btn-ghost-dark"
+          style={{ padding: "9px 18px", fontSize: 13, fontWeight: 500 }}
+          onClick={onCancel}
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className="btn-red-gradient"
+          style={{ padding: "9px 24px", fontSize: 13, display: "flex", alignItems: "center", gap: 6 }}
+        >
+          <ShieldAlert size={14} /> {initial ? "Update Critical Directive" : "Save Critical Directive"}
         </button>
       </div>
     </form>
@@ -6233,6 +7081,10 @@ export default function App() {
               Array.isArray(fetched.testPoints) && fetched.testPoints.length > 0
                 ? fetched.testPoints
                 : seedTestPoints(),
+            baCriticalPoints:
+              Array.isArray(fetched.baCriticalPoints) && fetched.baCriticalPoints.length > 0
+                ? fetched.baCriticalPoints
+                : seedBACriticalPoints(),
           });
         } else {
           const seed = seedData();
@@ -6606,6 +7458,41 @@ export default function App() {
   const saveTestPoint = (item) => {
     const isEdit = !!modal?.editing?.id;
     const targetId = modal?.editing?.id || uid();
+
+    if (isEdit) {
+      const original = (data?.testPoints || []).find((t) => t.id === modal.editing.id) || modal.editing;
+      const userIsBA = isUserBA(currentUser);
+      const isDev = isAssignedDev(original, currentUser);
+      const isTester = isAssignedTester(original, currentUser);
+
+      if (!userIsBA && !isDev && !isTester) {
+        alert(
+          `🔒 Access Restricted: Directive ${original.code} is assigned to Developer "${original.assignedDev || "Developer"}".\n\nOnly the assigned team member or a Business Analyst (BA) can update this point.`
+        );
+        return;
+      }
+
+      // If developer (not BA), protect BA specification and QA verification fields
+      if (isDev && !userIsBA) {
+        item = {
+          ...original,
+          devStatus: item.devStatus,
+          devRemark: item.devRemark,
+          estimatedTime: item.estimatedTime,
+          timerDeadline: item.timerDeadline !== undefined ? item.timerDeadline : original.timerDeadline,
+        };
+      } else if (isTester && !userIsBA) {
+        // If tester (not BA), protect BA specification and Developer resolution fields
+        item = {
+          ...original,
+          status: item.status,
+          actualResult: item.actualResult,
+          finalRetestRemarks: item.finalRetestRemarks,
+          severity: item.severity,
+        };
+      }
+    }
+
     const calculatedDeadline =
       item.timerDeadline !== undefined
         ? item.timerDeadline
@@ -6741,6 +7628,10 @@ export default function App() {
   };
 
   const promptDeleteTestPoint = (tp) => {
+    if (!canUserDeletePoint(currentUser)) {
+      alert("🔒 Permission Denied: Only Business Analysts / Admins have authority to delete matrix directives.");
+      return;
+    }
     setConfirmDelete({
       itemType: "Dev-Test Matrix Point",
       itemTitle: `[${tp.code || "Point"}] ${tp.scenario || ""}`,
@@ -6852,6 +7743,16 @@ export default function App() {
   };
 
   const cycleTaskStatus = (item) => {
+    const userIsBA = isUserBA(currentUser);
+    const isAssigned =
+      (item.assignee || "").trim().toLowerCase() === (currentUser?.name || "").trim().toLowerCase() ||
+      (item.assignee || "").trim().toLowerCase() === (currentUser?.username || "").trim().toLowerCase() ||
+      (item.assignedDev || "").trim().toLowerCase() === (currentUser?.name || "").trim().toLowerCase();
+    if (!userIsBA && !isAssigned) {
+      alert(`🔒 Access Restricted: Task "${item.title}" is assigned to "${item.assignee || "another member"}".\n\nOnly the assigned person or a Business Analyst can update its status.`);
+      return;
+    }
+
     const next = TASK_STATUSES[(TASK_STATUSES.indexOf(item.status) + 1) % TASK_STATUSES.length];
     const newNotifications = [];
     if (next === "Done") {
@@ -6878,6 +7779,13 @@ export default function App() {
   };
 
   const cycleTestPointStatus = (tp) => {
+    if (!canUserModifyTestStatus(tp, currentUser)) {
+      alert(
+        `🔒 Access Restricted: QA verification on ${tp.code} is assigned to Tester "${tp.tester || "QA Tester"}".\n\nOnly ${tp.tester || "the assigned tester"} or a Business Analyst (BA) can cycle the test status.`
+      );
+      return;
+    }
+
     const next = TEST_STATUSES[(TEST_STATUSES.indexOf(tp.status) + 1) % TEST_STATUSES.length];
     const nextLogs = logActivity("UPDATE", "Dev-Test Matrix Point", tp.code || tp.scenario, `Cycled test status to ${next}`);
     const newNotifications = [];
@@ -6967,6 +7875,13 @@ export default function App() {
 
   const resolveTestPoint = (id, resolution) => {
     const target = (data?.testPoints || []).find((t) => t.id === id);
+    if (target && !canUserModifyDevStatus(target, currentUser)) {
+      alert(
+        `🔒 Access Restricted: Directive ${target.code} is assigned to Developer "${target.assignedDev || "another developer"}".\n\nOnly ${target.assignedDev || "the assigned developer"} or a Business Analyst (BA) can update the developer resolution status.`
+      );
+      return;
+    }
+
     const updatedPoints = (data?.testPoints || []).map((t) =>
       t.id === id ? { ...t, ...resolution, updatedAt: todayISO() } : t
     );
@@ -7022,6 +7937,13 @@ export default function App() {
 
   const updateTestPointTimer = (id, estimatedTime, timerDeadline) => {
     const target = (data?.testPoints || []).find((t) => t.id === id);
+    if (target && !canUserModifyDevStatus(target, currentUser)) {
+      alert(
+        `🔒 Access Restricted: Directive ${target.code} is assigned to Developer "${target.assignedDev || "another developer"}".\n\nOnly ${target.assignedDev || "the assigned developer"} or a Business Analyst can adjust the SLA countdown timer.`
+      );
+      return;
+    }
+
     const calculatedDeadline =
       timerDeadline !== undefined
         ? timerDeadline
@@ -7138,6 +8060,153 @@ export default function App() {
         notes: `Expected: ${tp.expectedResult}\nActual: ${tp.actualResult}\nDeveloper Remark: ${tp.devRemark || "None"}`,
       },
     });
+  };
+
+  const saveBACriticalPoint = (item) => {
+    if (!isBA) {
+      alert("Access Restricted: Only Business Analysts can manage major critical directives.");
+      return;
+    }
+    const isEdit = !!modal?.editing?.id;
+    const currentPoints = data?.baCriticalPoints || seedBACriticalPoints();
+    const updated = addOrUpdate(currentPoints, item, modal?.editing?.id);
+    const nextLogs = logActivity(
+      isEdit ? "UPDATE" : "CREATE",
+      "BA Critical Directive",
+      item.code || "CRIT",
+      `Title: "${item.title}" · Module: ${item.module} · Live Status: ${item.liveStatus} · Testing: ${item.testingStatus}`
+    );
+    persist({ ...data, baCriticalPoints: updated, auditLogs: nextLogs });
+    setModal(null);
+  };
+
+  const promptDeleteBACriticalPoint = (point) => {
+    if (!isBA) {
+      alert("Access Restricted: Only Business Analysts can delete critical directives.");
+      return;
+    }
+    setConfirmDelete({
+      itemType: "BA Critical Directive",
+      itemTitle: point.title || point.code,
+      details: `Code: ${point.code} · Module: ${point.module} · Live Status: ${point.liveStatus}`,
+      onConfirm: () => {
+        const currentPoints = data?.baCriticalPoints || [];
+        const nextPoints = currentPoints.filter((p) => p.id !== point.id);
+        const nextLogs = logActivity(
+          "DELETE",
+          "BA Critical Directive",
+          point.code || "CRIT",
+          `Deleted critical point "${point.title}" (Module: ${point.module})`
+        );
+        persist({ ...data, baCriticalPoints: nextPoints, auditLogs: nextLogs });
+        setConfirmDelete(null);
+      },
+    });
+  };
+
+  const toggleBALiveStatus = (pointId, forcedNext) => {
+    if (!isBA) {
+      alert("Access Restricted: Only Business Analysts can toggle Live production deployment status.");
+      return;
+    }
+    const currentPoints = data?.baCriticalPoints || seedBACriticalPoints();
+    const target = currentPoints.find((p) => p.id === pointId);
+    if (!target) return;
+
+    let nextLiveStatus = forcedNext;
+    if (!nextLiveStatus) {
+      const currentlyLive = target.liveStatus === "Live (Uploaded to Production)" || target.liveStatus === "Live Verified" || target.isLive;
+      nextLiveStatus = currentlyLive ? "Not on Live" : "Live (Uploaded to Production)";
+    }
+
+    const isLive = nextLiveStatus === "Live (Uploaded to Production)" || nextLiveStatus === "Live Verified";
+    const uploadedAt = isLive ? (target.liveUploadedAt || todayISO()) : "";
+    const uploadedBy = isLive ? (target.liveUploadedBy || currentUser?.name || "Sudhanshu Khande") : "";
+    const version = isLive ? (target.liveVersion || "v2.4.2") : target.liveVersion;
+
+    const nextPoints = currentPoints.map((p) => {
+      if (p.id !== pointId) return p;
+      return {
+        ...p,
+        liveStatus: nextLiveStatus,
+        isLive,
+        liveUploadedAt: uploadedAt,
+        liveUploadedBy: uploadedBy,
+        liveVersion: version,
+        updatedAt: todayISO(),
+      };
+    });
+
+    const nextLogs = logActivity(
+      "UPDATE",
+      "Live Production Status",
+      target.code,
+      `Toggled Live Status to "${nextLiveStatus}" by ${currentUser?.name || "BA"} (Version: ${version || "N/A"})`
+    );
+
+    persist({ ...data, baCriticalPoints: nextPoints, auditLogs: nextLogs });
+  };
+
+  const cycleBATestingStatus = (pointId) => {
+    if (!isBA) {
+      alert("Access Restricted: Only Business Analysts can cycle testing status in the BA Critical Matrix.");
+      return;
+    }
+    const currentPoints = data?.baCriticalPoints || seedBACriticalPoints();
+    const cycle = ["Untested", "Testing In Progress", "QA Passed", "QA Failed / Blocked", "Retest Required"];
+    const target = currentPoints.find((p) => p.id === pointId);
+    if (!target) return;
+
+    const curIndex = cycle.indexOf(target.testingStatus || "Untested");
+    const nextStatus = cycle[(curIndex + 1) % cycle.length];
+
+    const nextPoints = currentPoints.map((p) => {
+      if (p.id !== pointId) return p;
+      return {
+        ...p,
+        testingStatus: nextStatus,
+        testedDate: nextStatus === "QA Passed" ? (p.testedDate || todayISO()) : p.testedDate,
+        testedBy: nextStatus === "QA Passed" ? (p.testedBy || currentUser?.name || "Rutuja") : p.testedBy,
+        updatedAt: todayISO(),
+      };
+    });
+
+    persist({ ...data, baCriticalPoints: nextPoints });
+  };
+
+  const pushBACriticalToTestMatrix = (point) => {
+    if (!isBA) {
+      alert("Access Restricted: Only Business Analysts can push directives to the Dev-Test Matrix.");
+      return;
+    }
+    const newPoint = {
+      id: `tp_${uid()}`,
+      code: `BA-${point.code || Math.floor(100 + Math.random() * 900)}`,
+      module: point.module || "BA Directive",
+      scenario: `[BA Critical Directive] ${point.title}: ${point.description || ""}`,
+      assignedDate: todayISO(),
+      assignedDev: point.assignedDev || "Sankalp",
+      devStatus: "Pending Dev Fix",
+      tester: point.assignedTester || "Rutuja",
+      status: point.testingStatus === "QA Passed" ? "Passed" : "Untested",
+      actualResult: `Originated from BA Critical Matrix (${point.code}). Target Live: ${point.targetLiveDate || "TBD"}`,
+      devRemark: `Target Live Date: ${point.targetLiveDate || "N/A"} · Criticality: ${point.criticality || "High Critical"}`,
+      finalRetestRemarks: "",
+      severity: (point.criticality || "").toLowerCase().includes("blocker") ? "Blocker" : "Critical",
+      estimatedTime: "1 Day",
+      createdAt: todayISO(),
+      updatedAt: todayISO(),
+    };
+
+    const nextPoints = [newPoint, ...(data?.testPoints || [])];
+    const nextLogs = logActivity(
+      "CREATE",
+      "Dev-Test Matrix Point",
+      newPoint.code,
+      `Dispatched from BA Critical Matrix: "${point.title}" (Code: ${point.code})`
+    );
+    persist({ ...data, testPoints: nextPoints, auditLogs: nextLogs });
+    alert(`Critical Directive successfully dispatched to Dev-Test Execution Matrix as ${newPoint.code}!`);
   };
 
   // Notification actions
@@ -7271,9 +8340,25 @@ export default function App() {
   const isCEO = currentUser?.role === "CEO" || userRoleLower.includes("ceo");
   const canAccessMOM = isBA || isManager || isCEO;
 
+  const pendingLiveDirectives = (data?.baCriticalPoints || []).filter(
+    (p) => p.liveStatus === "Not on Live" || p.liveStatus === "Ready for Live" || !p.isLive
+  ).length;
+
   const navItems = [
     { key: "my_desk", label: "My Desk & Tasks", icon: UserCheck, count: myOpenIssues + myPendingTasks, highlight: true },
     { key: "test_hub", label: "Dev-Test Execution Matrix", icon: FileSpreadsheet, count: failedTestPointsCount, isAlert: failedTestPointsCount > 0 },
+    ...(isBA
+      ? [
+          {
+            key: "ba_critical_points",
+            label: "BA Critical & Live Matrix",
+            icon: ShieldAlert,
+            count: pendingLiveDirectives,
+            isAlert: pendingLiveDirectives > 0,
+            highlight: true,
+          },
+        ]
+      : []),
     ...(canAccessMOM
       ? [
           {
@@ -7887,6 +8972,8 @@ export default function App() {
               <p style={{ margin: "4px 0 0 0", fontSize: 12.5, color: isLight ? "#475569" : "#94a3b8" }}>
                 {tab === "my_desk"
                   ? `Assigned directives and active defects for ${currentUser?.name || "User"}`
+                  : tab === "ba_critical_points"
+                  ? "BA Major Critical Directives Registry, QA testing status, and Live Production deployment verification (BA Only)"
                   : tab === "test_hub"
                   ? "Unified Dev-Test Execution Matrix, lead assignment, developer completion status, and retest log"
                   : tab === "mom"
@@ -8422,6 +9509,7 @@ export default function App() {
             testPoints={filteredTestPoints}
             allTestPoints={allTestPoints}
             users={data?.users || TEAM_ROSTER}
+            currentUser={currentUser}
             onCycleStatus={cycleTestPointStatus}
             onOpenResolve={(tp) => setModal({ type: "dev_resolve", editing: tp })}
             onOpenEdit={(tp) => setModal({ type: "test_point", editing: tp })}
@@ -8440,6 +9528,34 @@ export default function App() {
             setSearchQuery={setQaSearch}
             isLight={isLight}
           />
+        )}
+
+        {tab === "ba_critical_points" && (
+          isBA ? (
+            <BACriticalMatrixView
+              points={data?.baCriticalPoints || []}
+              users={data?.users || TEAM_ROSTER}
+              currentUser={currentUser}
+              onOpenAdd={() => setModal({ type: "ba_critical_point" })}
+              onOpenEdit={(pt) => setModal({ type: "ba_critical_point", editing: pt })}
+              onDelete={promptDeleteBACriticalPoint}
+              onToggleLiveStatus={toggleBALiveStatus}
+              onCycleTestingStatus={cycleBATestingStatus}
+              onPushToTestMatrix={pushBACriticalToTestMatrix}
+              onExportCSV={() => exportBACriticalCSV(data?.baCriticalPoints || [])}
+              isLight={isLight}
+            />
+          ) : (
+            <div className="glass-card" style={{ padding: "50px 20px", textAlign: "center", maxWidth: 520, margin: "60px auto" }}>
+              <ShieldAlert size={48} color="#ff334b" style={{ margin: "0 auto 16px", display: "block" }} />
+              <div style={{ fontSize: 18, fontWeight: 800, color: isLight ? "#0f172a" : "#ffffff", marginBottom: 8 }}>
+                Access Restricted: Business Analysts Only
+              </div>
+              <div style={{ fontSize: 13, color: isLight ? "#64748b" : "#94a3b8", lineHeight: 1.5 }}>
+                The Critical Directives & Live Deployment Matrix is reserved exclusively for Business Analysts and Administrators. Your current role does not have authorization to view or edit this module.
+              </div>
+            </div>
+          )
         )}
 
         {tab === "mom" && canAccessMOM && (
@@ -8653,6 +9769,11 @@ export default function App() {
               }}
             >
               {[
+                ...(isBA
+                  ? [
+                      { key: "ba_critical_points", label: "BA Critical Matrix", icon: ShieldAlert, color: "#ff334b", badge: pendingLiveDirectives },
+                    ]
+                  : []),
                 { key: "bill_tracker", label: "Bill Tracker", icon: Receipt, badge: totalBillsCount, color: "#10b981" },
                 { key: "dashboard", label: "Operations Deck", icon: LayoutGrid, color: "#38bdf8" },
                 { key: "issues", label: "Issues Matrix", icon: AlertTriangle, badge: openIssues, color: "#ef4444" },
@@ -8925,6 +10046,7 @@ export default function App() {
           <DevResolveForm
             initial={modal.editing}
             users={data?.users || TEAM_ROSTER}
+            currentUser={currentUser}
             onSave={(resolution) => resolveTestPoint(modal.editing.id, resolution)}
             onCancel={() => setModal(null)}
           />
@@ -8962,6 +10084,23 @@ export default function App() {
               setModal(null);
             }}
             onCancel={() => setModal(null)}
+          />
+        </Modal>
+      )}
+
+      {modal?.type === "ba_critical_point" && (
+        <Modal
+          title={modal.editing ? `Edit Critical Directive: ${modal.editing.code || ""}` : "Register Major Critical Directive"}
+          icon={ShieldAlert}
+          onClose={() => setModal(null)}
+        >
+          <BACriticalPointForm
+            initial={modal.editing}
+            users={data?.users || TEAM_ROSTER}
+            currentUser={currentUser}
+            onSave={saveBACriticalPoint}
+            onCancel={() => setModal(null)}
+            isLight={isLight}
           />
         </Modal>
       )}
@@ -9893,8 +11032,10 @@ function TestHubView({
   setSelectedDevStatus,
   searchQuery,
   setSearchQuery,
+  currentUser,
   isLight,
 }) {
+  const isBA = isUserBA(currentUser);
   const total = allTestPoints.length;
   const passed = allTestPoints.filter((t) => t.status === "Passed").length;
   const failed = allTestPoints.filter((t) => t.status === "Failed").length;
@@ -10084,6 +11225,43 @@ function TestHubView({
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {isBA ? (
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                color: "#38bdf8",
+                background: "rgba(56, 189, 248, 0.12)",
+                border: "1px solid rgba(56, 189, 248, 0.3)",
+                padding: "5px 10px",
+                borderRadius: 20,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 5,
+              }}
+              title="You have full BA / Admin authority to edit, assign, and change status on any matrix point."
+            >
+              <ShieldCheck size={13} color="#38bdf8" /> BA / Admin Authority
+            </span>
+          ) : (
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                color: isLight ? "#475569" : "#cbd5e1",
+                background: isLight ? "#e2e8f0" : "rgba(255, 255, 255, 0.05)",
+                border: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.1)",
+                padding: "5px 10px",
+                borderRadius: 20,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 5,
+              }}
+              title={`Logged in as ${currentUser?.name || currentUser?.username || "User"} (${currentUser?.role || "Member"}). You can only change status on points assigned to you.`}
+            >
+              <Lock size={12} color="#94a3b8" /> Assigned Mode: {currentUser?.name || currentUser?.username || "User"}
+            </span>
+          )}
           <button
             className="btn-ghost-dark"
             onClick={onExportCSV}
@@ -10166,7 +11344,13 @@ function TestHubView({
                 </td>
               </tr>
             ) : (
-              testPoints.map((tp, idx) => (
+            testPoints.map((tp, idx) => {
+              const canModifyDev = canUserModifyDevStatus(tp, currentUser);
+              const canModifyTest = canUserModifyTestStatus(tp, currentUser);
+              const canEdit = canUserEditPoint(tp, currentUser);
+              const canDelete = canUserDeletePoint(currentUser);
+
+              return (
                 <tr
                   key={tp.id}
                   className="custom-table-row"
@@ -10276,16 +11460,30 @@ function TestHubView({
                     <div style={{ marginTop: 2, display: "flex", alignItems: "center", gap: 4 }}>
                       {tp.timerDeadline ? (
                         <div
-                          onClick={() => (onQuickTimer ? onQuickTimer(tp) : onOpenEdit(tp))}
-                          style={{ cursor: "pointer" }}
-                          title={`Click to adjust SLA deadline (${tp.estimatedTime || "Active"})`}
+                          onClick={() => {
+                            if (!canModifyDev) {
+                              alert(`Access Restricted: SLA deadline can only be modified by assigned developer (${tp.assignedDev || 'None'}) or a BA.`);
+                              return;
+                            }
+                            if (onQuickTimer) onQuickTimer(tp);
+                            else onOpenEdit(tp);
+                          }}
+                          style={{ cursor: canModifyDev ? "pointer" : "not-allowed", opacity: canModifyDev ? 1 : 0.7 }}
+                          title={canModifyDev ? `Click to adjust SLA deadline (${tp.estimatedTime || "Active"})` : `Locked - Assigned to ${tp.assignedDev || "None"}`}
                         >
                           <LiveCountdown timerDeadline={tp.timerDeadline} status={tp.status} compact />
                         </div>
                       ) : (
                         <span
-                          onClick={() => (onQuickTimer ? onQuickTimer(tp) : onOpenEdit(tp))}
-                          title={`Estimated Time: ${tp.estimatedTime || "Click to set duration"}`}
+                          onClick={() => {
+                            if (!canModifyDev) {
+                              alert(`Access Restricted: SLA deadline can only be set by assigned developer (${tp.assignedDev || 'None'}) or a BA.`);
+                              return;
+                            }
+                            if (onQuickTimer) onQuickTimer(tp);
+                            else onOpenEdit(tp);
+                          }}
+                          title={canModifyDev ? `Estimated Time: ${tp.estimatedTime || "Click to set duration"}` : `Locked - Assigned to ${tp.assignedDev || "None"}`}
                           style={{
                             display: "inline-flex",
                             alignItems: "center",
@@ -10297,13 +11495,14 @@ function TestHubView({
                             background: tp.estimatedTime ? "rgba(56, 189, 248, 0.14)" : "rgba(255, 255, 255, 0.04)",
                             color: tp.estimatedTime ? "#38bdf8" : (isLight ? "#64748b" : "#94a3b8"),
                             border: tp.estimatedTime ? "1px solid rgba(56, 189, 248, 0.3)" : "1px dashed rgba(255, 255, 255, 0.15)",
-                            cursor: "pointer",
+                            cursor: canModifyDev ? "pointer" : "not-allowed",
+                            opacity: canModifyDev ? 1 : 0.65,
                             maxWidth: "100%",
                             boxSizing: "border-box",
                             transition: "all 0.15s ease",
                           }}
                         >
-                          <Clock size={8.5} style={{ flexShrink: 0 }} />
+                          {!canModifyDev ? <Lock size={8} style={{ flexShrink: 0 }} /> : <Clock size={8.5} style={{ flexShrink: 0 }} />}
                           <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                             {tp.estimatedTime || "Set Time"}
                           </span>
@@ -10314,7 +11513,19 @@ function TestHubView({
 
                   {/* 5. Dev Completion Status */}
                   <td style={{ padding: "8px 4px", textAlign: "center", verticalAlign: "middle", overflow: "hidden" }}>
-                    <DevStatusChip value={tp.devStatus} onClick={() => onOpenResolve(tp)} compact />
+                    <DevStatusChip
+                      value={tp.devStatus}
+                      onClick={() => {
+                        if (!canModifyDev) {
+                          alert(`Access Restricted: Only the assigned developer (${tp.assignedDev || 'None'}) or a BA can change development status.`);
+                          return;
+                        }
+                        onOpenResolve(tp);
+                      }}
+                      disabled={!canModifyDev}
+                      assignedTo={tp.assignedDev}
+                      compact
+                    />
                   </td>
 
                   {/* 6. Assigned Tester */}
@@ -10359,7 +11570,20 @@ function TestHubView({
                   {/* 7. Tester Status / Remarks */}
                   <td style={{ padding: "8px 6px", verticalAlign: "middle", overflow: "hidden" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 2 }}>
-                      <TestStatusChip value={tp.status} interactive onClick={() => onCycleStatus(tp)} compact />
+                      <TestStatusChip
+                        value={tp.status}
+                        interactive={canModifyTest}
+                        disabled={!canModifyTest}
+                        assignedTo={tp.tester}
+                        onClick={() => {
+                          if (!canModifyTest) {
+                            alert(`Access Restricted: Only the assigned tester (${tp.tester || 'QA'}) or a BA can update verification status.`);
+                            return;
+                          }
+                          onCycleStatus(tp);
+                        }}
+                        compact
+                      />
                     </div>
                     {tp.actualResult ? (
                       <div
@@ -10438,16 +11662,29 @@ function TestHubView({
                   {/* 10. Actions */}
                   <td style={{ padding: "8px 4px", textAlign: "center", verticalAlign: "middle", overflow: "hidden" }}>
                     <div style={{ display: "inline-flex", gap: 3, alignItems: "center" }}>
-                      <IconButton onClick={() => onOpenEdit(tp)} title="Edit Matrix Point" style={{ padding: 3 }}>
-                        <Pencil size={12} />
+                      <IconButton
+                        onClick={() => {
+                          if (!canEdit) {
+                            alert(`Access Restricted: You cannot edit this matrix point because you are not the assigned developer (${tp.assignedDev || 'None'}), assigned tester (${tp.tester || 'None'}), or a BA.`);
+                            return;
+                          }
+                          onOpenEdit(tp);
+                        }}
+                        title={canEdit ? "Edit Matrix Point" : `Locked: Assigned to Dev: ${tp.assignedDev || 'None'}, Tester: ${tp.tester || 'None'}`}
+                        style={{ padding: 3, opacity: canEdit ? 1 : 0.45 }}
+                      >
+                        {canEdit ? <Pencil size={12} /> : <Lock size={12} />}
                       </IconButton>
-                      <IconButton onClick={() => onDelete(tp)} title="Delete Matrix Point" variant="danger" style={{ padding: 3 }}>
-                        <Trash2 size={12} />
-                      </IconButton>
+                      {canDelete && (
+                        <IconButton onClick={() => onDelete(tp)} title="Delete Matrix Point (BA/Admin Only)" variant="danger" style={{ padding: 3 }}>
+                          <Trash2 size={12} />
+                        </IconButton>
+                      )}
                     </div>
                   </td>
                 </tr>
-              ))
+              );
+            })
             )}
           </tbody>
         </table>
@@ -11931,6 +13168,843 @@ function MOMView({
             );
           })
         )}
+      </div>
+    </div>
+  );
+}
+
+/* ---------------------------- BA-Exclusive Critical Directives & Live Tracker Matrix ---------------------------- */
+
+function exportBACriticalCSV(points = []) {
+  const headers = [
+    "Sr. No.",
+    "Directive Code",
+    "Title / Critical Directive",
+    "Functional Module",
+    "Criticality Level",
+    "BA Owner",
+    "Target Live Date",
+    "Assigned Developer",
+    "Assigned QA Tester",
+    "QA Testing Status",
+    "Tester Remarks",
+    "Tested By",
+    "Tested Date",
+    "Live Production Status",
+    "Live Version",
+    "Live Uploaded Date",
+    "Live Uploaded By",
+    "Live Deployment Remarks",
+    "Created Date",
+  ];
+
+  const rows = points.map((p, idx) => [
+    idx + 1,
+    `"${(p.code || "").replace(/"/g, '""')}"`,
+    `"${(p.title || "").replace(/"/g, '""')}"`,
+    `"${(p.module || "").replace(/"/g, '""')}"`,
+    `"${(p.criticality || "").replace(/"/g, '""')}"`,
+    `"${(p.baOwner || "").replace(/"/g, '""')}"`,
+    `"${(p.targetLiveDate || "").replace(/"/g, '""')}"`,
+    `"${(p.assignedDev || "").replace(/"/g, '""')}"`,
+    `"${(p.assignedTester || "").replace(/"/g, '""')}"`,
+    `"${(p.testingStatus || "").replace(/"/g, '""')}"`,
+    `"${(p.testerRemarks || "").replace(/"/g, '""')}"`,
+    `"${(p.testedBy || "").replace(/"/g, '""')}"`,
+    `"${(p.testedDate || "").replace(/"/g, '""')}"`,
+    `"${(p.liveStatus || "").replace(/"/g, '""')}"`,
+    `"${(p.liveVersion || "").replace(/"/g, '""')}"`,
+    `"${(p.liveUploadedAt || "").replace(/"/g, '""')}"`,
+    `"${(p.liveUploadedBy || "").replace(/"/g, '""')}"`,
+    `"${(p.liveRemarks || "").replace(/"/g, '""')}"`,
+    `"${(p.createdAt || "").replace(/"/g, '""')}"`,
+  ]);
+
+  const csvContent =
+    "data:text/csv;charset=utf-8,\uFEFF" +
+    [headers.join(","), ...rows.map((r) => r.join(","))].join("\r\n");
+
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", `ZPBDMS_BA_Critical_Live_Matrix_${todayISO()}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function BACriticalMatrixView({
+  points = [],
+  users = TEAM_ROSTER,
+  currentUser,
+  onOpenAdd,
+  onOpenEdit,
+  onDelete,
+  onToggleLiveStatus,
+  onCycleTestingStatus,
+  onPushToTestMatrix,
+  onExportCSV,
+  isLight = false,
+}) {
+  const [search, setSearch] = useState("");
+  const [liveFilter, setLiveFilter] = useState("All Live Statuses");
+  const [testFilter, setTestFilter] = useState("All Testing Statuses");
+  const [moduleFilter, setModuleFilter] = useState("All Modules");
+  const [criticalityFilter, setCriticalityFilter] = useState("All Criticalities");
+  const [quickTab, setQuickTab] = useState("all"); // "all" | "live_only" | "not_live" | "qa_passed" | "blockers"
+
+  const total = points.length;
+  const liveCount = points.filter((p) => p.liveStatus === "Live (Uploaded to Production)" || p.liveStatus === "Live Verified" || p.isLive).length;
+  const passedCount = points.filter((p) => p.testingStatus === "QA Passed").length;
+  const readyCount = points.filter((p) => p.liveStatus === "Ready for Live").length;
+  const notLiveCount = points.filter((p) => p.liveStatus === "Not on Live").length;
+  const blockerCount = points.filter((p) => (p.criticality || "").toLowerCase().includes("blocker")).length;
+
+  const liveRate = total > 0 ? Math.round((liveCount / total) * 100) : 0;
+  const passRate = total > 0 ? Math.round((passedCount / total) * 100) : 0;
+
+  // Extract distinct modules
+  const modules = ["All Modules", ...Array.from(new Set(points.map((p) => p.module).filter(Boolean)))];
+
+  // Filtering
+  const filtered = points.filter((p) => {
+    const isPointLive = p.liveStatus === "Live (Uploaded to Production)" || p.liveStatus === "Live Verified" || p.isLive;
+
+    // Quick Tab filter
+    if (quickTab === "live_only" && !isPointLive) return false;
+    if (quickTab === "not_live" && isPointLive) return false;
+    if (quickTab === "qa_passed" && p.testingStatus !== "QA Passed") return false;
+    if (quickTab === "blockers" && !(p.criticality || "").toLowerCase().includes("blocker")) return false;
+
+    // Live status dropdown
+    if (liveFilter !== "All Live Statuses") {
+      if (liveFilter === "Live (Uploaded to Production)") {
+        if (!isPointLive) return false;
+      } else if (p.liveStatus !== liveFilter) {
+        return false;
+      }
+    }
+
+    // Testing status dropdown
+    if (testFilter !== "All Testing Statuses" && p.testingStatus !== testFilter) return false;
+
+    // Module dropdown
+    if (moduleFilter !== "All Modules" && p.module !== moduleFilter) return false;
+
+    // Criticality dropdown
+    if (criticalityFilter !== "All Criticalities" && p.criticality !== criticalityFilter) return false;
+
+    // Real-time Search functionality across all key fields
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      const codeMatch = (p.code || "").toLowerCase().includes(q);
+      const titleMatch = (p.title || "").toLowerCase().includes(q);
+      const moduleMatch = (p.module || "").toLowerCase().includes(q);
+      const descMatch = (p.description || "").toLowerCase().includes(q);
+      const devMatch = (p.assignedDev || "").toLowerCase().includes(q);
+      const testerMatch = (p.assignedTester || "").toLowerCase().includes(q);
+      const baMatch = (p.baOwner || "").toLowerCase().includes(q);
+      const remarksMatch =
+        (p.testerRemarks || "").toLowerCase().includes(q) ||
+        (p.liveRemarks || "").toLowerCase().includes(q);
+      const versionMatch = (p.liveVersion || "").toLowerCase().includes(q);
+
+      return (
+        codeMatch ||
+        titleMatch ||
+        moduleMatch ||
+        descMatch ||
+        devMatch ||
+        testerMatch ||
+        baMatch ||
+        remarksMatch ||
+        versionMatch
+      );
+    }
+
+    return true;
+  });
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      {/* Top BA Executive Command Header */}
+      <div
+        className="glass-card"
+        style={{
+          padding: "16px 20px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: 12,
+          background: isLight
+            ? "linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(241, 245, 249, 0.95) 100%)"
+            : "linear-gradient(135deg, rgba(255, 51, 75, 0.08) 0%, rgba(18, 22, 34, 0.9) 100%)",
+          border: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 51, 75, 0.25)",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div
+            style={{
+              width: 42,
+              height: 42,
+              borderRadius: 10,
+              background: "rgba(255, 51, 75, 0.15)",
+              border: "1px solid rgba(255, 51, 75, 0.4)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            <ShieldAlert size={22} color="#ff334b" />
+          </div>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <h2 style={{ fontSize: 17, fontWeight: 800, margin: 0, color: isLight ? "#0f172a" : "#ffffff", letterSpacing: "-0.3px" }}>
+                BA Critical & Live Deployment Matrix
+              </h2>
+              <span
+                style={{
+                  fontSize: 10.5,
+                  fontWeight: 700,
+                  color: "#38bdf8",
+                  background: "rgba(56, 189, 248, 0.14)",
+                  border: "1px solid rgba(56, 189, 248, 0.35)",
+                  padding: "2px 8px",
+                  borderRadius: 14,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                }}
+                title="Strictly accessible to Business Analysts and Authorized Leadership only."
+              >
+                <ShieldCheck size={12} color="#38bdf8" /> BA / Admin Exclusive Control
+              </span>
+            </div>
+            <p style={{ margin: "2px 0 0", fontSize: 12, color: isLight ? "#64748b" : "#94a3b8" }}>
+              Track mission-critical business requirements, QA testing sign-offs, and production live deployment verification.
+            </p>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <button
+            className="btn-ghost-dark"
+            onClick={onExportCSV}
+            style={{ padding: "7px 13px", fontSize: 12 }}
+            title="Download full BA Critical Directives & Live Deployment matrix in CSV format"
+          >
+            <Download size={13} style={{ marginRight: 4 }} /> Export CSV
+          </button>
+          <button
+            className="btn-red-gradient"
+            onClick={onOpenAdd}
+            style={{ padding: "7px 16px", fontSize: 12.5 }}
+          >
+            <Plus size={14} style={{ marginRight: 4 }} /> Add Critical Point
+          </button>
+        </div>
+      </div>
+
+      {/* Operational KPI Deck */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))",
+          gap: 12,
+        }}
+      >
+        {/* Total Directives */}
+        <div className="glass-card" style={{ padding: "14px 16px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", textTransform: "uppercase", fontWeight: 700 }}>
+              Total Critical Directives
+            </span>
+            <FileSpreadsheet size={15} color={isLight ? "#475569" : "#cbd5e1"} />
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 800, color: isLight ? "#0f172a" : "#ffffff", marginTop: 6 }}>
+            {total}
+          </div>
+          <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>
+            Registered by Business Analysts
+          </div>
+        </div>
+
+        {/* Live on Production */}
+        <div className="glass-card" style={{ padding: "14px 16px", borderLeft: "3px solid #22c55e" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 11, color: "#16a34a", textTransform: "uppercase", fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", boxShadow: "0 0 6px #22c55e" }} />
+              Live on Production
+            </span>
+            <CheckCircle2 size={15} color="#22c55e" />
+          </div>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginTop: 6 }}>
+            <div style={{ fontSize: 24, fontWeight: 800, color: "#22c55e" }}>{liveCount}</div>
+            <div style={{ fontSize: 11.5, color: isLight ? "#64748b" : "#94a3b8" }}>({liveRate}% Live)</div>
+          </div>
+          <div style={{ width: "100%", height: 4, background: isLight ? "#e2e8f0" : "rgba(255, 255, 255, 0.08)", borderRadius: 2, marginTop: 6, overflow: "hidden" }}>
+            <div style={{ width: `${liveRate}%`, height: "100%", background: "#22c55e", borderRadius: 2 }} />
+          </div>
+        </div>
+
+        {/* QA Passed & Cleared */}
+        <div className="glass-card" style={{ padding: "14px 16px", borderLeft: "3px solid #38bdf8" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 11, color: "#0284c7", textTransform: "uppercase", fontWeight: 700 }}>
+              QA Passed / Verified
+            </span>
+            <CheckCheck size={15} color="#38bdf8" />
+          </div>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginTop: 6 }}>
+            <div style={{ fontSize: 24, fontWeight: 800, color: "#38bdf8" }}>{passedCount}</div>
+            <div style={{ fontSize: 11.5, color: isLight ? "#64748b" : "#94a3b8" }}>({passRate}% Passed)</div>
+          </div>
+          <div style={{ width: "100%", height: 4, background: isLight ? "#e2e8f0" : "rgba(255, 255, 255, 0.08)", borderRadius: 2, marginTop: 6, overflow: "hidden" }}>
+            <div style={{ width: `${passRate}%`, height: "100%", background: "#38bdf8", borderRadius: 2 }} />
+          </div>
+        </div>
+
+        {/* Pending Live Upload */}
+        <div className="glass-card" style={{ padding: "14px 16px", borderLeft: "3px solid #f59e0b" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 11, color: "#d97706", textTransform: "uppercase", fontWeight: 700 }}>
+              Pending Live Upload
+            </span>
+            <Clock size={15} color="#f59e0b" />
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 800, color: "#f59e0b", marginTop: 6 }}>
+            {readyCount + notLiveCount}
+          </div>
+          <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>
+            {readyCount} Ready · {notLiveCount} Not on Live
+          </div>
+        </div>
+
+        {/* Blocker Showstoppers */}
+        <div className="glass-card" style={{ padding: "14px 16px", borderLeft: "3px solid #ef4444" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 11, color: "#dc2626", textTransform: "uppercase", fontWeight: 700 }}>
+              Showstoppers / Blockers
+            </span>
+            <AlertTriangle size={15} color="#ef4444" />
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 800, color: "#ef4444", marginTop: 6 }}>
+            {blockerCount}
+          </div>
+          <div style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8", marginTop: 2 }}>
+            Highest operational priority
+          </div>
+        </div>
+      </div>
+
+      {/* Filter Toolbar & Real-Time Search Bar */}
+      <div
+        className="glass-card"
+        style={{
+          padding: "14px 18px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 12,
+        }}
+      >
+        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", justifyContent: "space-between" }}>
+          {/* Real-Time Instant Search Input */}
+          <div style={{ position: "relative", flex: 1, minWidth: 260 }}>
+            <Search
+              size={14}
+              style={{
+                position: "absolute",
+                left: 11,
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: isLight ? "#64748b" : "#94a3b8",
+                pointerEvents: "none",
+              }}
+            />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search critical points by title, code, module, developer, remarks, version..."
+              style={{
+                ...darkInputStyle,
+                paddingLeft: 34,
+                paddingRight: search ? 30 : 12,
+                fontSize: 12.5,
+                height: 36,
+                borderRadius: 8,
+              }}
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                style={{
+                  position: "absolute",
+                  right: 9,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "transparent",
+                  border: "none",
+                  color: "#94a3b8",
+                  cursor: "pointer",
+                  padding: 2,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+                title="Clear search"
+              >
+                <X size={13} />
+              </button>
+            )}
+          </div>
+
+          {/* Quick Counter Badge */}
+          <div style={{ fontSize: 12, fontWeight: 600, color: isLight ? "#64748b" : "#94a3b8", whiteSpace: "nowrap" }}>
+            Showing <strong style={{ color: isLight ? "#0f172a" : "#ffffff" }}>{filtered.length}</strong> of {total} points
+          </div>
+        </div>
+
+        {/* Dropdown Filters & Quick Filter Chips */}
+        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+          {/* Quick Filter Tabs */}
+          <div style={{ display: "flex", gap: 4, background: isLight ? "#e2e8f0" : "rgba(255, 255, 255, 0.04)", padding: 3, borderRadius: 8 }}>
+            {[
+              { id: "all", label: `All (${total})` },
+              { id: "live_only", label: `🚀 Live (${liveCount})` },
+              { id: "not_live", label: `⏳ Not Live (${notLiveCount + readyCount})` },
+              { id: "qa_passed", label: `✅ Passed (${passedCount})` },
+              { id: "blockers", label: `⚡ Blockers (${blockerCount})` },
+            ].map((t) => {
+              const active = quickTab === t.id;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setQuickTab(t.id)}
+                  style={{
+                    background: active
+                      ? (isLight ? "#ffffff" : "rgba(255, 51, 75, 0.2)")
+                      : "transparent",
+                    color: active
+                      ? (isLight ? "#0f172a" : "#ffffff")
+                      : (isLight ? "#64748b" : "#94a3b8"),
+                    border: active
+                      ? (isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 51, 75, 0.4)")
+                      : "1px solid transparent",
+                    padding: "4px 9px",
+                    borderRadius: 6,
+                    fontSize: 11,
+                    fontWeight: active ? 700 : 500,
+                    cursor: "pointer",
+                    transition: "all 0.15s ease",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
+
+          <div style={{ height: 18, width: 1, background: isLight ? "#cbd5e1" : "rgba(255, 255, 255, 0.1)" }} />
+
+          {/* Live Status Filter Dropdown */}
+          <div style={{ minWidth: 155 }}>
+            <SelectInput
+              value={liveFilter}
+              onChange={setLiveFilter}
+              options={["All Live Statuses", "Live (Uploaded to Production)", "Ready for Live", "Not on Live", "Live Verified"]}
+            />
+          </div>
+
+          {/* Testing Status Filter Dropdown */}
+          <div style={{ minWidth: 155 }}>
+            <SelectInput
+              value={testFilter}
+              onChange={setTestFilter}
+              options={["All Testing Statuses", "QA Passed", "Testing In Progress", "Untested", "QA Failed / Blocked", "Retest Required"]}
+            />
+          </div>
+
+          {/* Module Filter Dropdown */}
+          <div style={{ minWidth: 165 }}>
+            <SelectInput
+              value={moduleFilter}
+              onChange={setModuleFilter}
+              options={modules}
+            />
+          </div>
+
+          {/* Clear Filters Button if any filter is active */}
+          {(search || liveFilter !== "All Live Statuses" || testFilter !== "All Testing Statuses" || moduleFilter !== "All Modules" || quickTab !== "all") && (
+            <button
+              type="button"
+              onClick={() => {
+                setSearch("");
+                setLiveFilter("All Live Statuses");
+                setTestFilter("All Testing Statuses");
+                setModuleFilter("All Modules");
+                setCriticalityFilter("All Criticalities");
+                setQuickTab("all");
+              }}
+              style={{
+                background: "transparent",
+                border: "none",
+                color: "#ff6479",
+                fontSize: 11.5,
+                fontWeight: 600,
+                cursor: "pointer",
+                padding: "4px 8px",
+              }}
+            >
+              Reset Filters
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* BA Critical Execution & Live Matrix Table */}
+      <div
+        className="glass-card"
+        style={{
+          width: "100%",
+          overflow: "hidden",
+          border: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.08)",
+        }}
+      >
+        <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
+          <colgroup>
+            <col style={{ width: 90 }} />
+            <col style={{ width: "26%" }} />
+            <col style={{ width: "13%" }} />
+            <col style={{ width: "14%" }} />
+            <col style={{ width: "15%" }} />
+            <col style={{ width: "18%" }} />
+            <col style={{ width: 105 }} />
+          </colgroup>
+          <thead>
+            <tr
+              style={{
+                background: isLight ? "#e2e8f0" : "rgba(255, 255, 255, 0.04)",
+                borderBottom: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.08)",
+                fontSize: 10.5,
+                fontWeight: 700,
+                color: isLight ? "#475569" : "#94a3b8",
+                textTransform: "uppercase",
+                letterSpacing: "0.5px",
+              }}
+            >
+              <th style={{ padding: "10px 6px", textAlign: "center" }}>Code / Sev</th>
+              <th style={{ padding: "10px 10px", textAlign: "left" }}>Major Critical Directive & Criteria</th>
+              <th style={{ padding: "10px 8px", textAlign: "left" }}>BA Owner & Date</th>
+              <th style={{ padding: "10px 8px", textAlign: "left" }}>Dev & Tester</th>
+              <th style={{ padding: "10px 8px", textAlign: "left" }}>QA Testing Status</th>
+              <th style={{ padding: "10px 8px", textAlign: "left" }}>Live Production State</th>
+              <th style={{ padding: "10px 6px", textAlign: "center" }}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.length === 0 ? (
+              <tr>
+                <td colSpan={7} style={{ padding: "50px 20px", textAlign: "center" }}>
+                  <ShieldAlert size={36} color="#64748b" style={{ margin: "0 auto 12px", display: "block" }} />
+                  <div style={{ color: isLight ? "#0f172a" : "#ffffff", fontSize: 14, fontWeight: 700 }}>
+                    No critical directives match current filter or search query
+                  </div>
+                  <div style={{ fontSize: 12, color: isLight ? "#64748b" : "#94a3b8", marginTop: 4 }}>
+                    Try searching for a different keyword or resetting your filter criteria.
+                  </div>
+                  <button
+                    className="btn-red-gradient"
+                    onClick={onOpenAdd}
+                    style={{ padding: "7px 16px", fontSize: 12, marginTop: 14 }}
+                  >
+                    <Plus size={13} style={{ marginRight: 4 }} /> Add New Critical Point
+                  </button>
+                </td>
+              </tr>
+            ) : (
+              filtered.map((pt, idx) => {
+                const isPtLive = pt.liveStatus === "Live (Uploaded to Production)" || pt.liveStatus === "Live Verified" || pt.isLive;
+
+                return (
+                  <tr
+                    key={pt.id}
+                    className="custom-table-row"
+                    style={{
+                      borderBottom: idx === filtered.length - 1 ? "none" : isLight ? "1px solid #f1f5f9" : "1px solid rgba(255, 255, 255, 0.05)",
+                      background: idx % 2 === 1 ? (isLight ? "rgba(241, 245, 249, 0.5)" : "rgba(255, 255, 255, 0.01)") : "transparent",
+                    }}
+                  >
+                    {/* 1. Code / Severity */}
+                    <td style={{ padding: "10px 6px", textAlign: "center", verticalAlign: "middle" }}>
+                      <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11.5, fontWeight: 800, color: isLight ? "#0f172a" : "#ffffff" }}>
+                        {pt.code || `CRIT-${idx + 1}`}
+                      </div>
+                      <div style={{ marginTop: 3 }}>
+                        <BACriticalityBadge value={pt.criticality} compact isLight={isLight} />
+                      </div>
+                    </td>
+
+                    {/* 2. Directive Title & Business Acceptance Criteria */}
+                    <td style={{ padding: "10px 10px", verticalAlign: "middle" }}>
+                      <div
+                        title={pt.title}
+                        style={{
+                          fontSize: 12.5,
+                          fontWeight: 700,
+                          color: isLight ? "#0f172a" : "#ffffff",
+                          lineHeight: 1.35,
+                          marginBottom: 3,
+                        }}
+                      >
+                        {pt.title}
+                      </div>
+
+                      {/* Module Badge */}
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                        <span
+                          style={{
+                            fontSize: 9.5,
+                            padding: "1px 6px",
+                            borderRadius: 4,
+                            background: isLight ? "#e2e8f0" : "rgba(255, 255, 255, 0.07)",
+                            color: isLight ? "#475569" : "#cbd5e1",
+                            fontWeight: 700,
+                          }}
+                        >
+                          {pt.module || "Core Flow"}
+                        </span>
+                      </div>
+
+                      {/* Criteria snippet */}
+                      {pt.description && (
+                        <div
+                          title={pt.description}
+                          style={{
+                            fontSize: 11,
+                            color: isLight ? "#64748b" : "#94a3b8",
+                            lineHeight: 1.35,
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                            overflow: "hidden",
+                          }}
+                        >
+                          {pt.description}
+                        </div>
+                      )}
+                    </td>
+
+                    {/* 3. BA Owner & Target Date */}
+                    <td style={{ padding: "10px 8px", verticalAlign: "middle" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 4 }}>
+                        <div
+                          style={{
+                            width: 17,
+                            height: 17,
+                            borderRadius: "50%",
+                            background: "rgba(255, 51, 75, 0.16)",
+                            border: "1px solid rgba(255, 51, 75, 0.4)",
+                            color: "#ff6479",
+                            fontSize: 8.5,
+                            fontWeight: 800,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0,
+                          }}
+                        >
+                          {(pt.baOwner || "B").charAt(0)}
+                        </div>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: isLight ? "#1e293b" : "#f1f5f9", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {pt.baOwner || "Sudhanshu Khande"}
+                        </span>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, color: isLight ? "#64748b" : "#94a3b8" }}>
+                        <Calendar size={10} color="#ff334b" />
+                        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 600 }}>
+                          Target: {pt.targetLiveDate || "TBD"}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* 4. Dev & Tester Team */}
+                    <td style={{ padding: "10px 8px", verticalAlign: "middle" }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                        {/* Assigned Dev */}
+                        <div style={{ display: "flex", alignItems: "center", gap: 4, overflow: "hidden" }}>
+                          <span style={{ fontSize: 9.5, fontWeight: 700, color: "#38bdf8", width: 26 }}>DEV:</span>
+                          <span style={{ fontSize: 11, fontWeight: 600, color: isLight ? "#334155" : "#e2e8f0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {pt.assignedDev || "Unassigned"}
+                          </span>
+                        </div>
+                        {/* Assigned Tester */}
+                        <div style={{ display: "flex", alignItems: "center", gap: 4, overflow: "hidden" }}>
+                          <span style={{ fontSize: 9.5, fontWeight: 700, color: "#c084fc", width: 26 }}>QA:</span>
+                          <span style={{ fontSize: 11, fontWeight: 600, color: isLight ? "#334155" : "#e2e8f0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {pt.assignedTester || "Rutuja"}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* 5. QA Testing Status */}
+                    <td style={{ padding: "10px 8px", verticalAlign: "middle" }}>
+                      <div style={{ marginBottom: 3 }}>
+                        <TestStatusChip
+                          value={pt.testingStatus}
+                          interactive
+                          onClick={() => onCycleTestingStatus(pt.id)}
+                          compact
+                        />
+                      </div>
+                      {pt.testerRemarks ? (
+                        <div
+                          title={pt.testerRemarks}
+                          style={{
+                            fontSize: 10,
+                            color: pt.testingStatus === "QA Failed / Blocked" ? "#ff6479" : (isLight ? "#64748b" : "#94a3b8"),
+                            lineHeight: 1.3,
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                            overflow: "hidden",
+                          }}
+                        >
+                          {pt.testerRemarks}
+                        </div>
+                      ) : (
+                        <span style={{ fontSize: 9.5, color: isLight ? "#94a3b8" : "#64748b", fontStyle: "italic" }}>
+                          Awaiting QA remarks
+                        </span>
+                      )}
+                    </td>
+
+                    {/* 6. Live Production State */}
+                    <td style={{ padding: "10px 8px", verticalAlign: "middle" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 3 }}>
+                        <BALiveStatusChip
+                          value={pt.liveStatus}
+                          interactive
+                          onClick={() => onToggleLiveStatus(pt.id)}
+                          compact
+                          isLight={isLight}
+                        />
+                        {pt.liveVersion && (
+                          <span
+                            style={{
+                              fontSize: 9,
+                              fontFamily: "'JetBrains Mono', monospace",
+                              fontWeight: 700,
+                              padding: "1px 5px",
+                              borderRadius: 3,
+                              background: isLight ? "#e2e8f0" : "rgba(255, 255, 255, 0.08)",
+                              color: isLight ? "#475569" : "#cbd5e1",
+                            }}
+                            title={`Release build: ${pt.liveVersion}`}
+                          >
+                            {pt.liveVersion}
+                          </span>
+                        )}
+                      </div>
+
+                      {pt.liveUploadedAt ? (
+                        <div style={{ fontSize: 9.5, color: "#22c55e", display: "flex", alignItems: "center", gap: 3 }}>
+                          <span>✓ Live on {pt.liveUploadedAt}</span>
+                        </div>
+                      ) : (
+                        <div style={{ fontSize: 9.5, color: isLight ? "#94a3b8" : "#64748b", fontStyle: "italic" }}>
+                          Not deployed to Live
+                        </div>
+                      )}
+
+                      {pt.liveRemarks && (
+                        <div
+                          title={pt.liveRemarks}
+                          style={{
+                            fontSize: 9.5,
+                            color: isLight ? "#64748b" : "#94a3b8",
+                            marginTop: 2,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {pt.liveRemarks}
+                        </div>
+                      )}
+                    </td>
+
+                    {/* 7. 1-Click Actions */}
+                    <td style={{ padding: "10px 6px", textAlign: "center", verticalAlign: "middle" }}>
+                      <div style={{ display: "inline-flex", gap: 4, alignItems: "center" }}>
+                        {/* Quick 1-Click Live Switch Button */}
+                        <button
+                          type="button"
+                          onClick={() => onToggleLiveStatus(pt.id)}
+                          style={{
+                            padding: "3px 7px",
+                            fontSize: 10,
+                            fontWeight: 700,
+                            borderRadius: 4,
+                            cursor: "pointer",
+                            background: isPtLive
+                              ? "rgba(16, 185, 129, 0.16)"
+                              : "rgba(239, 68, 68, 0.16)",
+                            color: isPtLive ? "#22c55e" : "#ff6479",
+                            border: isPtLive
+                              ? "1px solid rgba(16, 185, 129, 0.4)"
+                              : "1px solid rgba(239, 68, 68, 0.4)",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 3,
+                            transition: "all 0.15s ease",
+                          }}
+                          title={isPtLive ? "Click to toggle or revert Live deployment status" : "Click to mark Live on Production immediately with timestamp"}
+                        >
+                          {isPtLive ? "✓ Live" : "🚀 Go Live"}
+                        </button>
+
+                        {/* Push to Dev-Test Matrix */}
+                        <IconButton
+                          onClick={() => onPushToTestMatrix(pt)}
+                          title="Push to Dev-Test Execution Matrix as priority directive"
+                          style={{ padding: 4 }}
+                        >
+                          <Layers size={12} color="#38bdf8" />
+                        </IconButton>
+
+                        {/* Edit Button */}
+                        <IconButton
+                          onClick={() => onOpenEdit(pt)}
+                          title="Edit Critical Directive"
+                          style={{ padding: 4 }}
+                        >
+                          <Pencil size={12} />
+                        </IconButton>
+
+                        {/* Delete Button */}
+                        <IconButton
+                          onClick={() => onDelete(pt)}
+                          title="Delete Critical Directive (BA Only)"
+                          variant="danger"
+                          style={{ padding: 4 }}
+                        >
+                          <Trash2 size={12} />
+                        </IconButton>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );
