@@ -89,6 +89,8 @@ import {
   Zap,
 } from "lucide-react";
 import MindZoneView from "./MindZoneView.jsx";
+import CyberAtmosphereCanvas from "./CyberAtmosphereCanvas.jsx";
+import TiltCard from "./TiltCard.jsx";
 import {
   isNativePlatform,
   isAndroid,
@@ -8605,8 +8607,11 @@ export default function App() {
       {/* Dynamic Cybernetic Canvas Landing Screen Animation */}
       {showLanding && currentUser && <DynamicCyberLanding user={currentUser} onEnter={() => setShowLanding(false)} />}
 
-      {/* Visual Ambient Atmosphere */}
-      <div className="ambient-bg">
+      {/* Dynamic Cyber Atmosphere Interactive 3D Canvas */}
+      <CyberAtmosphereCanvas isLight={isLight} />
+
+      {/* Visual Ambient Atmosphere & Cyber Grid */}
+      <div className="ambient-bg" style={{ background: "transparent" }}>
         <div className="cyber-grid" />
       </div>
 
@@ -9066,12 +9071,12 @@ export default function App() {
                     {liveDistrictsCount}/{(data?.districts || []).length}
                   </span>
                 </div>
-                <div style={{ width: "100%", height: 4, background: "rgba(255, 255, 255, 0.1)", borderRadius: 4, overflow: "hidden" }}>
+                <div style={{ width: "100%", height: 5, background: "rgba(255, 255, 255, 0.1)", borderRadius: 4, overflow: "hidden" }}>
                   <div
+                    className="neon-progress-bar"
                     style={{
                       height: "100%",
                       width: `${(data?.districts || []).length ? (liveDistrictsCount / (data?.districts || []).length) * 100 : 0}%`,
-                      background: "linear-gradient(90deg, #ff334b, #22c55e)",
                       borderRadius: 4,
                     }}
                   />
@@ -9113,6 +9118,9 @@ export default function App() {
           width: "100%",
         }}
       >
+        {/* Top Executive 4K HUD Telemetry Ribbon */}
+        <HUDTelemetryRibbon isLight={isLight} currentUser={currentUser} />
+
         {/* Top Control Bar */}
         <header
           className="app-header"
@@ -10607,21 +10615,70 @@ function MyDeskView({
 
 /* ---------------------------- Overview / Dashboard ---------------------------- */
 
+function HUDTelemetryRibbon({ isLight, currentUser }) {
+  const [timeStr, setTimeStr] = useState(() =>
+    new Date().toLocaleTimeString("en-IN", { hour12: false })
+  );
+  const [dateStr, setDateStr] = useState(() =>
+    new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
+  );
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const now = new Date();
+      setTimeStr(now.toLocaleTimeString("en-IN", { hour12: false }));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className={isLight ? "hud-telemetry-ribbon-light" : "hud-telemetry-ribbon"}>
+      <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+        <div className="telemetry-item" style={{ color: "#10b981" }}>
+          <span className="pulse-radar-green" />
+          <span>4K ULTIMATE GRAPHICS ENGINE · 60 FPS ACTIVE</span>
+        </div>
+        <div style={{ width: 1, height: 14, background: isLight ? "#cbd5e1" : "rgba(255, 255, 255, 0.15)" }} />
+        <div className="telemetry-item" style={{ color: isLight ? "#475569" : "#94a3b8" }}>
+          <ShieldCheck size={13} color="#38bdf8" />
+          <span>SECURITY PROTOCOL: QUANTUM ENCRYPTED</span>
+        </div>
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+        <div className="telemetry-item" style={{ color: "#f59e0b" }}>
+          <Clock size={13} color="#f59e0b" />
+          <span style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: "1px" }}>
+            {dateStr.toUpperCase()} · {timeStr} IST
+          </span>
+        </div>
+        <div style={{ width: 1, height: 14, background: isLight ? "#cbd5e1" : "rgba(255, 255, 255, 0.15)" }} />
+        <div className="telemetry-item" style={{ color: isLight ? "#0f172a" : "#f1f5f9" }}>
+          <Sparkles size={12} color="#ff334b" />
+          <span>VIP COMMAND: {currentUser?.name?.toUpperCase() || "ADMIN"}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function StatMetricCard({ title, value, subtitle, icon: Icon, tone = "default", onClick }) {
   const isRed = tone === "warn";
   const isGreen = tone === "success";
 
-  return (
+  const cardContent = (
     <div
-      className={isRed ? "glass-card-accent" : "glass-card"}
-      onClick={onClick}
+      className={isRed ? "glass-card-accent" : "glass-card-nano"}
       style={{
         flex: 1,
         minWidth: 200,
         padding: "20px 22px",
-        cursor: onClick ? "pointer" : "default",
         position: "relative",
         overflow: "hidden",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
       }}
     >
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
@@ -10634,46 +10691,71 @@ function StatMetricCard({ title, value, subtitle, icon: Icon, tone = "default", 
             height: 34,
             borderRadius: 8,
             background: isRed
-              ? "rgba(255, 51, 75, 0.2)"
+              ? "rgba(255, 51, 75, 0.25)"
               : isGreen
-              ? "rgba(34, 197, 94, 0.15)"
-              : "rgba(255, 255, 255, 0.07)",
+              ? "rgba(34, 197, 94, 0.18)"
+              : "rgba(255, 255, 255, 0.08)",
             border: isRed
-              ? "1px solid rgba(255, 51, 75, 0.4)"
+              ? "1px solid rgba(255, 51, 75, 0.45)"
               : isGreen
-              ? "1px solid rgba(34, 197, 94, 0.3)"
-              : "1px solid rgba(255, 255, 255, 0.1)",
+              ? "1px solid rgba(34, 197, 94, 0.35)"
+              : "1px solid rgba(255, 255, 255, 0.15)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             color: isRed ? "#ff334b" : isGreen ? "#4ade80" : "#ffffff",
+            boxShadow: isRed ? "0 0 12px rgba(255, 51, 75, 0.4)" : isGreen ? "0 0 12px rgba(34, 197, 94, 0.3)" : "none",
           }}
         >
           <Icon size={18} />
         </div>
       </div>
 
-      <div
-        style={{
-          fontFamily: "'Outfit', sans-serif",
-          fontSize: 34,
-          fontWeight: 800,
-          color: isRed ? "#ff334b" : "#ffffff",
-          letterSpacing: "-0.5px",
-          lineHeight: 1,
-          marginBottom: 6,
-          textShadow: isRed ? "0 0 20px rgba(255, 51, 75, 0.4)" : "none",
-        }}
-      >
-        {value}
-      </div>
-
-      {subtitle && (
-        <div style={{ fontSize: 12, color: "#94a3b8", display: "flex", alignItems: "center", gap: 5 }}>
-          {subtitle}
+      <div>
+        <div
+          style={{
+            fontFamily: "'Outfit', sans-serif",
+            fontSize: 34,
+            fontWeight: 800,
+            color: isRed ? "#ff334b" : "#ffffff",
+            letterSpacing: "-0.5px",
+            lineHeight: 1,
+            marginBottom: 6,
+            textShadow: isRed
+              ? "0 0 20px rgba(255, 51, 75, 0.5)"
+              : "0 0 16px rgba(255, 255, 255, 0.15)",
+          }}
+        >
+          {value}
         </div>
-      )}
+
+        {subtitle && (
+          <div style={{ fontSize: 12, color: "#94a3b8", display: "flex", alignItems: "center", gap: 5 }}>
+            {subtitle}
+          </div>
+        )}
+      </div>
     </div>
+  );
+
+  return (
+    <TiltCard
+      maxTilt={6}
+      glare={true}
+      hudBrackets={isRed}
+      onClick={onClick}
+      style={{ flex: 1, minWidth: 200 }}
+    >
+      {isRed ? (
+        <div className="conic-beam-card" style={{ width: "100%", height: "100%" }}>
+          <div className="conic-beam-content" style={{ width: "100%", height: "100%" }}>
+            {cardContent}
+          </div>
+        </div>
+      ) : (
+        cardContent
+      )}
+    </TiltCard>
   );
 }
 

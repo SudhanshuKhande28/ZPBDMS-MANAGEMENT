@@ -25,6 +25,7 @@ import {
   Lightbulb,
   CheckCheck,
 } from "lucide-react";
+import TiltCard from "./TiltCard.jsx";
 
 /* =========================================================================
    SUDOKU PUZZLE GENERATOR & SOLVER LOGIC
@@ -1280,333 +1281,339 @@ function DailyQuestsGame({ isLight, userStats, onCompleteQuest }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       {/* QUEST 1 */}
-      <div
-        className={isLight ? "glass-card-4k-light" : "glass-card-4k"}
-        style={{
-          padding: "24px",
-          borderLeft: userStats.questsCompleted.q1 ? "4px solid #10b981" : "4px solid #f59e0b",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: 8,
-                background: "rgba(245, 158, 11, 0.15)",
-                color: "#f59e0b",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Hash size={18} />
-            </div>
-            <div>
-              <div style={{ fontSize: 16, fontWeight: 800, color: isLight ? "#0f172a" : "#ffffff" }}>
-                Quest 1: ZP Headcode Ledger Balance
-              </div>
-              <div style={{ fontSize: 12, color: isLight ? "#64748b" : "#94a3b8" }}>
-                Adjust the 3 department allotment sliders so the combined total precisely matches ₹100 Lakhs.
-              </div>
-            </div>
-          </div>
-
-          {userStats.questsCompleted.q1 ? (
-            <span style={{ display: "flex", alignItems: "center", gap: 5, color: "#10b981", fontWeight: 700, fontSize: 12.5 }}>
-              <CheckCircle2 size={16} /> Completed (+80 XP)
-            </span>
-          ) : (
-            <span className="badge-4k-gold">+80 XP</span>
-          )}
-        </div>
-
-        <div style={{ maxWidth: 560, marginTop: 16, display: "flex", flexDirection: "column", gap: 14 }}>
-          <div>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, fontWeight: 600, marginBottom: 4 }}>
-              <span>Gram Panchayat Works:</span>
-              <strong style={{ color: "#38bdf8" }}>₹{q1Values.itemA} Lakhs</strong>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={q1Values.itemA}
-              disabled={userStats.questsCompleted.q1}
-              onChange={(e) => setQ1Values({ ...q1Values, itemA: parseInt(e.target.value, 10) })}
-              style={{ width: "100%", accentColor: "#38bdf8" }}
-            />
-          </div>
-
-          <div>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, fontWeight: 600, marginBottom: 4 }}>
-              <span>Rural Water Scheme:</span>
-              <strong style={{ color: "#10b981" }}>₹{q1Values.itemB} Lakhs</strong>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={q1Values.itemB}
-              disabled={userStats.questsCompleted.q1}
-              onChange={(e) => setQ1Values({ ...q1Values, itemB: parseInt(e.target.value, 10) })}
-              style={{ width: "100%", accentColor: "#10b981" }}
-            />
-          </div>
-
-          <div>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, fontWeight: 600, marginBottom: 4 }}>
-              <span>Health Infrastructure:</span>
-              <strong style={{ color: "#f59e0b" }}>₹{q1Values.itemC} Lakhs</strong>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={q1Values.itemC}
-              disabled={userStats.questsCompleted.q1}
-              onChange={(e) => setQ1Values({ ...q1Values, itemC: parseInt(e.target.value, 10) })}
-              style={{ width: "100%", accentColor: "#f59e0b" }}
-            />
-          </div>
-
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
-            <div style={{ fontSize: 14, fontWeight: 800 }}>
-              Current Total:{" "}
-              <span style={{ color: q1CurrentSum === q1Target ? "#10b981" : "#ef4444" }}>
-                ₹{q1CurrentSum} / ₹{q1Target} Lakhs
-              </span>
-            </div>
-
-            {!userStats.questsCompleted.q1 && (
-              <button
-                onClick={handleQ1Submit}
-                disabled={q1CurrentSum !== q1Target}
+      <TiltCard maxTilt={3} glare={true} hudBrackets={true} style={{ width: "100%" }}>
+        <div
+          className={isLight ? "glass-card-4k-light" : "glass-card-nano"}
+          style={{
+            padding: "24px",
+            borderLeft: userStats.questsCompleted.q1 ? "4px solid #10b981" : "4px solid #f59e0b",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div
                 style={{
-                  padding: "8px 18px",
+                  width: 36,
+                  height: 36,
                   borderRadius: 8,
-                  fontSize: 13,
-                  fontWeight: 700,
-                  cursor: q1CurrentSum === q1Target ? "pointer" : "not-allowed",
-                  background: q1CurrentSum === q1Target ? "linear-gradient(135deg, #10b981, #059669)" : "#475569",
-                  color: "#ffffff",
-                  border: "none",
+                  background: "rgba(245, 158, 11, 0.15)",
+                  color: "#f59e0b",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
-                Submit Balance
-              </button>
+                <Hash size={18} />
+              </div>
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: isLight ? "#0f172a" : "#ffffff" }}>
+                  Quest 1: ZP Headcode Ledger Balance
+                </div>
+                <div style={{ fontSize: 12, color: isLight ? "#64748b" : "#94a3b8" }}>
+                  Adjust the 3 department allotment sliders so the combined total precisely matches ₹100 Lakhs.
+                </div>
+              </div>
+            </div>
+
+            {userStats.questsCompleted.q1 ? (
+              <span style={{ display: "flex", alignItems: "center", gap: 5, color: "#10b981", fontWeight: 700, fontSize: 12.5 }}>
+                <CheckCircle2 size={16} /> Completed (+80 XP)
+              </span>
+            ) : (
+              <span className="badge-4k-gold">+80 XP</span>
+            )}
+          </div>
+
+          <div style={{ maxWidth: 560, marginTop: 16, display: "flex", flexDirection: "column", gap: 14 }}>
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, fontWeight: 600, marginBottom: 4 }}>
+                <span>Gram Panchayat Works:</span>
+                <strong style={{ color: "#38bdf8" }}>₹{q1Values.itemA} Lakhs</strong>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={q1Values.itemA}
+                disabled={userStats.questsCompleted.q1}
+                onChange={(e) => setQ1Values({ ...q1Values, itemA: parseInt(e.target.value, 10) })}
+                style={{ width: "100%", accentColor: "#38bdf8" }}
+              />
+            </div>
+
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, fontWeight: 600, marginBottom: 4 }}>
+                <span>Rural Water Scheme:</span>
+                <strong style={{ color: "#10b981" }}>₹{q1Values.itemB} Lakhs</strong>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={q1Values.itemB}
+                disabled={userStats.questsCompleted.q1}
+                onChange={(e) => setQ1Values({ ...q1Values, itemB: parseInt(e.target.value, 10) })}
+                style={{ width: "100%", accentColor: "#10b981" }}
+              />
+            </div>
+
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, fontWeight: 600, marginBottom: 4 }}>
+                <span>Health Infrastructure:</span>
+                <strong style={{ color: "#f59e0b" }}>₹{q1Values.itemC} Lakhs</strong>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={q1Values.itemC}
+                disabled={userStats.questsCompleted.q1}
+                onChange={(e) => setQ1Values({ ...q1Values, itemC: parseInt(e.target.value, 10) })}
+                style={{ width: "100%", accentColor: "#f59e0b" }}
+              />
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
+              <div style={{ fontSize: 14, fontWeight: 800 }}>
+                Current Total:{" "}
+                <span style={{ color: q1CurrentSum === q1Target ? "#10b981" : "#ef4444" }}>
+                  ₹{q1CurrentSum} / ₹{q1Target} Lakhs
+                </span>
+              </div>
+
+              {!userStats.questsCompleted.q1 && (
+                <button
+                  onClick={handleQ1Submit}
+                  disabled={q1CurrentSum !== q1Target}
+                  style={{
+                    padding: "8px 18px",
+                    borderRadius: 8,
+                    fontSize: 13,
+                    fontWeight: 700,
+                    cursor: q1CurrentSum === q1Target ? "pointer" : "not-allowed",
+                    background: q1CurrentSum === q1Target ? "linear-gradient(135deg, #10b981, #059669)" : "#475569",
+                    color: "#ffffff",
+                    border: "none",
+                  }}
+                >
+                  Submit Balance
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </TiltCard>
+
+      {/* QUEST 2 */}
+      <TiltCard maxTilt={3} glare={true} hudBrackets={true} style={{ width: "100%" }}>
+        <div
+          className={isLight ? "glass-card-4k-light" : "glass-card-nano"}
+          style={{
+            padding: "24px",
+            borderLeft: userStats.questsCompleted.q2 ? "4px solid #10b981" : "4px solid #38bdf8",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 8,
+                  background: "rgba(56, 189, 248, 0.15)",
+                  color: "#38bdf8",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <ShieldCheck size={18} />
+              </div>
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: isLight ? "#0f172a" : "#ffffff" }}>
+                  Quest 2: BDMS Security Token Decryption
+                </div>
+                <div style={{ fontSize: 12, color: isLight ? "#64748b" : "#94a3b8" }}>
+                  Crack the 4-digit approval passcode using intelligence hints.
+                </div>
+              </div>
+            </div>
+
+            {userStats.questsCompleted.q2 ? (
+              <span style={{ display: "flex", alignItems: "center", gap: 5, color: "#10b981", fontWeight: 700, fontSize: 12.5 }}>
+                <CheckCircle2 size={16} /> Decrypted (+120 XP)
+              </span>
+            ) : (
+              <span className="badge-4k-gold">+120 XP</span>
+            )}
+          </div>
+
+          <div style={{ maxWidth: 520, marginTop: 14 }}>
+            <div
+              style={{
+                padding: "12px 16px",
+                borderRadius: 10,
+                background: isLight ? "#f8fafc" : "rgba(255, 255, 255, 0.03)",
+                border: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.06)",
+                fontSize: 12,
+                lineHeight: 1.6,
+                color: isLight ? "#475569" : "#cbd5e1",
+                marginBottom: 14,
+              }}
+            >
+              <div>• Digit 1: The lucky single prime number <strong>7</strong>.</div>
+              <div>• Digit 3: Half of 8 (which is <strong>4</strong>).</div>
+              <div>• Digit 4: Smallest positive even number (which is <strong>2</strong>).</div>
+              <div>• Rule: The sum of all 4 digits equals <strong>21</strong>.</div>
+            </div>
+
+            {!userStats.questsCompleted.q2 ? (
+              <div style={{ display: "flex", gap: 10 }}>
+                <input
+                  type="text"
+                  maxLength={4}
+                  value={q2Guess}
+                  onChange={(e) => setQ2Guess(e.target.value.replace(/\D/g, ""))}
+                  placeholder="Enter 4-digit PIN..."
+                  style={{
+                    padding: "10px 14px",
+                    borderRadius: 8,
+                    fontSize: 15,
+                    fontWeight: 700,
+                    letterSpacing: "4px",
+                    textAlign: "center",
+                    width: 180,
+                    background: isLight ? "#ffffff" : "rgba(255, 255, 255, 0.05)",
+                    border:
+                      q2Status === "error"
+                        ? "1px solid #ef4444"
+                        : isLight
+                        ? "1px solid #cbd5e1"
+                        : "1px solid rgba(255, 255, 255, 0.15)",
+                    color: isLight ? "#0f172a" : "#ffffff",
+                  }}
+                />
+                <button
+                  onClick={handleQ2Submit}
+                  style={{
+                    padding: "10px 20px",
+                    borderRadius: 8,
+                    fontSize: 13,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    background: "linear-gradient(135deg, #38bdf8, #0284c7)",
+                    color: "#ffffff",
+                    border: "none",
+                  }}
+                >
+                  Decrypt PIN
+                </button>
+              </div>
+            ) : (
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#10b981" }}>
+                Decrypted PIN: 7842 (Access Authenticated)
+              </div>
+            )}
+            {q2Status === "error" && !userStats.questsCompleted.q2 && (
+              <div style={{ color: "#ef4444", fontSize: 12, marginTop: 6 }}>
+                Incorrect token sequence. Re-verify the sum of digits!
+              </div>
             )}
           </div>
         </div>
-      </div>
-
-      {/* QUEST 2 */}
-      <div
-        className={isLight ? "glass-card-4k-light" : "glass-card-4k"}
-        style={{
-          padding: "24px",
-          borderLeft: userStats.questsCompleted.q2 ? "4px solid #10b981" : "4px solid #38bdf8",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: 8,
-                background: "rgba(56, 189, 248, 0.15)",
-                color: "#38bdf8",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <ShieldCheck size={18} />
-            </div>
-            <div>
-              <div style={{ fontSize: 16, fontWeight: 800, color: isLight ? "#0f172a" : "#ffffff" }}>
-                Quest 2: BDMS Security Token Decryption
-              </div>
-              <div style={{ fontSize: 12, color: isLight ? "#64748b" : "#94a3b8" }}>
-                Crack the 4-digit approval passcode using intelligence hints.
-              </div>
-            </div>
-          </div>
-
-          {userStats.questsCompleted.q2 ? (
-            <span style={{ display: "flex", alignItems: "center", gap: 5, color: "#10b981", fontWeight: 700, fontSize: 12.5 }}>
-              <CheckCircle2 size={16} /> Decrypted (+120 XP)
-            </span>
-          ) : (
-            <span className="badge-4k-gold">+120 XP</span>
-          )}
-        </div>
-
-        <div style={{ maxWidth: 520, marginTop: 14 }}>
-          <div
-            style={{
-              padding: "12px 16px",
-              borderRadius: 10,
-              background: isLight ? "#f8fafc" : "rgba(255, 255, 255, 0.03)",
-              border: isLight ? "1px solid #e2e8f0" : "1px solid rgba(255, 255, 255, 0.06)",
-              fontSize: 12,
-              lineHeight: 1.6,
-              color: isLight ? "#475569" : "#cbd5e1",
-              marginBottom: 14,
-            }}
-          >
-            <div>• Digit 1: The lucky single prime number <strong>7</strong>.</div>
-            <div>• Digit 3: Half of 8 (which is <strong>4</strong>).</div>
-            <div>• Digit 4: Smallest positive even number (which is <strong>2</strong>).</div>
-            <div>• Rule: The sum of all 4 digits equals <strong>21</strong>.</div>
-          </div>
-
-          {!userStats.questsCompleted.q2 ? (
-            <div style={{ display: "flex", gap: 10 }}>
-              <input
-                type="text"
-                maxLength={4}
-                value={q2Guess}
-                onChange={(e) => setQ2Guess(e.target.value.replace(/\D/g, ""))}
-                placeholder="Enter 4-digit PIN..."
-                style={{
-                  padding: "10px 14px",
-                  borderRadius: 8,
-                  fontSize: 15,
-                  fontWeight: 700,
-                  letterSpacing: "4px",
-                  textAlign: "center",
-                  width: 180,
-                  background: isLight ? "#ffffff" : "rgba(255, 255, 255, 0.05)",
-                  border:
-                    q2Status === "error"
-                      ? "1px solid #ef4444"
-                      : isLight
-                      ? "1px solid #cbd5e1"
-                      : "1px solid rgba(255, 255, 255, 0.15)",
-                  color: isLight ? "#0f172a" : "#ffffff",
-                }}
-              />
-              <button
-                onClick={handleQ2Submit}
-                style={{
-                  padding: "10px 20px",
-                  borderRadius: 8,
-                  fontSize: 13,
-                  fontWeight: 700,
-                  cursor: "pointer",
-                  background: "linear-gradient(135deg, #38bdf8, #0284c7)",
-                  color: "#ffffff",
-                  border: "none",
-                }}
-              >
-                Decrypt PIN
-              </button>
-            </div>
-          ) : (
-            <div style={{ fontSize: 13, fontWeight: 700, color: "#10b981" }}>
-              Decrypted PIN: 7842 (Access Authenticated)
-            </div>
-          )}
-          {q2Status === "error" && !userStats.questsCompleted.q2 && (
-            <div style={{ color: "#ef4444", fontSize: 12, marginTop: 6 }}>
-              Incorrect token sequence. Re-verify the sum of digits!
-            </div>
-          )}
-        </div>
-      </div>
+      </TiltCard>
 
       {/* QUEST 3 */}
-      <div
-        className={isLight ? "glass-card-4k-light" : "glass-card-4k"}
-        style={{
-          padding: "24px",
-          borderLeft: userStats.questsCompleted.q3 ? "4px solid #10b981" : "4px solid #ff334b",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: 8,
-                background: "rgba(255, 51, 75, 0.15)",
-                color: "#ff334b",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <FileCheck size={18} />
-            </div>
-            <div>
-              <div style={{ fontSize: 16, fontWeight: 800, color: isLight ? "#0f172a" : "#ffffff" }}>
-                Quest 3: Speed Audit Sprint
-              </div>
-              <div style={{ fontSize: 12, color: isLight ? "#64748b" : "#94a3b8" }}>
-                Spot and click the 3 flagged anomaly vouchers from the 6 submitted entries.
-              </div>
-            </div>
-          </div>
-
-          {userStats.questsCompleted.q3 ? (
-            <span style={{ display: "flex", alignItems: "center", gap: 5, color: "#10b981", fontWeight: 700, fontSize: 12.5 }}>
-              <CheckCircle2 size={16} /> Audit Verified (+150 XP)
-            </span>
-          ) : (
-            <span className="badge-4k-gold">+150 XP</span>
-          )}
-        </div>
-
+      <TiltCard maxTilt={3} glare={true} hudBrackets={true} style={{ width: "100%" }}>
         <div
+          className={isLight ? "glass-card-4k-light" : "glass-card-nano"}
           style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            gap: 12,
-            marginTop: 16,
+            padding: "24px",
+            borderLeft: userStats.questsCompleted.q3 ? "4px solid #10b981" : "4px solid #ff334b",
           }}
         >
-          {q3Vouchers.map((v) => {
-            const isSelected = v.selected;
-            return (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <div
-                key={v.id}
-                onClick={() => handleToggleVoucher(v.id)}
                 style={{
-                  padding: "14px 16px",
-                  borderRadius: 10,
-                  cursor: userStats.questsCompleted.q3 ? "default" : "pointer",
-                  background: isSelected
-                    ? "rgba(255, 51, 75, 0.15)"
-                    : isLight
-                    ? "#ffffff"
-                    : "rgba(255, 255, 255, 0.03)",
-                  border: isSelected
-                    ? "2px solid #ff334b"
-                    : isLight
-                    ? "1px solid #cbd5e1"
-                    : "1px solid rgba(255, 255, 255, 0.08)",
-                  boxShadow: isSelected ? "0 0 14px rgba(255, 51, 75, 0.35)" : "none",
-                  transition: "all 0.15s ease",
+                  width: 36,
+                  height: 36,
+                  borderRadius: 8,
+                  background: "rgba(255, 51, 75, 0.15)",
+                  color: "#ff334b",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                  <span style={{ fontSize: 12.5, fontWeight: 800, color: isLight ? "#0f172a" : "#ffffff" }}>
-                    {v.no}
-                  </span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: "#f59e0b" }}>{v.amount}</span>
+                <FileCheck size={18} />
+              </div>
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: isLight ? "#0f172a" : "#ffffff" }}>
+                  Quest 3: Speed Audit Sprint
                 </div>
-                <div style={{ fontSize: 11, color: isSelected ? "#ff334b" : "#94a3b8" }}>
-                  {isSelected ? `⚠️ Flagged: ${v.issue || "Audited"}` : "Tap to inspect & flag"}
+                <div style={{ fontSize: 12, color: isLight ? "#64748b" : "#94a3b8" }}>
+                  Spot and click the 3 flagged anomaly vouchers from the 6 submitted entries.
                 </div>
               </div>
-            );
-          })}
+            </div>
+
+            {userStats.questsCompleted.q3 ? (
+              <span style={{ display: "flex", alignItems: "center", gap: 5, color: "#10b981", fontWeight: 700, fontSize: 12.5 }}>
+                <CheckCircle2 size={16} /> Audit Verified (+150 XP)
+              </span>
+            ) : (
+              <span className="badge-4k-gold">+150 XP</span>
+            )}
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+              gap: 12,
+              marginTop: 16,
+            }}
+          >
+            {q3Vouchers.map((v) => {
+              const isSelected = v.selected;
+              return (
+                <div
+                  key={v.id}
+                  onClick={() => handleToggleVoucher(v.id)}
+                  style={{
+                    padding: "14px 16px",
+                    borderRadius: 10,
+                    cursor: userStats.questsCompleted.q3 ? "default" : "pointer",
+                    background: isSelected
+                      ? "rgba(255, 51, 75, 0.15)"
+                      : isLight
+                      ? "#ffffff"
+                      : "rgba(255, 255, 255, 0.03)",
+                    border: isSelected
+                      ? "2px solid #ff334b"
+                      : isLight
+                      ? "1px solid #cbd5e1"
+                      : "1px solid rgba(255, 255, 255, 0.08)",
+                    boxShadow: isSelected ? "0 0 14px rgba(255, 51, 75, 0.35)" : "none",
+                    transition: "all 0.15s ease",
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                    <span style={{ fontSize: 12.5, fontWeight: 800, color: isLight ? "#0f172a" : "#ffffff" }}>
+                      {v.no}
+                    </span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: "#f59e0b" }}>{v.amount}</span>
+                  </div>
+                  <div style={{ fontSize: 11, color: isSelected ? "#ff334b" : "#94a3b8" }}>
+                    {isSelected ? `⚠️ Flagged: ${v.issue || "Audited"}` : "Tap to inspect & flag"}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      </TiltCard>
     </div>
   );
 }
