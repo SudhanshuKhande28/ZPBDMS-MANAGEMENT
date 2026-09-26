@@ -81,7 +81,14 @@ import {
   Tag,
   Smartphone,
   Menu,
+  Gamepad2,
+  Trophy,
+  RotateCcw,
+  Brain,
+  Award,
+  Zap,
 } from "lucide-react";
+import MindZoneView from "./MindZoneView.jsx";
 import {
   isNativePlatform,
   isAndroid,
@@ -8569,6 +8576,7 @@ export default function App() {
       : []),
     { key: "district_flows", label: "District Approval Flows", icon: GitMerge, count: 34, highlight: true },
     { key: "bill_tracker", label: "Bill Tracker Matrix", icon: Receipt, count: totalBillsCount },
+    { key: "mind_zone", label: "Mind Zone & Games", icon: Gamepad2, highlight: true },
     { key: "dashboard", label: "Operations Deck", icon: LayoutGrid },
     { key: "issues", label: "Issues Matrix", icon: AlertTriangle, count: openIssues, isAlert: criticalOpen > 0 },
     { key: "tasks", label: "Task Directives", icon: ListChecks, count: pendingTasks },
@@ -8866,25 +8874,31 @@ export default function App() {
               <button
                 key={key}
                 onClick={() => setTab(key)}
+                className={active ? (isLight ? "nav-tab-golden-active-light" : "nav-tab-golden-active") : ""}
                 style={{
                   display: "flex",
                   alignItems: "center",
                   justifyContent: sidebarCollapsed ? "center" : "space-between",
                   gap: sidebarCollapsed ? 0 : 10,
                   border: active
-                    ? "1px solid rgba(255, 51, 75, 0.35)"
-                    : "1px solid transparent",
+                    ? (isLight ? "2px solid #d97706" : "2px solid #f59e0b")
+                    : "2px solid transparent",
                   cursor: "pointer",
                   background: active
-                    ? "linear-gradient(90deg, rgba(255, 51, 75, 0.16) 0%, rgba(255, 51, 75, 0.04) 100%)"
+                    ? (isLight ? "#ffffff" : "rgba(18, 22, 34, 0.92)")
                     : "transparent",
-                  color: active ? "#ffffff" : highlight ? "#cbd5e1" : "#94a3b8",
+                  boxShadow: active
+                    ? (isLight
+                        ? "0 0 16px rgba(217, 119, 6, 0.35), inset 0 0 8px rgba(217, 119, 6, 0.08)"
+                        : "0 0 16px rgba(245, 158, 11, 0.45), inset 0 0 8px rgba(245, 158, 11, 0.12), 0 8px 24px rgba(0, 0, 0, 0.6)")
+                    : "none",
+                  color: active ? (isLight ? "#0f172a" : "#ffffff") : highlight ? "#cbd5e1" : "#94a3b8",
                   padding: sidebarCollapsed ? "10px 0" : "10px 12px",
-                  borderRadius: 8,
+                  borderRadius: 10,
                   fontSize: 13.5,
-                  fontWeight: active ? 600 : 500,
+                  fontWeight: active ? 700 : 500,
                   textAlign: "left",
-                  transition: "all 0.18s ease",
+                  transition: "all 0.22s cubic-bezier(0.16, 1, 0.3, 1)",
                   position: "relative",
                 }}
                 title={label}
@@ -8903,24 +8917,26 @@ export default function App() {
               >
                 {active && (
                   <div
+                    className="nav-tab-neon-pill"
                     style={{
                       position: "absolute",
-                      left: 0,
-                      top: "20%",
-                      bottom: "20%",
-                      width: 3,
+                      left: -2,
+                      top: "18%",
+                      bottom: "18%",
+                      width: 4.5,
                       borderRadius: "0 4px 4px 0",
-                      background: "#ff334b",
-                      boxShadow: "0 0 10px #ff334b",
+                      background: "#ff0055",
+                      boxShadow: "0 0 12px #ff0055, 0 0 6px #ff334b",
+                      zIndex: 2,
                     }}
                   />
                 )}
-                <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ display: "flex", alignItems: "center", gap: 10, position: "relative", zIndex: 1 }}>
                   <Icon
                     size={sidebarCollapsed ? 18 : 16}
-                    color={active ? "#ff334b" : highlight ? "#ff6479" : "currentColor"}
+                    color={active ? "#ff0055" : highlight ? "#ff6479" : "currentColor"}
                     style={{
-                      filter: active ? "drop-shadow(0 0 6px rgba(255, 51, 75, 0.5))" : "none",
+                      filter: active ? "drop-shadow(0 0 7px rgba(255, 0, 85, 0.6))" : "none",
                     }}
                   />
                   {!sidebarCollapsed && label}
@@ -9532,7 +9548,7 @@ export default function App() {
             </div>
 
             {/* Quick Search */}
-            {tab !== "dashboard" && tab !== "my_desk" && tab !== "test_hub" && (
+            {tab !== "dashboard" && tab !== "my_desk" && tab !== "test_hub" && tab !== "mind_zone" && (
               <div style={{ position: "relative" }}>
                 <Search
                   size={14}
@@ -9582,6 +9598,24 @@ export default function App() {
                   <Download size={14} /> Export CSV
                 </span>
               </button>
+            ) : tab === "mind_zone" ? (
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "8px 14px",
+                  borderRadius: 8,
+                  background: isLight ? "rgba(245, 158, 11, 0.12)" : "rgba(245, 158, 11, 0.15)",
+                  border: "1px solid rgba(245, 158, 11, 0.4)",
+                  color: "#f59e0b",
+                  fontSize: 12.5,
+                  fontWeight: 700,
+                  boxShadow: "0 0 10px rgba(245, 158, 11, 0.2)",
+                }}
+              >
+                <Sparkles size={14} /> Cognitive Focus Mode
+              </div>
             ) : tab === "test_hub" ? (
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <button
@@ -9809,6 +9843,13 @@ export default function App() {
           />
         )}
 
+        {tab === "mind_zone" && (
+          <MindZoneView
+            isLight={isLight}
+            currentUser={currentUser}
+          />
+        )}
+
         {/* Corner Branding Footer */}
         <footer
           style={{
@@ -9974,6 +10015,7 @@ export default function App() {
                     ]
                   : []),
                 { key: "bill_tracker", label: "Bill Tracker", icon: Receipt, badge: totalBillsCount, color: "#10b981" },
+                { key: "mind_zone", label: "Mind Zone & Games", icon: Gamepad2, color: "#f59e0b" },
                 { key: "dashboard", label: "Operations Deck", icon: LayoutGrid, color: "#38bdf8" },
                 { key: "issues", label: "Issues Matrix", icon: AlertTriangle, badge: openIssues, color: "#ef4444" },
                 { key: "tasks", label: "Task Directives", icon: ListChecks, badge: pendingTasks, color: "#fbbf24" },
@@ -9994,17 +10036,23 @@ export default function App() {
                       setTab(key);
                       setMobileDrawerOpen(false);
                     }}
+                    className={active ? (isLight ? "nav-tab-golden-active-light" : "nav-tab-golden-active") : ""}
                     style={{
                       background: active
-                        ? "rgba(255, 51, 75, 0.12)"
+                        ? (isLight ? "#ffffff" : "rgba(18, 22, 34, 0.92)")
                         : isLight
                         ? "#f8fafc"
                         : "rgba(255, 255, 255, 0.03)",
                       border: active
-                        ? "1px solid rgba(255, 51, 75, 0.4)"
+                        ? (isLight ? "2px solid #d97706" : "2px solid #f59e0b")
                         : isLight
                         ? "1px solid #e2e8f0"
                         : "1px solid rgba(255, 255, 255, 0.06)",
+                      boxShadow: active
+                        ? (isLight
+                            ? "0 0 14px rgba(217, 119, 6, 0.35), inset 0 0 6px rgba(217, 119, 6, 0.08)"
+                            : "0 0 14px rgba(245, 158, 11, 0.4), inset 0 0 6px rgba(245, 158, 11, 0.12)")
+                        : "none",
                       borderRadius: 12,
                       padding: "12px 14px",
                       display: "flex",
@@ -10013,15 +10061,39 @@ export default function App() {
                       cursor: "pointer",
                       textAlign: "left",
                       width: "100%",
+                      position: "relative",
+                      transition: "all 0.2s ease",
                     }}
                   >
-                    <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-                      <ModIcon size={16} color={color || "#ff334b"} />
+                    {active && (
+                      <div
+                        className="nav-tab-neon-pill"
+                        style={{
+                          position: "absolute",
+                          left: -2,
+                          top: "20%",
+                          bottom: "20%",
+                          width: 4,
+                          borderRadius: "0 3px 3px 0",
+                          background: "#ff0055",
+                          boxShadow: "0 0 10px #ff0055",
+                          zIndex: 2,
+                        }}
+                      />
+                    )}
+                    <div style={{ display: "flex", alignItems: "center", gap: 9, position: "relative", zIndex: 1 }}>
+                      <ModIcon
+                        size={16}
+                        color={active ? "#ff0055" : (color || "#ff334b")}
+                        style={{
+                          filter: active ? "drop-shadow(0 0 6px rgba(255, 0, 85, 0.6))" : "none",
+                        }}
+                      />
                       <span
                         style={{
                           fontSize: 12.5,
                           fontWeight: active ? 700 : 500,
-                          color: active ? "#ff334b" : isLight ? "#0f172a" : "#ffffff",
+                          color: active ? (isLight ? "#0f172a" : "#ffffff") : isLight ? "#0f172a" : "#ffffff",
                         }}
                       >
                         {label}

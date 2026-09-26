@@ -873,6 +873,181 @@
   }
 }
 
+/* ==========================================================================
+   4K GRAPHICS, GLASSMORPHISM & GOLDEN TAB NAVIGATION
+   ========================================================================== */
+
+/* Exact Golden Tab Selection Border (Matching User Reference Photo) */
+.nav-tab-golden-active {
+  border: 2px solid #f59e0b !important;
+  border-radius: 10px !important;
+  background: rgba(18, 22, 34, 0.88) !important;
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.45), 
+              inset 0 0 8px rgba(245, 158, 11, 0.12),
+              0 8px 24px rgba(0, 0, 0, 0.6) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  position: relative;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.nav-tab-golden-active-light {
+  border: 2px solid #d97706 !important;
+  border-radius: 10px !important;
+  background: #ffffff !important;
+  box-shadow: 0 0 16px rgba(217, 119, 6, 0.3), 
+              inset 0 0 8px rgba(217, 119, 6, 0.08),
+              0 6px 18px rgba(0, 0, 0, 0.08) !important;
+  color: #0f172a !important;
+  font-weight: 700 !important;
+  position: relative;
+}
+
+/* Left Neon Crimson Pulse Pill for Active Selection */
+.nav-tab-neon-pill {
+  position: absolute;
+  left: -2px;
+  top: 22%;
+  bottom: 22%;
+  width: 4.5px;
+  border-radius: 0 4px 4px 0;
+  background: #ff0055;
+  box-shadow: 0 0 12px #ff0055, 0 0 6px #ff334b;
+  z-index: 2;
+}
+
+/* 4K Ultra-Glassmorphism Cards */
+.glass-card-4k {
+  background: rgba(14, 17, 27, 0.78);
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 14px;
+  box-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.8), 
+              0 0 24px 0 rgba(255, 255, 255, 0.02),
+              inset 0 1px 1px 0 rgba(255, 255, 255, 0.16);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card-4k:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  border-top-color: rgba(255, 255, 255, 0.35);
+  box-shadow: 0 26px 56px -10px rgba(0, 0, 0, 0.88), 
+              0 0 28px 0 rgba(255, 51, 75, 0.08),
+              inset 0 1px 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.glass-card-4k-light {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  border: 1px solid #cbd5e1;
+  border-top: 1px solid #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 14px 34px -8px rgba(0, 0, 0, 0.08), 
+              0 0 16px 0 rgba(0, 0, 0, 0.02),
+              inset 0 1px 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* 4K Illuminated Badge */
+.badge-4k-gold {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.1) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.5);
+  color: #fbbf24;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.25);
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-weight: 700;
+  font-size: 11px;
+}
+
+/* 4K Shimmer Animation */
+@keyframes shimmer-4k {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer-text-gold {
+  background: linear-gradient(90deg, #f59e0b 0%, #fef08a 50%, #f59e0b 100%);
+  background-size: 200% auto;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: shimmer-4k 4s linear infinite;
+}
+
+/* Memory Game 3D Flip Card Styles */
+.memory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 14px;
+  perspective: 1000px;
+}
+
+.memory-card {
+  position: relative;
+  height: 120px;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 12px;
+}
+
+.memory-card:hover {
+  transform: translateY(-2px);
+}
+
+.memory-card.is-flipped {
+  transform: rotateY(180deg);
+}
+
+.memory-card.is-matched {
+  transform: rotateY(180deg);
+  opacity: 0.88;
+}
+
+.memory-card-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  text-align: center;
+}
+
+.memory-card-front {
+  transform: rotateY(180deg);
+}
+
+/* Sudoku Board Grid 4K Styling */
+.sudoku-cell {
+  width: 100%;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+  font-weight: 800;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.12s ease;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.sudoku-cell:hover {
+  background: rgba(245, 158, 11, 0.18) !important;
+}
+
 
 
 
