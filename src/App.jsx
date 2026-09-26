@@ -5903,8 +5903,19 @@ function SettingsModal({
 /* ---------------------------- Clean Management Login View ---------------------------- */
 
 function LoginScreen({ onLogin, theme = "dark", toggleTheme, users, onDispatchAdminAlert }) {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const remembered = (() => {
+    try {
+      const raw = localStorage.getItem("zpbdms_remember_creds");
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  })();
+
+  const [username, setUsername] = useState(remembered?.username || "");
+  const [password, setPassword] = useState(remembered?.password || "");
+  const [rememberPassword, setRememberPassword] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showForgotPass, setShowForgotPass] = useState(false);
@@ -5975,6 +5986,20 @@ function LoginScreen({ onLogin, theme = "dark", toggleTheme, users, onDispatchAd
       const isHashValid = foundUser.passwordHash && foundUser.passwordHash === computedHash;
 
       if (fbVerified || isHashValid) {
+        // Handle Remember Password persistence
+        if (rememberPassword) {
+          try {
+            localStorage.setItem(
+              "zpbdms_remember_creds",
+              JSON.stringify({ username: cleanUser, password: cleanPass })
+            );
+          } catch (e) {}
+        } else {
+          try {
+            localStorage.removeItem("zpbdms_remember_creds");
+          } catch (e) {}
+        }
+
         const token = generateSessionToken(foundUser);
         onLogin(foundUser, token);
       } else {
@@ -6138,6 +6163,40 @@ function LoginScreen({ onLogin, theme = "dark", toggleTheme, users, onDispatchAd
                 }}
               />
             </div>
+            {/* Quick Pick Team Pills */}
+            <div style={{ display: "flex", gap: 5, marginTop: 6, flexWrap: "wrap", alignItems: "center" }}>
+              <span style={{ fontSize: 11, color: isLight ? "#64748b" : "#94a3b8" }}>Quick pick:</span>
+              {activeUsers.slice(0, 5).map((u) => {
+                const isSelected = username.toLowerCase() === (u.username || "").toLowerCase();
+                return (
+                  <button
+                    key={u.username || u.name}
+                    type="button"
+                    onClick={() => {
+                      setUsername(u.username || u.name);
+                      setError("");
+                    }}
+                    style={{
+                      background: isSelected
+                        ? "rgba(255, 51, 75, 0.15)"
+                        : (isLight ? "#e2e8f0" : "rgba(255, 255, 255, 0.05)"),
+                      border: isSelected
+                        ? "1px solid rgba(255, 51, 75, 0.4)"
+                        : (isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.1)"),
+                      color: isSelected ? "#ff6479" : (isLight ? "#334155" : "#cbd5e1"),
+                      borderRadius: 12,
+                      padding: "2px 8px",
+                      fontSize: 10.5,
+                      cursor: "pointer",
+                      fontWeight: isSelected ? 700 : 500,
+                      transition: "all 0.15s ease",
+                    }}
+                  >
+                    {u.name?.split(" ")[0]}
+                  </button>
+                );
+              })}
+            </div>
           </FormField>
 
           <FormField label="Password">
@@ -6153,7 +6212,7 @@ function LoginScreen({ onLogin, theme = "dark", toggleTheme, users, onDispatchAd
                 }}
               />
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value);
@@ -6165,7 +6224,7 @@ function LoginScreen({ onLogin, theme = "dark", toggleTheme, users, onDispatchAd
                   boxSizing: "border-box",
                   fontFamily: "'Inter', sans-serif",
                   fontSize: 13.5,
-                  padding: "11px 14px 11px 38px",
+                  padding: "11px 40px 11px 38px",
                   borderRadius: 8,
                   border: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.12)",
                   background: isLight ? "#ffffff" : "rgba(11, 14, 23, 0.88)",
@@ -6174,8 +6233,90 @@ function LoginScreen({ onLogin, theme = "dark", toggleTheme, users, onDispatchAd
                   transition: "all 0.2s ease",
                 }}
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                style={{
+                  position: "absolute",
+                  right: 10,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "transparent",
+                  border: "none",
+                  color: "#94a3b8",
+                  cursor: "pointer",
+                  padding: 4,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+                title={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
             </div>
           </FormField>
+
+          {/* Remember Password Checkbox & Clear */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginTop: 10,
+              fontSize: 12.5,
+            }}
+          >
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 7,
+                cursor: "pointer",
+                userSelect: "none",
+                color: isLight ? "#334155" : "#cbd5e1",
+                fontWeight: 500,
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={rememberPassword}
+                onChange={(e) => setRememberPassword(e.target.checked)}
+                style={{
+                  width: 15,
+                  height: 15,
+                  accentColor: "#ff334b",
+                  cursor: "pointer",
+                }}
+              />
+              <span>Remember Password</span>
+            </label>
+
+            {remembered && (
+              <button
+                type="button"
+                onClick={() => {
+                  try {
+                    localStorage.removeItem("zpbdms_remember_creds");
+                  } catch (e) {}
+                  setUsername("");
+                  setPassword("");
+                }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#94a3b8",
+                  fontSize: 11,
+                  cursor: "pointer",
+                  padding: "2px 4px",
+                  textDecoration: "underline",
+                }}
+                title="Clear saved password from this device"
+              >
+                Clear Saved
+              </button>
+            )}
+          </div>
 
           {error && (
             <div
