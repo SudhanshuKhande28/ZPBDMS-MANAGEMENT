@@ -3901,7 +3901,7 @@ function MOMForm({ initial, users = TEAM_ROSTER, currentUser, onSave, onCancel, 
   );
 }
 
-function BACriticalPointForm({ initial, users = TEAM_ROSTER, currentUser, onSave, onCancel, isLight }) {
+function BACriticalPointForm({ initial, users = TEAM_ROSTER, currentUser, onSave, onDelete, onCancel, isLight }) {
   const userList = Array.isArray(users) && users.length > 0 ? users : TEAM_ROSTER;
   const devUsers = userList.filter((u) => u.role?.toLowerCase().includes("dev") || !u.role?.toLowerCase().includes("test"));
   const testerUsers = userList.filter((u) => u.role?.toLowerCase().includes("test") || u.role?.toLowerCase().includes("qa"));
@@ -4191,22 +4191,56 @@ function BACriticalPointForm({ initial, users = TEAM_ROSTER, currentUser, onSave
       </div>
 
       {/* Buttons */}
-      <div style={{ display: "flex", gap: 10, marginTop: 12, justifyContent: "flex-end" }}>
-        <button
-          type="button"
-          className="btn-ghost-dark"
-          style={{ padding: "9px 18px", fontSize: 13, fontWeight: 500 }}
-          onClick={onCancel}
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          className="btn-red-gradient"
-          style={{ padding: "9px 24px", fontSize: 13, display: "flex", alignItems: "center", gap: 6 }}
-        >
-          <ShieldAlert size={14} /> {initial ? "Update Critical Directive" : "Save Critical Directive"}
-        </button>
+      <div style={{ display: "flex", gap: 10, marginTop: 14, justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
+        {initial && onDelete ? (
+          <button
+            type="button"
+            onClick={() => onDelete(initial)}
+            style={{
+              padding: "9px 16px",
+              fontSize: 12.5,
+              fontWeight: 700,
+              color: "#ff6479",
+              background: "rgba(239, 68, 68, 0.12)",
+              border: "1px solid rgba(239, 68, 68, 0.35)",
+              borderRadius: 6,
+              cursor: "pointer",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              transition: "all 0.15s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(239, 68, 68, 0.22)";
+              e.currentTarget.style.color = "#ff334b";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "rgba(239, 68, 68, 0.12)";
+              e.currentTarget.style.color = "#ff6479";
+            }}
+            title="Delete this critical directive from the system (BA Only)"
+          >
+            <Trash2 size={14} /> Delete Directive
+          </button>
+        ) : <div />}
+
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <button
+            type="button"
+            className="btn-ghost-dark"
+            style={{ padding: "9px 18px", fontSize: 13, fontWeight: 500 }}
+            onClick={onCancel}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="btn-red-gradient"
+            style={{ padding: "9px 24px", fontSize: 13, display: "flex", alignItems: "center", gap: 6 }}
+          >
+            <ShieldAlert size={14} /> {initial ? "Update Critical Directive" : "Save Critical Directive"}
+          </button>
+        </div>
       </div>
     </form>
   );
@@ -10099,6 +10133,10 @@ export default function App() {
             users={data?.users || TEAM_ROSTER}
             currentUser={currentUser}
             onSave={saveBACriticalPoint}
+            onDelete={(item) => {
+              setModal(null);
+              promptDeleteBACriticalPoint(item);
+            }}
             onCancel={() => setModal(null)}
             isLight={isLight}
           />
@@ -13672,19 +13710,19 @@ function BACriticalMatrixView({
         className="glass-card"
         style={{
           width: "100%",
-          overflow: "hidden",
+          overflowX: "auto",
           border: isLight ? "1px solid #cbd5e1" : "1px solid rgba(255, 255, 255, 0.08)",
         }}
       >
-        <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
+        <table style={{ width: "100%", minWidth: 1080, borderCollapse: "collapse", tableLayout: "fixed" }}>
           <colgroup>
-            <col style={{ width: 90 }} />
-            <col style={{ width: "26%" }} />
+            <col style={{ width: 85 }} />
+            <col style={{ width: "24%" }} />
+            <col style={{ width: "12%" }} />
             <col style={{ width: "13%" }} />
             <col style={{ width: "14%" }} />
-            <col style={{ width: "15%" }} />
-            <col style={{ width: "18%" }} />
-            <col style={{ width: 105 }} />
+            <col style={{ width: "16%" }} />
+            <col style={{ width: 185 }} />
           </colgroup>
           <thead>
             <tr
@@ -13989,14 +14027,36 @@ function BACriticalMatrixView({
                         </IconButton>
 
                         {/* Delete Button */}
-                        <IconButton
+                        <button
+                          type="button"
                           onClick={() => onDelete(pt)}
                           title="Delete Critical Directive (BA Only)"
-                          variant="danger"
-                          style={{ padding: 4 }}
+                          style={{
+                            padding: "3px 7px",
+                            fontSize: 10.5,
+                            fontWeight: 700,
+                            borderRadius: 4,
+                            cursor: "pointer",
+                            background: "rgba(239, 68, 68, 0.14)",
+                            color: "#ff6479",
+                            border: "1px solid rgba(239, 68, 68, 0.4)",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 3,
+                            transition: "all 0.15s ease",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = "rgba(239, 68, 68, 0.28)";
+                            e.currentTarget.style.color = "#ff334b";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = "rgba(239, 68, 68, 0.14)";
+                            e.currentTarget.style.color = "#ff6479";
+                          }}
                         >
-                          <Trash2 size={12} />
-                        </IconButton>
+                          <Trash2 size={11} />
+                          <span>Delete</span>
+                        </button>
                       </div>
                     </td>
                   </tr>
