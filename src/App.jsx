@@ -7115,10 +7115,9 @@ export default function App() {
               Array.isArray(fetched.testPoints) && fetched.testPoints.length > 0
                 ? fetched.testPoints
                 : seedTestPoints(),
-            baCriticalPoints:
-              Array.isArray(fetched.baCriticalPoints) && fetched.baCriticalPoints.length > 0
-                ? fetched.baCriticalPoints
-                : seedBACriticalPoints(),
+            baCriticalPoints: Array.isArray(fetched.baCriticalPoints)
+              ? fetched.baCriticalPoints
+              : seedBACriticalPoints(),
           });
         } else {
           const seed = seedData();
@@ -8102,7 +8101,7 @@ export default function App() {
       return;
     }
     const isEdit = !!modal?.editing?.id;
-    const currentPoints = data?.baCriticalPoints || seedBACriticalPoints();
+    const currentPoints = Array.isArray(data?.baCriticalPoints) ? data.baCriticalPoints : [];
     const updated = addOrUpdate(currentPoints, item, modal?.editing?.id);
     const nextLogs = logActivity(
       isEdit ? "UPDATE" : "CREATE",
@@ -8124,7 +8123,7 @@ export default function App() {
       itemTitle: point.title || point.code,
       details: `Code: ${point.code} · Module: ${point.module} · Live Status: ${point.liveStatus}`,
       onConfirm: () => {
-        const currentPoints = data?.baCriticalPoints || [];
+        const currentPoints = Array.isArray(data?.baCriticalPoints) ? data.baCriticalPoints : [];
         const nextPoints = currentPoints.filter((p) => p.id !== point.id);
         const nextLogs = logActivity(
           "DELETE",
@@ -8138,12 +8137,36 @@ export default function App() {
     });
   };
 
+  const promptClearAllBACriticalPoints = () => {
+    if (!isBA) {
+      alert("Access Restricted: Only Business Analysts can clear critical directives.");
+      return;
+    }
+    const currentPoints = Array.isArray(data?.baCriticalPoints) ? data.baCriticalPoints : [];
+    if (currentPoints.length === 0) return;
+    setConfirmDelete({
+      itemType: `ALL ${currentPoints.length} BA Critical Directives`,
+      itemTitle: `All ${currentPoints.length} Critical Directives in Matrix`,
+      details: "This will permanently remove all critical directive records from the system. You can register new directives anytime.",
+      onConfirm: () => {
+        const nextLogs = logActivity(
+          "DELETE",
+          "BA Critical Matrix",
+          "ALL",
+          `Cleared all ${currentPoints.length} critical directives by ${currentUser?.name || "BA"}`
+        );
+        persist({ ...data, baCriticalPoints: [], auditLogs: nextLogs });
+        setConfirmDelete(null);
+      },
+    });
+  };
+
   const toggleBALiveStatus = (pointId, forcedNext) => {
     if (!isBA) {
       alert("Access Restricted: Only Business Analysts can toggle Live production deployment status.");
       return;
     }
-    const currentPoints = data?.baCriticalPoints || seedBACriticalPoints();
+    const currentPoints = Array.isArray(data?.baCriticalPoints) ? data.baCriticalPoints : [];
     const target = currentPoints.find((p) => p.id === pointId);
     if (!target) return;
 
@@ -8186,7 +8209,7 @@ export default function App() {
       alert("Access Restricted: Only Business Analysts can cycle testing status in the BA Critical Matrix.");
       return;
     }
-    const currentPoints = data?.baCriticalPoints || seedBACriticalPoints();
+    const currentPoints = Array.isArray(data?.baCriticalPoints) ? data.baCriticalPoints : [];
     const cycle = ["Untested", "Testing In Progress", "QA Passed", "QA Failed / Blocked", "Retest Required"];
     const target = currentPoints.find((p) => p.id === pointId);
     if (!target) return;
@@ -9573,6 +9596,7 @@ export default function App() {
               onOpenAdd={() => setModal({ type: "ba_critical_point" })}
               onOpenEdit={(pt) => setModal({ type: "ba_critical_point", editing: pt })}
               onDelete={promptDeleteBACriticalPoint}
+              onClearAll={promptClearAllBACriticalPoints}
               onToggleLiveStatus={toggleBALiveStatus}
               onCycleTestingStatus={cycleBATestingStatus}
               onPushToTestMatrix={pushBACriticalToTestMatrix}
@@ -13278,6 +13302,7 @@ function BACriticalMatrixView({
   onOpenAdd,
   onOpenEdit,
   onDelete,
+  onClearAll,
   onToggleLiveStatus,
   onCycleTestingStatus,
   onPushToTestMatrix,
@@ -13427,6 +13452,26 @@ function BACriticalMatrixView({
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {total > 0 && onClearAll && (
+            <button
+              type="button"
+              className="btn-ghost-dark"
+              onClick={onClearAll}
+              style={{
+                padding: "7px 12px",
+                fontSize: 12,
+                color: "#ff6479",
+                border: "1px solid rgba(239, 68, 68, 0.35)",
+                background: "rgba(239, 68, 68, 0.08)",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 5,
+              }}
+              title="Clear all critical directives from the matrix (BA Only)"
+            >
+              <Trash2 size={13} /> Clear All
+            </button>
+          )}
           <button
             className="btn-ghost-dark"
             onClick={onExportCSV}
